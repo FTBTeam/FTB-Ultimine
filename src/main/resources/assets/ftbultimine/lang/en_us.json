@@ -1,0 +1,10 @@
+{
+	"key.ftbultimine": "FTB Ultimine",
+	"key.ftbultimine_settings": "FTB Ultimine Settings",
+	"ftbultimine.shape_changed": "FTB Ultimine shape changed to: %s",
+	"ftbultimine.shape.shapeless": "Shapeless",
+	"ftbultimine.shape.small_tunnel": "Small Tunnel",
+	"ftbultimine.shape.small_square": "Small Square",
+	"ftbultimine.shape.mining_tunnel": "Mining Tunnel",
+	"ftbultimine.shape.escape_tunnel": "Escape Tunnel"
+}
