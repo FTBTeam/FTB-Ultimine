@@ -249,7 +249,7 @@ public class FTBUltimine
 
 		if (droppedXp > 0)
 		{
-			world.addEntity(new ExperienceOrbEntity(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, Integer.MAX_VALUE));
+			world.addEntity(new ExperienceOrbEntity(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, droppedXp));
 		}
 	}
 
