@@ -15,6 +15,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
+import net.minecraft.block.IceBlock;
+import net.minecraft.block.material.Material;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.item.ExperienceOrbEntity;
@@ -228,6 +230,16 @@ public class FTBUltimine
 			}
 
 			world.setBlockState(p, fluidState.getBlockState(), Constants.BlockFlags.DEFAULT);
+
+			if (silktouch == 0 && state.getBlock() instanceof IceBlock)
+			{
+				Material material = world.getBlockState(p.down()).getMaterial();
+
+				if (material.blocksMovement() || material.isLiquid())
+				{
+					world.setBlockState(p, Blocks.WATER.getDefaultState());
+				}
+			}
 
 			if (brokenItemHandler.isBroken)
 			{
