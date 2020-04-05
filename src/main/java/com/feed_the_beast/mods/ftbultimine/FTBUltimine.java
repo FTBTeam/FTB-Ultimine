@@ -15,18 +15,13 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.CropsBlock;
-import net.minecraft.block.IceBlock;
-import net.minecraft.block.material.Material;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.item.ExperienceOrbEntity;
+import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.HoeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ShearsItem;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -35,15 +30,16 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
@@ -67,17 +63,15 @@ public class FTBUltimine
 	public final FTBUltimineConfig config;
 
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
+	private boolean isBreakingBlock;
+	private int tempBlockDroppedXp;
+	private ItemCollection tempBlockDropsList;
 
 	public FTBUltimine()
 	{
 		instance = this;
 		FTBUltimineNet.init();
-		MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, this::blockBroken);
-		MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, this::blockRightClick);
-		MinecraftForge.EVENT_BUS.addListener(this::serverAboutToStart);
-		MinecraftForge.EVENT_BUS.addListener(this::playerTick);
-		MinecraftForge.EVENT_BUS.addListener(this::playerLoaded);
-		MinecraftForge.EVENT_BUS.addListener(this::playerSaved);
+		MinecraftForge.EVENT_BUS.register(this);
 
 		//noinspection Convert2MethodRef
 		proxy = DistExecutor.runForDist(() -> () -> new FTBUltimineClient(), () -> () -> new FTBUltimineCommon());
@@ -95,7 +89,8 @@ public class FTBUltimine
 		return cachedDataMap.computeIfAbsent(player.getUniqueID(), FTBUltiminePlayerData::new);
 	}
 
-	private void serverAboutToStart(FMLServerAboutToStartEvent event)
+	@SubscribeEvent
+	public void serverAboutToStart(FMLServerAboutToStartEvent event)
 	{
 		cachedDataMap = new HashMap<>();
 	}
@@ -125,8 +120,14 @@ public class FTBUltimine
 		return config.maxBlocks;
 	}
 
-	private void blockBroken(BlockEvent.BreakEvent event)
+	@SubscribeEvent(priority = EventPriority.LOW)
+	public void blockBroken(BlockEvent.BreakEvent event)
 	{
+		if (isBreakingBlock)
+		{
+			return;
+		}
+
 		if (!(event.getPlayer() instanceof ServerPlayerEntity) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUniqueID() == null)
 		{
 			return;
@@ -145,7 +146,7 @@ public class FTBUltimine
 			return;
 		}
 
-		RayTraceResult result = player.pick(4.5D, 1F, false);
+		RayTraceResult result = FTBUltiminePlayerData.rayTrace(player);
 
 		if (!(result instanceof BlockRayTraceResult) || result.getType() != RayTraceResult.Type.BLOCK)
 		{
@@ -160,90 +161,16 @@ public class FTBUltimine
 			return;
 		}
 
-		//data.cachedBlocks.remove(event.getPos());
-		mineBlocks(player, event.getPos(), data.cachedBlocks);
-		data.clearCache();
-		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(Collections.emptyList()));
-		event.setCanceled(true);
-	}
+		isBreakingBlock = true;
+		tempBlockDropsList = new ItemCollection();
+		tempBlockDroppedXp = 0;
+		boolean hadItem = !player.getHeldItemMainhand().isEmpty();
 
-	private int canHarvestBlock(ServerPlayerEntity player, BlockState state, BlockPos pos)
-	{
-		if (player.isCreative())
+		for (BlockPos p : data.cachedBlocks)
 		{
-			return 1;
-		}
-		else if (ForgeHooks.canHarvestBlock(state, player, player.world, pos))
-		{
-			return 2;
-		}
-		else if (state.getBlock() == Blocks.SNOW)
-		{
-			return 1;
-		}
-
-		return 0;
-	}
-
-	private void mineBlocks(ServerPlayerEntity player, BlockPos pos, List<BlockPos> list)
-	{
-		ServerWorld world = player.getServerWorld();
-
-		if (canHarvestBlock(player, world.getBlockState(pos), pos) == 0)
-		{
-			return;
-		}
-
-		int droppedXp = 0;
-		int silktouch = EnchantmentHelper.getEnchantmentLevel(Enchantments.SILK_TOUCH, player.getHeldItemMainhand());
-		int fortune = EnchantmentHelper.getEnchantmentLevel(Enchantments.FORTUNE, player.getHeldItemMainhand());
-
-		BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
-		ItemCollection itemCollection = new ItemCollection();
-
-		for (int i = 0; i < Math.min(list.size(), config.maxBlocks); i++)
-		{
-			BlockPos p = list.get(i);
-			BlockState state = world.getBlockState(p);
-			int harvest = canHarvestBlock(player, state, p);
-
-			if (harvest == 0)
+			if (!player.interactionManager.tryHarvestBlock(p))
 			{
 				continue;
-			}
-			else if (!player.isCreative() && (player.getHeldItemMainhand().getItem() instanceof ShearsItem || state.getBlockHardness(world, pos) != 0.0F))
-			{
-				player.getHeldItemMainhand().damageItem(1, player, brokenItemHandler);
-			}
-
-			IFluidState fluidState = world.getFluidState(p);
-
-			if (harvest == 2)
-			{
-				for (ItemStack stack : Block.getDrops(state, world, p, state.hasTileEntity() ? world.getTileEntity(p) : null, player, player.getHeldItemMainhand()))
-				{
-					itemCollection.add(stack);
-				}
-
-				state.spawnAdditionalDrops(world, p, ItemStack.EMPTY);
-				droppedXp += state.getExpDrop(world, p, fortune, silktouch);
-			}
-
-			world.setBlockState(p, fluidState.getBlockState(), Constants.BlockFlags.DEFAULT);
-
-			if (silktouch == 0 && state.getBlock() instanceof IceBlock)
-			{
-				Material material = world.getBlockState(p.down()).getMaterial();
-
-				if (material.blocksMovement() || material.isLiquid())
-				{
-					world.setBlockState(p, Blocks.WATER.getDefaultState());
-				}
-			}
-
-			if (brokenItemHandler.isBroken)
-			{
-				break;
 			}
 
 			if (!player.isCreative())
@@ -255,17 +182,29 @@ public class FTBUltimine
 					break;
 				}
 			}
+
+			if (hadItem && player.getHeldItemMainhand().isEmpty())
+			{
+				break;
+			}
 		}
 
-		itemCollection.drop(world, pos);
+		isBreakingBlock = false;
 
-		if (droppedXp > 0)
+		tempBlockDropsList.drop(player.world, event.getPos());
+
+		if (tempBlockDroppedXp > 0)
 		{
-			world.addEntity(new ExperienceOrbEntity(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, droppedXp));
+			player.world.addEntity(new ExperienceOrbEntity(player.world, event.getPos().getX() + 0.5D, event.getPos().getY() + 0.5D, event.getPos().getZ() + 0.5D, tempBlockDroppedXp));
 		}
+
+		data.clearCache();
+		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(Collections.emptyList()));
+		event.setCanceled(true);
 	}
 
-	private void blockRightClick(PlayerInteractEvent.RightClickBlock event)
+	@SubscribeEvent(priority = EventPriority.LOW)
+	public void blockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
 		if (!(event.getPlayer() instanceof ServerPlayerEntity) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUniqueID() == null)
 		{
@@ -278,7 +217,7 @@ public class FTBUltimine
 		}
 
 		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
-		RayTraceResult result = player.pick(4.5D, 1F, false);
+		RayTraceResult result = FTBUltiminePlayerData.rayTrace(player);
 
 		if (!(result instanceof BlockRayTraceResult) || result.getType() != RayTraceResult.Type.BLOCK)
 		{
@@ -386,7 +325,8 @@ public class FTBUltimine
 		}
 	}
 
-	private void playerTick(TickEvent.PlayerTickEvent event)
+	@SubscribeEvent
+	public void playerTick(TickEvent.PlayerTickEvent event)
 	{
 		if (event.phase == TickEvent.Phase.START && !event.player.world.isRemote())
 		{
@@ -395,11 +335,28 @@ public class FTBUltimine
 		}
 	}
 
-	private void playerLoaded(PlayerEvent.LoadFromFile event)
+	@SubscribeEvent
+	public void playerLoaded(PlayerEvent.LoadFromFile event)
 	{
 	}
 
-	private void playerSaved(PlayerEvent.SaveToFile event)
+	@SubscribeEvent
+	public void playerSaved(PlayerEvent.SaveToFile event)
 	{
+	}
+
+	@SubscribeEvent
+	public void entityJoinedWorld(EntityJoinWorldEvent event)
+	{
+		if (isBreakingBlock && event.getEntity() instanceof ItemEntity)
+		{
+			tempBlockDropsList.add(((ItemEntity) event.getEntity()).getItem());
+			event.setCanceled(true);
+		}
+		else if (isBreakingBlock && event.getEntity() instanceof ExperienceOrbEntity)
+		{
+			tempBlockDroppedXp += ((ExperienceOrbEntity) event.getEntity()).getXpValue();
+			event.setCanceled(true);
+		}
 	}
 }

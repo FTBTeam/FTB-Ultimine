@@ -43,6 +43,12 @@ public class FTBUltiminePlayerData
 		cachedBlocks = null;
 	}
 
+	public static RayTraceResult rayTrace(ServerPlayerEntity player)
+	{
+		double distance = player.getAttribute(PlayerEntity.REACH_DISTANCE).getValue();
+		return player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
+	}
+
 	public void checkBlocks(ServerPlayerEntity player, boolean sendUpdate, int maxBlocks)
 	{
 		if (!pressed)
@@ -50,8 +56,7 @@ public class FTBUltiminePlayerData
 			return;
 		}
 
-		double distance = player.getAttribute(PlayerEntity.REACH_DISTANCE).getValue();
-		RayTraceResult result = player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
+		RayTraceResult result = rayTrace(player);
 
 		if (!(result instanceof BlockRayTraceResult) || result.getType() != RayTraceResult.Type.BLOCK)
 		{
