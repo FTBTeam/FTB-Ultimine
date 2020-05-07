@@ -102,7 +102,7 @@ public class FTBUltiminePlayerData
 			context.maxBlocks = maxBlocks;
 			context.original = player.world.getBlockState(cachedPos);
 
-			if (FTBUltimine.instance.config.mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original))
+			if (FTBUltimineConfig.mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original))
 			{
 				context.matcher = BlockMatcher.ANY_STONE;
 			}

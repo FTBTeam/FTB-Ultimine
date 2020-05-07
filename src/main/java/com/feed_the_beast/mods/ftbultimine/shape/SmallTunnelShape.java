@@ -1,6 +1,5 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
@@ -22,40 +21,16 @@ public class SmallTunnelShape extends Shape
 	{
 		List<BlockPos> list = new ArrayList<>(context.maxBlocks);
 
-		if (context.face.getAxis().isVertical())
+		for (int i = 0; i < context.maxBlocks; i++)
 		{
-			for (int y = 0; y < context.maxBlocks; y++)
-			{
-				BlockPos p = new BlockPos(context.pos.getX(), context.pos.getY() - context.face.getYOffset() * y, context.pos.getZ());
+			BlockPos p = new BlockPos(context.pos.getX() - context.face.getXOffset() * i, context.pos.getY() - context.face.getYOffset() * i, context.pos.getZ() - context.face.getZOffset() * i);
 
-				if (!context.check(p))
-				{
-					break;
-				}
-
-				list.add(p);
-			}
-
-			return list;
-		}
-
-		for (int i = 0; i < context.maxBlocks / 2; i++)
-		{
-			BlockPos pTop = new BlockPos(context.pos.getX() - context.face.getXOffset() * i, context.pos.getY(), context.pos.getZ() - context.face.getZOffset() * i);
-
-			if (!context.check(pTop))
+			if (!context.check(p))
 			{
 				break;
 			}
 
-			list.add(pTop);
-
-			BlockPos pBot = pTop.offset(Direction.DOWN);
-
-			if (context.check(pBot))
-			{
-				list.add(pBot);
-			}
+			list.add(p);
 		}
 
 		return list;

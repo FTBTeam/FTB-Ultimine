@@ -60,7 +60,6 @@ public class FTBUltimine
 	public static FTBUltimine instance;
 
 	public final FTBUltimineCommon proxy;
-	public final FTBUltimineConfig config;
 
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
@@ -75,7 +74,7 @@ public class FTBUltimine
 
 		//noinspection Convert2MethodRef
 		proxy = DistExecutor.runForDist(() -> () -> new FTBUltimineClient(), () -> () -> new FTBUltimineCommon());
-		config = new FTBUltimineConfig();
+		FTBUltimineConfig.init();
 
 		Shape.register(new ShapelessShape());
 		Shape.register(new SmallTunnelShape());
@@ -117,7 +116,7 @@ public class FTBUltimine
 
 	private int getMaxBlocks(PlayerEntity player)
 	{
-		return config.maxBlocks;
+		return FTBUltimineConfig.maxBlocks;
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)
@@ -133,12 +132,18 @@ public class FTBUltimine
 			return;
 		}
 
-		if (event.getPlayer().getFoodStats().getFoodLevel() <= 0 && !event.getPlayer().isCreative())
+		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+
+		if (player.getFoodStats().getFoodLevel() <= 0 && !player.isCreative())
 		{
 			return;
 		}
 
-		ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+		if (FTBUltimineConfig.toolBlacklist.contains(player.getHeldItemMainhand().getItem().getRegistryName()))
+		{
+			return;
+		}
+
 		FTBUltiminePlayerData data = get(player);
 
 		if (!data.pressed)
@@ -175,7 +180,7 @@ public class FTBUltimine
 
 			if (!player.isCreative())
 			{
-				player.addExhaustion(config.exhaustionPerBlock * 0.005F);
+				player.addExhaustion((float) (FTBUltimineConfig.exhaustionPerBlock * 0.005D));
 
 				if (player.getFoodStats().getFoodLevel() <= 0)
 				{
@@ -242,7 +247,7 @@ public class FTBUltimine
 				boolean playSound = false;
 				BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-				for (int i = 0; i < Math.min(data.cachedBlocks.size(), config.maxBlocks); i++)
+				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineConfig.maxBlocks); i++)
 				{
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.world.getBlockState(p);
@@ -258,7 +263,7 @@ public class FTBUltimine
 					if (!player.isCreative())
 					{
 						player.getHeldItemMainhand().damageItem(1, player, brokenItemHandler);
-						player.addExhaustion(config.exhaustionPerBlock * 0.005F);
+						player.addExhaustion((float) (FTBUltimineConfig.exhaustionPerBlock * 0.005D));
 
 						if (brokenItemHandler.isBroken || player.getFoodStats().getFoodLevel() <= 0)
 						{
