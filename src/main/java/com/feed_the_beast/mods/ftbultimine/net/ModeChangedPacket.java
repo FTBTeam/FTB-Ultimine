@@ -11,21 +11,26 @@ import java.util.function.Supplier;
  */
 public class ModeChangedPacket
 {
-	public ModeChangedPacket()
+	public final boolean next;
+
+	public ModeChangedPacket(boolean n)
 	{
+		next = n;
 	}
 
 	public ModeChangedPacket(PacketBuffer buf)
 	{
+		next = buf.readBoolean();
 	}
 
 	public void write(PacketBuffer buf)
 	{
+		buf.writeBoolean(next);
 	}
 
 	public void handle(Supplier<NetworkEvent.Context> context)
 	{
-		context.get().enqueueWork(() -> FTBUltimine.instance.modeChanged(context.get().getSender()));
+		context.get().enqueueWork(() -> FTBUltimine.instance.modeChanged(context.get().getSender(), next));
 		context.get().setPacketHandled(true);
 	}
 }

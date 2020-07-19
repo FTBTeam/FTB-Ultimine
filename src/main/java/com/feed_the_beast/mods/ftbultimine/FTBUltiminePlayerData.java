@@ -5,12 +5,12 @@ import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.feed_the_beast.mods.ftbultimine.shape.BlockMatcher;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -45,7 +45,7 @@ public class FTBUltiminePlayerData
 
 	public static RayTraceResult rayTrace(ServerPlayerEntity player)
 	{
-		double distance = player.getAttribute(PlayerEntity.REACH_DISTANCE).getValue();
+		double distance = player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
 		return player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
 	}
 
@@ -66,7 +66,7 @@ public class FTBUltiminePlayerData
 
 				if (sendUpdate)
 				{
-					FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(Collections.emptyList()));
+					FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(shape, Collections.emptyList()));
 				}
 			}
 
@@ -116,7 +116,7 @@ public class FTBUltiminePlayerData
 
 		if (sendUpdate)
 		{
-			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(cachedBlocks));
+			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(shape, cachedBlocks));
 		}
 
 		return context;

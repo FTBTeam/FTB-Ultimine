@@ -1,7 +1,7 @@
 {
 	"key.ftbultimine": "FTB Ultimine",
-	"key.ftbultimine_settings": "FTB Ultimine Settings",
-	"ftbultimine.shape_changed": "FTB Ultimine shape changed to: %s",
+	"ftbultimine.active": "FTB Ultimine is active",
+	"ftbultimine.change_shape": "Hold Shift + Scroll Mouse to change shape",
 	"ftbultimine.shape.shapeless": "Shapeless",
 	"ftbultimine.shape.small_tunnel": "Small Tunnel",
 	"ftbultimine.shape.small_square": "Small Square",

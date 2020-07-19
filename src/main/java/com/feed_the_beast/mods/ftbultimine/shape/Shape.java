@@ -35,6 +35,23 @@ public abstract class Shape
 		return MAP.getOrDefault(id, defaultShape);
 	}
 
+	public Shape next;
+	public Shape prev;
+
+	public static void postinit()
+	{
+		ArrayList<Shape> list = new ArrayList<>(MAP.values());
+
+		for (int i = 0; i < list.size() - 1; i++)
+		{
+			list.get(i).next = list.get(i + 1);
+			list.get(i + 1).prev = list.get(i);
+		}
+
+		list.get(0).prev = list.get(list.size() - 1);
+		list.get(list.size() - 1).next = list.get(0);
+	}
+
 	public abstract String getName();
 
 	public abstract List<BlockPos> getBlocks(ShapeContext context);
@@ -42,11 +59,5 @@ public abstract class Shape
 	public boolean isDefault()
 	{
 		return false;
-	}
-
-	public final Shape next()
-	{
-		List<Shape> list = new ArrayList<>(MAP.values());
-		return list.get((list.indexOf(this) + 1) % list.size());
 	}
 }

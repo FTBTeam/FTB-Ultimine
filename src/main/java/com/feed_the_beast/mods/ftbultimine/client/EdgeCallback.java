@@ -1,9 +1,9 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.math.vector.Matrix4f;
 
 /**
  * @author LatvianModder

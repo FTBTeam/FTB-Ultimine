@@ -14,7 +14,7 @@ public class UltimineRenderTypes extends RenderState
 {
 	public static final RenderType LINES_NORMAL = RenderType.makeType("ultimine_lines_normal", DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, 256, RenderType.State.getBuilder()
 			.line(new RenderState.LineState(OptionalDouble.empty()))
-			.layer(PROJECTION_LAYERING)
+			.layer(NO_LAYERING)
 			.transparency(TRANSLUCENT_TRANSPARENCY)
 			.writeMask(COLOR_WRITE)
 			.cull(CULL_ENABLED)
@@ -22,7 +22,7 @@ public class UltimineRenderTypes extends RenderState
 
 	public static final RenderType LINES_TRANSPARENT = RenderType.makeType("ultimine_lines_transparent", DefaultVertexFormats.POSITION_COLOR, GL11.GL_LINES, 256, RenderType.State.getBuilder()
 			.line(new RenderState.LineState(OptionalDouble.empty()))
-			.layer(PROJECTION_LAYERING)
+			.layer(NO_LAYERING)
 			.transparency(TRANSLUCENT_TRANSPARENCY)
 			.writeMask(COLOR_DEPTH_WRITE)
 			.cull(CULL_ENABLED)

@@ -1,27 +1,41 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineCommon;
+import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.ModeChangedPacket;
+import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,20 +46,17 @@ import java.util.List;
  */
 public class FTBUltimineClient extends FTBUltimineCommon
 {
-	private KeyBinding keyBinding, keyBindingSettings;
+	private final KeyBinding keyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private List<CachedEdge> cachedEdges = null;
+	public boolean hasScrolled = false;
 
 	public FTBUltimineClient()
 	{
-		MinecraftForge.EVENT_BUS.addListener(this::renderInGame);
-		MinecraftForge.EVENT_BUS.addListener(this::renderInfo);
-		MinecraftForge.EVENT_BUS.addListener(this::clientTick);
+		MinecraftForge.EVENT_BUS.register(this);
 		keyBinding = new KeyBinding("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
-		keyBindingSettings = new KeyBinding("key.ftbultimine_settings", KeyConflictContext.IN_GAME, KeyModifier.SHIFT, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(keyBinding);
-		ClientRegistry.registerKeyBinding(keyBindingSettings);
 	}
 
 	@Override
@@ -56,7 +67,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		updateEdges();
 	}
 
-	private void renderInGame(RenderWorldLastEvent event)
+	@SubscribeEvent
+	public void renderInGame(RenderWorldLastEvent event)
 	{
 		if (!pressed || cachedEdges == null || cachedEdges.isEmpty())
 		{
@@ -65,7 +77,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		Minecraft mc = Minecraft.getInstance();
 		ActiveRenderInfo activeRenderInfo = mc.getRenderManager().info;
-		Vec3d projectedView = activeRenderInfo.getProjectedView();
+		Vector3d projectedView = activeRenderInfo.getProjectedView();
 
 		MatrixStack ms = event.getMatrixStack();
 		ms.push();
@@ -95,11 +107,90 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		ms.pop();
 	}
 
-	private void renderInfo(GuiScreenEvent event)
+	@SubscribeEvent
+	public void mouseEvent(InputEvent.MouseScrollEvent event)
 	{
+		if (pressed && event.getScrollDelta() != 0 && sneak())
+		{
+			hasScrolled = true;
+			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(event.getScrollDelta() < 0D));
+			event.setCanceled(true);
+		}
 	}
 
-	private void clientTick(TickEvent.ClientTickEvent event)
+
+	private boolean sneak()
+	{
+		return keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+	}
+
+	private void addPressedInfo(List<IFormattableTextComponent> list)
+	{
+		list.add(new TranslationTextComponent("ftbultimine.active"));
+
+		if (!hasScrolled)
+		{
+			list.add(new TranslationTextComponent("ftbultimine.change_shape").func_240699_a_(TextFormatting.GRAY));
+		}
+
+		if (SendShapePacket.current != null)
+		{
+			if (sneak())
+			{
+				list.add(new StringTextComponent(""));
+				list.add(new StringTextComponent("^ ").func_240699_a_(TextFormatting.GRAY).func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+			}
+
+			list.add(new StringTextComponent("- ").func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
+
+			if (sneak())
+			{
+				list.add(new StringTextComponent("v ").func_240699_a_(TextFormatting.GRAY).func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+			}
+		}
+	}
+
+	private int infoOffset = 0;
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void info(RenderGameOverlayEvent.Text event)
+	{
+		if (FTBUltimineConfig.renderTextManually == -1)
+		{
+			infoOffset = event.getLeft().size();
+		}
+		else
+		{
+			infoOffset = FTBUltimineConfig.renderTextManually;
+		}
+	}
+
+	@SubscribeEvent
+	public void renderGameOverlay(RenderGameOverlayEvent.Post event)
+	{
+		if (pressed && event.getType() == RenderGameOverlayEvent.ElementType.ALL)
+		{
+			RenderSystem.color4f(1F, 1F, 1F, 1F);
+			RenderSystem.enableBlend();
+			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+
+			List<IFormattableTextComponent> list = new ArrayList<>();
+			addPressedInfo(list);
+			Minecraft minecraft = Minecraft.getInstance();
+
+			int top = 2 + minecraft.fontRenderer.FONT_HEIGHT * infoOffset;
+
+			for (IFormattableTextComponent msg : list)
+			{
+				AbstractGui.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.fontRenderer.getStringWidth(msg.getString()) + 1, top + minecraft.fontRenderer.FONT_HEIGHT - 1, -1873784752);
+				minecraft.fontRenderer.func_238407_a_(event.getMatrixStack(), msg, 2, top, 14737632);
+				top += minecraft.fontRenderer.FONT_HEIGHT;
+			}
+		}
+	}
+
+	@SubscribeEvent
+	public void clientTick(TickEvent.ClientTickEvent event)
 	{
 		Minecraft mc = Minecraft.getInstance();
 
@@ -108,24 +199,11 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			return;
 		}
 
-		if (keyBindingSettings.isPressed())
-		{
-			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket());
-			return;
-		}
+		boolean p = pressed;
 
-		if (keyBinding.isPressed())
+		if ((pressed = keyBinding.isKeyDown()) != p)
 		{
-			if (!pressed)
-			{
-				pressed = true;
-				FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(true));
-			}
-		}
-		else if (pressed && !keyBinding.isKeyDown())
-		{
-			pressed = false;
-			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(false));
+			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
 		}
 	}
 

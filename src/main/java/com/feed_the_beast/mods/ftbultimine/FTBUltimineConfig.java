@@ -22,6 +22,7 @@ public class FTBUltimineConfig
 	public static double exhaustionPerBlock;
 	public static boolean mergeStone;
 	public static final HashSet<ResourceLocation> toolBlacklist = new HashSet<>();
+	public static int renderTextManually;
 
 	private static Pair<CommonConfig, ForgeConfigSpec> server;
 
@@ -52,6 +53,8 @@ public class FTBUltimineConfig
 			{
 				toolBlacklist.add(new ResourceLocation(s));
 			}
+
+			renderTextManually = c.renderTextManually.get();
 		}
 	}
 
@@ -61,6 +64,7 @@ public class FTBUltimineConfig
 		private final ForgeConfigSpec.DoubleValue exhaustionPerBlock;
 		private final ForgeConfigSpec.BooleanValue mergeStone;
 		private final ForgeConfigSpec.ConfigValue<List<? extends String>> toolBlacklist;
+		private final ForgeConfigSpec.IntValue renderTextManually;
 
 		private CommonConfig(ForgeConfigSpec.Builder builder)
 		{
@@ -83,6 +87,11 @@ public class FTBUltimineConfig
 					.comment("Tools that won't let you active ultimine when held")
 					.translation("ftbultimine.tool_blacklist")
 					.defineList("tool_blacklist", Util.make(new ArrayList<>(), l -> l.add("mininggadgets:mininggadget")), o -> true);
+
+			renderTextManually = builder
+					.comment("Required for some modpacks")
+					.translation("ftbultimine.render_text_manually")
+					.defineInRange("render_text_manually", -1, -1, 8);
 		}
 	}
 }

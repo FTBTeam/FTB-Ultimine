@@ -28,7 +28,6 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
@@ -72,8 +71,7 @@ public class FTBUltimine
 		FTBUltimineNet.init();
 		MinecraftForge.EVENT_BUS.register(this);
 
-		//noinspection Convert2MethodRef
-		proxy = DistExecutor.runForDist(() -> () -> new FTBUltimineClient(), () -> () -> new FTBUltimineCommon());
+		proxy = DistExecutor.safeRunForDist(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 		FTBUltimineConfig.init();
 
 		Shape.register(new ShapelessShape());
@@ -81,6 +79,8 @@ public class FTBUltimine
 		Shape.register(new SmallSquareShape());
 		Shape.register(new MiningTunnelShape());
 		Shape.register(new EscapeTunnelShape());
+
+		Shape.postinit();
 	}
 
 	public FTBUltiminePlayerData get(PlayerEntity player)
@@ -102,16 +102,16 @@ public class FTBUltimine
 
 		if (!data.pressed)
 		{
-			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(Collections.emptyList()));
+			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
 		}
 	}
 
-	public void modeChanged(ServerPlayerEntity player)
+	public void modeChanged(ServerPlayerEntity player, boolean next)
 	{
 		FTBUltiminePlayerData data = get(player);
+		data.shape = next ? data.shape.next : data.shape.prev;
 		data.clearCache();
-		data.shape = data.shape.next();
-		player.sendStatusMessage(new TranslationTextComponent("ftbultimine.shape_changed", new TranslationTextComponent("ftbultimine.shape." + data.shape.getName())), true);
+		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
 	}
 
 	private int getMaxBlocks(PlayerEntity player)
@@ -204,7 +204,7 @@ public class FTBUltimine
 		}
 
 		data.clearCache();
-		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(Collections.emptyList()));
+		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
 		event.setCanceled(true);
 	}
 

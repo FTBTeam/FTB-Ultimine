@@ -1,6 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
+import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -14,15 +15,20 @@ import java.util.function.Supplier;
  */
 public class SendShapePacket
 {
+	public static Shape current = null;
+
+	private final Shape shape;
 	private final List<BlockPos> blocks;
 
-	public SendShapePacket(List<BlockPos> b)
+	public SendShapePacket(Shape s, List<BlockPos> b)
 	{
+		shape = s;
 		blocks = b;
 	}
 
 	public SendShapePacket(PacketBuffer buf)
 	{
+		shape = Shape.get(buf.readString(Short.MAX_VALUE));
 		int s = buf.readVarInt();
 		blocks = new ArrayList<>(s);
 
@@ -34,6 +40,7 @@ public class SendShapePacket
 
 	public void write(PacketBuffer buf)
 	{
+		buf.writeString(shape.getName(), Short.MAX_VALUE);
 		buf.writeVarInt(blocks.size());
 
 		for (BlockPos pos : blocks)
@@ -44,7 +51,11 @@ public class SendShapePacket
 
 	public void handle(Supplier<NetworkEvent.Context> context)
 	{
-		context.get().enqueueWork(() -> FTBUltimine.instance.proxy.setShape(blocks));
+		context.get().enqueueWork(() -> {
+			current = shape;
+			FTBUltimine.instance.proxy.setShape(blocks);
+		});
+
 		context.get().setPacketHandled(true);
 	}
 }
