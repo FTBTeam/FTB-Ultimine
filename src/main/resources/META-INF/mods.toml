@@ -1,13 +1,14 @@
-modLoader="javafml"
-loaderVersion="[30,)"
-issueTrackerURL="https://github.com/FTBTeam/FTB-Ultimine/issues"
+modLoader = "javafml"
+loaderVersion = "[32,)"
+issueTrackerURL = "https://github.com/FTBTeam/FTB-Ultimine/issues"
+license = "All Rights Reserved"
 
 [[mods]]
-modId="ftbultimine"
-version="${file.jarVersion}"
-displayName="FTB Ultimine"
-authors="LatvianModder"
-description='''
+modId = "ftbultimine"
+version = "${file.jarVersion}"
+displayName = "FTB Ultimine"
+authors = "LatvianModder"
+description = '''
 Allows you to break multiple blocks at once
 '''
 

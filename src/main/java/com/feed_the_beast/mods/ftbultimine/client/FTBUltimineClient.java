@@ -130,7 +130,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		if (!hasScrolled)
 		{
-			list.add(new TranslationTextComponent("ftbultimine.change_shape").func_240699_a_(TextFormatting.GRAY));
+			list.add(new TranslationTextComponent("ftbultimine.change_shape").mergeStyle(TextFormatting.GRAY));
 		}
 
 		if (SendShapePacket.current != null)
@@ -138,14 +138,14 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			if (sneak())
 			{
 				list.add(new StringTextComponent(""));
-				list.add(new StringTextComponent("^ ").func_240699_a_(TextFormatting.GRAY).func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+				list.add(new StringTextComponent("^ ").mergeStyle(TextFormatting.GRAY).append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
-			list.add(new StringTextComponent("- ").func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
+			list.add(new StringTextComponent("- ").append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
 
 			if (sneak())
 			{
-				list.add(new StringTextComponent("v ").func_240699_a_(TextFormatting.GRAY).func_230529_a_(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+				list.add(new StringTextComponent("v ").mergeStyle(TextFormatting.GRAY).append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
 			}
 		}
 	}
@@ -170,7 +170,6 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	{
 		if (pressed && event.getType() == RenderGameOverlayEvent.ElementType.ALL)
 		{
-			RenderSystem.color4f(1F, 1F, 1F, 1F);
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
@@ -183,7 +182,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			for (IFormattableTextComponent msg : list)
 			{
 				AbstractGui.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.fontRenderer.getStringWidth(msg.getString()) + 1, top + minecraft.fontRenderer.FONT_HEIGHT - 1, -1873784752);
-				minecraft.fontRenderer.func_238407_a_(event.getMatrixStack(), msg, 2, top, 14737632);
+				minecraft.fontRenderer.func_243246_a(event.getMatrixStack(), msg, 2, top, 14737632);
 				top += minecraft.fontRenderer.FONT_HEIGHT;
 			}
 		}
