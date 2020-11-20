@@ -21,7 +21,7 @@ public class ItemCollection
 	{
 		if (!is.isEmpty())
 		{
-			items.add(is);
+			items.add(is.copy());
 		}
 	}
 
