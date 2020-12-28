@@ -1,8 +1,9 @@
 package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.function.Supplier;
 
@@ -28,9 +29,8 @@ public class ModeChangedPacket
 		buf.writeBoolean(next);
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> context)
+	public void handle(Supplier<NetworkManager.PacketContext> context)
 	{
-		context.get().enqueueWork(() -> FTBUltimine.instance.modeChanged(context.get().getSender(), next));
-		context.get().setPacketHandled(true);
+		context.get().queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.get().getPlayer(), next));
 	}
 }

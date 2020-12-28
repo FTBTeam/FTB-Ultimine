@@ -12,6 +12,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
+import me.shedaniel.architectury.event.events.TickEvent;
+import me.shedaniel.architectury.event.events.client.ClientTickEvent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -22,6 +24,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -40,6 +43,9 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ResourceBundle;
+
+import static com.feed_the_beast.mods.ftbultimine.FTBUltimine.*;
 
 /**
  * @author LatvianModder
@@ -56,9 +62,9 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 	public FTBUltimineClient()
 	{
-		MinecraftForge.EVENT_BUS.register(this);
-		keyBinding = new KeyMapping("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputConstants.Type.KEYSYM, 96, "key.categories.gameplay");
+		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(keyBinding);
+		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 	}
 
 	@Override
@@ -209,16 +215,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 	}
 
-	@SubscribeEvent
-	public void clientTick(TickEvent.ClientTickEvent event)
+	public void clientTick(Minecraft mc)
 	{
-		Minecraft mc = Minecraft.getInstance();
-
-		if (event.phase != TickEvent.Phase.START || mc.player == null)
-		{
-			return;
-		}
-
 		boolean p = pressed;
 
 		if ((pressed = keyBinding.isDown()) != p)

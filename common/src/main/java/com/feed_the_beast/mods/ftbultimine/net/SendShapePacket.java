@@ -3,9 +3,9 @@ package com.feed_the_beast.mods.ftbultimine.net;
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,16 +50,15 @@ public class SendShapePacket
 		}
 	}
 
-	public void handle(Supplier<NetworkEvent.Context> context)
+	public void handle(Supplier<NetworkManager.PacketContext> context)
 	{
-		context.get().enqueueWork(() -> {
+		context.get().queue(() -> {
 			current = shape;
-			
-			if (FTBUltimineConfig.renderOutline) {
+
+			if (FTBUltimineConfig.renderOutline)
+			{
 				FTBUltimine.instance.proxy.setShape(blocks);
 			}
 		});
-
-		context.get().setPacketHandled(true);
 	}
 }

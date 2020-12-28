@@ -1,0 +1,84 @@
+buildscript {
+	repositories {
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
+	}
+}
+
+plugins {
+	id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+apply plugin: 'com.matthewprenger.cursegradle'
+
+def ENV = System.getenv()
+
+configurations {
+	shadow
+}
+
+architectury {
+	platformSetupLoomIde()
+}
+
+dependencies {
+	minecraft("com.mojang:minecraft:${minecraft_version}")
+	mappings(minecraft.officialMojangMappings())
+	forge("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+
+	compileOnly(project(path: ":common")) {
+		transitive = false
+	}
+	runtimeOnly(project(path: ":common", configuration: "transformForgeFakeMod")) {
+		transitive = false
+	}
+	shadow(project(path: ":common", configuration: "transformForge")) {
+		transitive = false
+	}
+}
+
+shadowJar {
+	exclude "fabric.mod.json"
+
+	configurations = [project.configurations.shadow]
+	classifier "shadow"
+}
+
+remapJar {
+	dependsOn(shadowJar)
+	input.set(shadowJar.archivePath)
+	archiveClassifier = "forge"
+}
+
+jar {
+	manifest {
+		attributes([
+				"Specification-Title"     : project.mod_id,
+				"Specification-Vendor"    : project.mod_author,
+				"Specification-Version"   : "1",
+				"Implementation-Title"    : project.name,
+				"Implementation-Version"  : version,
+				"Implementation-Vendor"   : project.mod_author,
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		])
+	}
+}
+
+if (ENV.CURSEFORGE_KEY) {
+	curseforge {
+		apiKey = ENV.CURSEFORGE_KEY
+		project {
+			id = project.curseforge_id_forge
+			releaseType = "release"
+			addGameVersion "Forge"
+			addGameVersion "1.16.2"
+			addGameVersion "1.16.3"
+			addGameVersion "1.16.4"
+			requiredDependency 'architectury-forge'
+			changelog = getGitChangelog
+			changelogType = 'markdown'
+		}
+	}
+}

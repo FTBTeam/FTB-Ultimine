@@ -11,21 +11,40 @@ import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapelessShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallSquareShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallTunnelShape;
+import me.shedaniel.architectury.event.events.EntityEvent;
+import me.shedaniel.architectury.event.events.InteractionEvent;
+import me.shedaniel.architectury.event.events.LifecycleEvent;
+import me.shedaniel.architectury.event.events.PlayerEvent;
+import me.shedaniel.architectury.event.events.TickEvent;
+import me.shedaniel.architectury.utils.EnvExecutor;
+import me.shedaniel.architectury.utils.IntValue;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.data.tags.BlockTagsProvider;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.SerializationTags;
+import net.minecraft.tags.TagCollection;
+import net.minecraft.tags.TagLoader;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -34,15 +53,10 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,10 +67,11 @@ import java.util.UUID;
 /**
  * @author LatvianModder
  */
-@Mod("ftbultimine")
 public class FTBUltimine
 {
 	public static FTBUltimine instance;
+
+	public static final String MOD_ID = "ftbultimine";
 
 	public final FTBUltimineCommon proxy;
 
@@ -69,9 +84,8 @@ public class FTBUltimine
 	{
 		instance = this;
 		FTBUltimineNet.init();
-		MinecraftForge.EVENT_BUS.register(this);
 
-		proxy = DistExecutor.safeRunForDist(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
+		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 		FTBUltimineConfig.init();
 
 		Shape.register(new ShapelessShape());
@@ -81,17 +95,17 @@ public class FTBUltimine
 		Shape.register(new EscapeTunnelShape());
 
 		Shape.postinit();
+
+		LifecycleEvent.SERVER_BEFORE_START.register(__ -> cachedDataMap = new HashMap<>());
+		PlayerEvent.BREAK_BLOCK.register(this::blockBroken);
+		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
+		TickEvent.PLAYER_PRE.register(this::playerTick);
+		EntityEvent.ADD.register(this::entityJoinedWorld);
 	}
 
 	public FTBUltiminePlayerData get(Player player)
 	{
 		return cachedDataMap.computeIfAbsent(player.getUUID(), FTBUltiminePlayerData::new);
-	}
-
-	@SubscribeEvent
-	public void serverAboutToStart(FMLServerAboutToStartEvent event)
-	{
-		cachedDataMap = new HashMap<>();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed)
@@ -119,51 +133,48 @@ public class FTBUltimine
 		return FTBUltimineConfig.maxBlocks;
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public void blockBroken(BlockEvent.BreakEvent event)
+	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp)
 	{
 		if (isBreakingBlock)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
-		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUUID() == null)
+		if (player instanceof FakePlayer || player.getUUID() == null)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
-
-		ServerPlayer player = (ServerPlayer) event.getPlayer();
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative())
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		if (FTBUltimineConfig.toolBlacklist.contains(player.getMainHandItem().getItem().getRegistryName()))
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		FTBUltiminePlayerData data = get(player);
 
 		if (!data.pressed)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		data.clearCache();
-		data.updateBlocks(player, event.getPos(), ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
+		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty())
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		isBreakingBlock = true;
@@ -196,49 +207,50 @@ public class FTBUltimine
 
 		isBreakingBlock = false;
 
-		tempBlockDropsList.drop(player.level, event.getPos());
+		tempBlockDropsList.drop(player.level, pos);
 
 		if (tempBlockDroppedXp > 0)
 		{
-			player.level.addFreshEntity(new ExperienceOrb(player.level, event.getPos().getX() + 0.5D, event.getPos().getY() + 0.5D, event.getPos().getZ() + 0.5D, tempBlockDroppedXp));
+			player.level.addFreshEntity(new ExperienceOrb(player.level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, tempBlockDroppedXp));
 		}
 
 		data.clearCache();
 		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
-		event.setCanceled(true);
+
+		return InteractionResult.FAIL;
 	}
 
-	@SubscribeEvent(priority = EventPriority.LOW)
-	public void blockRightClick(PlayerInteractEvent.RightClickBlock event)
+	public InteractionResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face)
 	{
-		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUUID() == null)
+		if (!(player instanceof ServerPlayer) || player instanceof FakePlayer || player.getUUID() == null)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
-		if (event.getPlayer().getFoodData().getFoodLevel() <= 0 && !event.getPlayer().isCreative())
+		ServerPlayer serverPlayer = (ServerPlayer) player;
+
+		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative())
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
-		ServerPlayer player = (ServerPlayer) event.getPlayer();
-		HitResult result = FTBUltiminePlayerData.rayTrace(player);
+		HitResult result = FTBUltiminePlayerData.rayTrace(serverPlayer);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK)
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
 		FTBUltiminePlayerData data = get(player);
 		data.clearCache();
-		ShapeContext shapeContext = data.updateBlocks(player, event.getPos(), ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
+		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (shapeContext == null || !data.pressed || data.cachedBlocks == null || data.cachedBlocks.isEmpty())
 		{
-			return;
+			return InteractionResult.PASS;
 		}
 
-		if (event.getItemStack().getItem() instanceof HoeItem)
+		if (player.getItemInHand(hand).getItem() instanceof HoeItem)
 		{
 			ResourceLocation dirtTag = new ResourceLocation("forge", "dirt");
 
@@ -252,17 +264,17 @@ public class FTBUltimine
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.level.getBlockState(p);
 
-					if (!state.getBlock().getTags().contains(dirtTag))
-					{
+					// vanilla
+					if(!BlockTags.getAllTags().getTag(dirtTag).contains(state.getBlock())) {
 						continue;
 					}
 
-					player.level.setBlock(p, Blocks.FARMLAND.defaultBlockState(), Constants.BlockFlags.DEFAULT_AND_RERENDER);
+					player.level.setBlock(p, Blocks.FARMLAND.defaultBlockState(), 11);
 					playSound = true;
 
 					if (!player.isCreative())
 					{
-						player.getMainHandItem().hurtAndBreak(1, player, brokenItemHandler);
+						player.getMainHandItem().hurtAndBreak(1, serverPlayer, brokenItemHandler);
 						player.causeFoodExhaustion((float) (FTBUltimineConfig.exhaustionPerBlock * 0.005D));
 
 						if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0)
@@ -274,12 +286,12 @@ public class FTBUltimine
 
 				if (playSound)
 				{
-					player.level.playSound(player, event.getPos(), SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
+					player.level.playSound(player, clickPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
 				}
 			}
 
-			player.swing(event.getHand());
-			event.setCanceled(true);
+			player.swing(hand);
+			return InteractionResult.FAIL;
 		}
 		else if (shapeContext.matcher == BlockMatcher.BUSH)
 		{
@@ -303,12 +315,11 @@ public class FTBUltimine
 
 				if (player.level.isClientSide())
 				{
-					event.setCanceled(true);
-					player.swing(event.getHand());
+					player.swing(hand);
 					continue;
 				}
 
-				List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, state.hasTileEntity() ? player.level.getBlockEntity(pos) : null, player, ItemStack.EMPTY);
+				List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, state.getBlock().isEntityBlock() ? player.level.getBlockEntity(pos) : null, player, ItemStack.EMPTY);
 				Item seedItem = c.getCloneItemStack(player.level, pos, state).getItem();
 
 				for (ItemStack stack : drops)
@@ -321,22 +332,21 @@ public class FTBUltimine
 					itemCollection.add(stack);
 				}
 
-				player.level.setBlock(pos, c.getStateForAge(0), Constants.BlockFlags.DEFAULT);
+				player.level.setBlock(pos, c.getStateForAge(0), 3);
 			}
 
-			itemCollection.drop(player.level, event.getFace() == null ? event.getPos() : event.getPos().relative(event.getFace()));
-			player.swing(event.getHand());
-			event.setCanceled(true);
+			itemCollection.drop(player.level, face == null ? clickPos : clickPos.relative(face));
+			player.swing(hand);
+			return InteractionResult.FAIL;
 		}
 	}
 
-	@SubscribeEvent
-	public void playerTick(TickEvent.PlayerTickEvent event)
+	public void playerTick(Player player)
 	{
-		if (event.phase == TickEvent.Phase.START && !event.player.level.isClientSide())
+		if (!player.level.isClientSide())
 		{
-			FTBUltiminePlayerData data = get(event.player);
-			data.checkBlocks((ServerPlayer) event.player, true, getMaxBlocks(event.player));
+			FTBUltiminePlayerData data = get(player);
+			data.checkBlocks((ServerPlayer) player, true, getMaxBlocks(player));
 		}
 	}
 
@@ -350,18 +360,22 @@ public class FTBUltimine
 	{
 	}
 
-	@SubscribeEvent
-	public void entityJoinedWorld(EntityJoinWorldEvent event)
+	public InteractionResult entityJoinedWorld(Entity entity, Level level)
 	{
-		if (isBreakingBlock && event.getEntity() instanceof ItemEntity)
+		if (isBreakingBlock && entity instanceof ItemEntity)
 		{
-			tempBlockDropsList.add(((ItemEntity) event.getEntity()).getItem());
-			event.setCanceled(true);
+			tempBlockDropsList.add(((ItemEntity) entity).getItem());
+			return InteractionResult.FAIL;
 		}
-		else if (isBreakingBlock && event.getEntity() instanceof ExperienceOrb)
+		else if (isBreakingBlock && entity instanceof ExperienceOrb)
 		{
-			tempBlockDroppedXp += ((ExperienceOrb) event.getEntity()).getValue();
-			event.setCanceled(true);
+			tempBlockDroppedXp += ((ExperienceOrb) entity).getValue();
+			return InteractionResult.FAIL;
 		}
+		return InteractionResult.PASS;
+	}
+
+	public static ResourceLocation id(String path) {
+		return new ResourceLocation(MOD_ID, path);
 	}
 }
