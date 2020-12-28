@@ -51,6 +51,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private List<CachedEdge> cachedEdges = null;
 	public boolean hasScrolled = false;
+	private long lastToggle = 0;
+	private final int INPUT_DELAY = 125;
 
 	public FTBUltimineClient()
 	{
@@ -118,6 +120,25 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 	}
 
+	@SubscribeEvent
+	public void onKeyPress(InputEvent.KeyInputEvent event)
+	{
+		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
+			return;
+		}
+
+		if (event.getKey() != GLFW.GLFW_KEY_UP && event.getKey() != GLFW.GLFW_KEY_DOWN) {
+			return;
+		}
+
+		if (!pressed || !sneak()) {
+			return;
+		}
+
+		hasScrolled = true;
+		FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(event.getKey() == GLFW.GLFW_KEY_DOWN));
+		lastToggle = System.currentTimeMillis();
+	}
 
 	private boolean sneak()
 	{
