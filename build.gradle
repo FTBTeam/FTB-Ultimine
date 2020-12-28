@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
 	// id "architect-plugin" version "1.2.34" // TODO: (port the thing, obviously)
-	id "forgified-fabric-loom" version "0.5.13"
+	id "forgified-fabric-loom" version "0.5.14"
 }
 
 //apply plugin: 'net.minecraftforge.gradle'
