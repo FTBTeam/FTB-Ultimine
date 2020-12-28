@@ -53,7 +53,10 @@ public class SendShapePacket
 	{
 		context.get().enqueueWork(() -> {
 			current = shape;
-			FTBUltimine.instance.proxy.setShape(blocks);
+			
+			if (FTBUltimineConfig.renderOutline) {
+				FTBUltimine.instance.proxy.setShape(blocks);
+			}
 		});
 
 		context.get().setPacketHandled(true);
