@@ -5,11 +5,11 @@ import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.feed_the_beast.mods.ftbultimine.shape.BlockMatcher;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -43,22 +43,22 @@ public class FTBUltiminePlayerData
 		cachedBlocks = null;
 	}
 
-	public static RayTraceResult rayTrace(ServerPlayerEntity player)
+	public static HitResult rayTrace(ServerPlayer player)
 	{
 		double distance = player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
 		return player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
 	}
 
-	public void checkBlocks(ServerPlayerEntity player, boolean sendUpdate, int maxBlocks)
+	public void checkBlocks(ServerPlayer player, boolean sendUpdate, int maxBlocks)
 	{
 		if (!pressed)
 		{
 			return;
 		}
 
-		RayTraceResult result = rayTrace(player);
+		HitResult result = rayTrace(player);
 
-		if (!(result instanceof BlockRayTraceResult) || result.getType() != RayTraceResult.Type.BLOCK)
+		if (!(result instanceof BlockHitResult) || result.getType() != RayTraceResult.Type.BLOCK)
 		{
 			if (cachedBlocks != null && !cachedBlocks.isEmpty())
 			{
@@ -73,16 +73,16 @@ public class FTBUltiminePlayerData
 			return;
 		}
 
-		BlockRayTraceResult r = (BlockRayTraceResult) result;
+		BlockHitResult r = (BlockHitResult) result;
 
-		if (cachedDirection != r.getFace() || cachedPos == null || !cachedPos.equals(r.getPos()))
+		if (cachedDirection != r.getDirection() || cachedPos == null || !cachedPos.equals(r.getBlockPos()))
 		{
-			updateBlocks(player, r.getPos(), r.getFace(), sendUpdate, maxBlocks);
+			updateBlocks(player, r.getBlockPos(), r.getDirection(), sendUpdate, maxBlocks);
 		}
 	}
 
 	@Nullable
-	public ShapeContext updateBlocks(ServerPlayerEntity player, BlockPos p, Direction d, boolean sendUpdate, int maxBlocks)
+	public ShapeContext updateBlocks(ServerPlayer player, BlockPos p, Direction d, boolean sendUpdate, int maxBlocks)
 	{
 		ShapeContext context = null;
 		cachedPos = p;
@@ -100,7 +100,7 @@ public class FTBUltiminePlayerData
 			context.face = cachedDirection;
 			context.matcher = BlockMatcher.MATCH;
 			context.maxBlocks = maxBlocks;
-			context.original = player.world.getBlockState(cachedPos);
+			context.original = player.level.getBlockState(cachedPos);
 
 			if (FTBUltimineConfig.mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original))
 			{

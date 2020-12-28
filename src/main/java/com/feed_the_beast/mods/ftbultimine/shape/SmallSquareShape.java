@@ -1,9 +1,8 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder
@@ -36,13 +35,13 @@ public class SmallSquareShape extends Shape
 				switch (context.face.getAxis())
 				{
 					case X:
-						p = context.pos.add(0, a, b);
+						p = context.pos.offset(0, a, b);
 						break;
 					case Y:
-						p = context.pos.add(a, 0, b);
+						p = context.pos.offset(a, 0, b);
 						break;
 					case Z:
-						p = context.pos.add(a, b, 0);
+						p = context.pos.offset(a, b, 0);
 						break;
 				}
 

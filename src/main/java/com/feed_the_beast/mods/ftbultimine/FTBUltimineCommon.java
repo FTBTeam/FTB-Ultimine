@@ -1,8 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder

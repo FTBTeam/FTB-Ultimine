@@ -1,9 +1,9 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class ItemCollection
 		}
 	}
 
-	public void drop(World world, BlockPos pos)
+	public void drop(Level world, BlockPos pos)
 	{
 		if (items.isEmpty())
 		{
@@ -65,7 +65,7 @@ public class ItemCollection
 
 		for (ItemStack stack : stacks)
 		{
-			Block.spawnAsEntity(world, pos, stack);
+			Block.popResource(world, pos, stack);
 		}
 	}
 

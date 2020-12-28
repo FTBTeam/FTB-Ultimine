@@ -1,9 +1,8 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
-import net.minecraft.util.math.BlockPos;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder
@@ -21,14 +20,14 @@ public class MiningTunnelShape extends Shape
 	{
 		if (context.face.getAxis().isVertical())
 		{
-			context.face = context.player.getHorizontalFacing().getOpposite();
+			context.face = context.player.getDirection().getOpposite();
 		}
 
 		List<BlockPos> list = new ArrayList<>(context.maxBlocks);
 
 		for (int i = 0; i < context.maxBlocks; i++)
 		{
-			BlockPos pTop = new BlockPos(context.pos.getX() - context.face.getXOffset() * i, context.pos.getY() - i, context.pos.getZ() - context.face.getZOffset() * i);
+			BlockPos pTop = new BlockPos(context.pos.getX() - context.face.getStepX() * i, context.pos.getY() - i, context.pos.getZ() - context.face.getStepZ() * i);
 
 			if (!context.check(pTop))
 			{

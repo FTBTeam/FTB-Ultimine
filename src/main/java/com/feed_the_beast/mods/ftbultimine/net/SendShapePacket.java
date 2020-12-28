@@ -2,8 +2,8 @@ package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.ArrayList;
@@ -26,9 +26,9 @@ public class SendShapePacket
 		blocks = b;
 	}
 
-	public SendShapePacket(PacketBuffer buf)
+	public SendShapePacket(FriendlyByteBuf buf)
 	{
-		shape = Shape.get(buf.readString(Short.MAX_VALUE));
+		shape = Shape.get(buf.readUtf(Short.MAX_VALUE));
 		int s = buf.readVarInt();
 		blocks = new ArrayList<>(s);
 
@@ -38,9 +38,9 @@ public class SendShapePacket
 		}
 	}
 
-	public void write(PacketBuffer buf)
+	public void write(FriendlyByteBuf buf)
 	{
-		buf.writeString(shape.getName(), Short.MAX_VALUE);
+		buf.writeUtf(shape.getName(), Short.MAX_VALUE);
 		buf.writeVarInt(blocks.size());
 
 		for (BlockPos pos : blocks)

@@ -1,21 +1,19 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
-
 import java.util.function.Consumer;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * @author LatvianModder
  */
-public class BrokenItemHandler implements Consumer<ServerPlayerEntity>
+public class BrokenItemHandler implements Consumer<ServerPlayer>
 {
 	public boolean isBroken = false;
 
 	@Override
-	public void accept(ServerPlayerEntity player)
+	public void accept(ServerPlayer player)
 	{
 		isBroken = true;
-		player.sendBreakAnimation(EquipmentSlotType.MAINHAND);
+		player.broadcastBreakEvent(EquipmentSlotType.MAINHAND);
 	}
 }

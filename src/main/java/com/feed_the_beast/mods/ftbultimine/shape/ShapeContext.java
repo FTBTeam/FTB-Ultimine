@@ -1,16 +1,16 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author LatvianModder
  */
 public class ShapeContext
 {
-	public ServerPlayerEntity player;
+	public ServerPlayer player;
 	public BlockPos pos;
 	public Direction face;
 	public BlockState original;
@@ -24,7 +24,7 @@ public class ShapeContext
 
 	public BlockState block(BlockPos pos)
 	{
-		return player.world.getBlockState(pos);
+		return player.level.getBlockState(pos);
 	}
 
 	public boolean check(BlockPos pos)

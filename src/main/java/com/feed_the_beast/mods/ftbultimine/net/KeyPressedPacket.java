@@ -1,7 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -18,12 +18,12 @@ public class KeyPressedPacket
 		pressed = p;
 	}
 
-	public KeyPressedPacket(PacketBuffer buf)
+	public KeyPressedPacket(FriendlyByteBuf buf)
 	{
 		pressed = buf.readBoolean();
 	}
 
-	public void write(PacketBuffer buf)
+	public void write(FriendlyByteBuf buf)
 	{
 		buf.writeBoolean(pressed);
 	}

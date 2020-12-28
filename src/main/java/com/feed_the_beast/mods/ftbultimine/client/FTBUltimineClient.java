@@ -6,25 +6,23 @@ import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.ModeChangedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import net.minecraft.client.Camera;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.util.InputMappings;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -46,7 +44,7 @@ import java.util.List;
  */
 public class FTBUltimineClient extends FTBUltimineCommon
 {
-	private final KeyBinding keyBinding;
+	private final KeyMapping keyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private List<CachedEdge> cachedEdges = null;
@@ -55,7 +53,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	public FTBUltimineClient()
 	{
 		MinecraftForge.EVENT_BUS.register(this);
-		keyBinding = new KeyBinding("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
+		keyBinding = new KeyMapping("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(keyBinding);
 	}
 
@@ -76,35 +74,35 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 
 		Minecraft mc = Minecraft.getInstance();
-		ActiveRenderInfo activeRenderInfo = mc.getRenderManager().info;
-		Vector3d projectedView = activeRenderInfo.getProjectedView();
+		Camera activeRenderInfo = mc.getEntityRenderDispatcher().camera;
+		Vec3 projectedView = activeRenderInfo.getPosition();
 
-		MatrixStack ms = event.getMatrixStack();
-		ms.push();
+		PoseStack ms = event.getMatrixStack();
+		ms.pushPose();
 		ms.translate(-projectedView.x, -projectedView.y, -projectedView.z);
-		Matrix4f matrix = ms.getLast().getMatrix();
+		Matrix4f matrix = ms.last().pose();
 
-		IVertexBuilder buffer = mc.getRenderTypeBuffers().getBufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
-
-		for (CachedEdge edge : cachedEdges)
-		{
-			buffer.pos(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
-			buffer.pos(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
-		}
-
-		mc.getRenderTypeBuffers().getBufferSource().finish(UltimineRenderTypes.LINES_NORMAL);
-
-		IVertexBuilder buffer2 = mc.getRenderTypeBuffers().getBufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
+		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
 
 		for (CachedEdge edge : cachedEdges)
 		{
-			buffer2.pos(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
-			buffer2.pos(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
+			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
+			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
 		}
 
-		mc.getRenderTypeBuffers().getBufferSource().finish(UltimineRenderTypes.LINES_TRANSPARENT);
+		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
 
-		ms.pop();
+		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
+
+		for (CachedEdge edge : cachedEdges)
+		{
+			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
+			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
+		}
+
+		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
+
+		ms.popPose();
 	}
 
 	@SubscribeEvent
@@ -124,28 +122,28 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		return keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
-	private void addPressedInfo(List<IFormattableTextComponent> list)
+	private void addPressedInfo(List<MutableComponent> list)
 	{
-		list.add(new TranslationTextComponent("ftbultimine.active"));
+		list.add(new TranslatableComponent("ftbultimine.active"));
 
 		if (!hasScrolled)
 		{
-			list.add(new TranslationTextComponent("ftbultimine.change_shape").mergeStyle(TextFormatting.GRAY));
+			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(TextFormatting.GRAY));
 		}
 
 		if (SendShapePacket.current != null)
 		{
 			if (sneak())
 			{
-				list.add(new StringTextComponent(""));
-				list.add(new StringTextComponent("^ ").mergeStyle(TextFormatting.GRAY).append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+				list.add(new TextComponent(""));
+				list.add(new TextComponent("^ ").withStyle(TextFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
-			list.add(new StringTextComponent("- ").append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
+			list.add(new TextComponent("- ").append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
 
 			if (sneak())
 			{
-				list.add(new StringTextComponent("v ").mergeStyle(TextFormatting.GRAY).append(new TranslationTextComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+				list.add(new TextComponent("v ").withStyle(TextFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
 			}
 		}
 	}
@@ -173,17 +171,17 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-			List<IFormattableTextComponent> list = new ArrayList<>();
+			List<MutableComponent> list = new ArrayList<>();
 			addPressedInfo(list);
 			Minecraft minecraft = Minecraft.getInstance();
 
-			int top = 2 + minecraft.fontRenderer.FONT_HEIGHT * infoOffset;
+			int top = 2 + minecraft.font.lineHeight * infoOffset;
 
-			for (IFormattableTextComponent msg : list)
+			for (MutableComponent msg : list)
 			{
-				AbstractGui.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.fontRenderer.getStringWidth(msg.getString()) + 1, top + minecraft.fontRenderer.FONT_HEIGHT - 1, -1873784752);
-				minecraft.fontRenderer.func_243246_a(event.getMatrixStack(), msg, 2, top, 14737632);
-				top += minecraft.fontRenderer.FONT_HEIGHT;
+				GuiComponent.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
+				minecraft.font.func_243246_a(event.getMatrixStack(), msg, 2, top, 14737632);
+				top += minecraft.font.lineHeight;
 			}
 		}
 	}
@@ -200,7 +198,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		boolean p = pressed;
 
-		if ((pressed = keyBinding.isKeyDown()) != p)
+		if ((pressed = keyBinding.isDown()) != p)
 		{
 			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
 		}
@@ -221,18 +219,18 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		BlockPos pos = shapeBlocks.get(0);
 
 		double d = 0.005D;
-		VoxelShape shape = VoxelShapes.create(-d, -d, -d, 1D + d, 1D + d, 1D + d);
+		VoxelShape shape = Shapes.box(-d, -d, -d, 1D + d, 1D + d, 1D + d);
 		VoxelShape[] extraShapes = new VoxelShape[shapeBlocks.size() - 1];
 
 		for (int i = 1; i < shapeBlocks.size(); i++)
 		{
 			BlockPos p = shapeBlocks.get(i);
-			extraShapes[i - 1] = shape.withOffset(p.getX() - pos.getX(), p.getY() - pos.getY(), p.getZ() - pos.getZ());
+			extraShapes[i - 1] = shape.move(p.getX() - pos.getX(), p.getY() - pos.getY(), p.getZ() - pos.getZ());
 		}
 
 		cachedEdges = new ArrayList<>();
 
-		(extraShapes.length == 0 ? shape : VoxelShapes.or(shape, extraShapes)).forEachEdge((x1, y1, z1, x2, y2, z2) -> {
+		(extraShapes.length == 0 ? shape : Shapes.or(shape, extraShapes)).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
 			CachedEdge edge = new CachedEdge();
 			edge.x1 = (float) (x1 + pos.getX());
 			edge.y1 = (float) (y1 + pos.getY());

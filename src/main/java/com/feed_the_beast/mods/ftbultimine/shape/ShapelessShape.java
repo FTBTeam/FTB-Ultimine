@@ -1,14 +1,13 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
 import com.feed_the_beast.mods.ftbultimine.EntityDistanceComparator;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder
@@ -131,7 +130,7 @@ public class ShapelessShape extends Shape
 
 				for (BlockPos side : plant ? NEIGHBOR_POSITIONS_PLANT : NEIGHBOR_POSITIONS)
 				{
-					BlockPos offset = ptr.add(side);
+					BlockPos offset = ptr.offset(side);
 
 					if (traversed.add(offset))
 					{
