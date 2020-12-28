@@ -58,7 +58,7 @@ public class FTBUltiminePlayerData
 
 		HitResult result = rayTrace(player);
 
-		if (!(result instanceof BlockHitResult) || result.getType() != RayTraceResult.Type.BLOCK)
+		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK)
 		{
 			if (cachedBlocks != null && !cachedBlocks.isEmpty())
 			{

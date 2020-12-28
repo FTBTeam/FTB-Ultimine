@@ -1,21 +1,22 @@
 buildscript {
 	repositories {
-		jcenter()
-		maven { url = 'https://files.minecraftforge.net/maven' }
 		maven { url "https://plugins.gradle.org/m2/" }
-		mavenCentral()
 	}
 	dependencies {
-		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-		classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.1.0'
-		classpath 'com.wynprice.cursemaven:CurseMaven:1.2.+'
+		// classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+		classpath 'gradle.plugin.com.matthewprenger:CurseGradle:1.4.0'
 	}
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'com.matthewprenger.cursegradle'
+
+plugins {
+	// id "architect-plugin" version "1.2.34" // TODO: (port the thing, obviously)
+	id "forgified-fabric-loom" version "0.5.13"
+}
+
+//apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven'
-apply plugin: 'com.wynprice.cursemaven'
+apply plugin: 'com.matthewprenger.cursegradle'
+apply plugin: "forgified-fabric-loom"
 
 apply from: 'https://raw.githubusercontent.com/MinecraftModDevelopment/Gradle-Collection/master/generic/markdown-git-changelog.gradle'
 
@@ -26,67 +27,24 @@ archivesBaseName = project.mod_name
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
-minecraft {
-	mappings channel: 'snapshot', version: project.mapping_version
-	// accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-	runs {
-		client {
-			workingDirectory project.file('run')
-			//property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-			property 'forge.logging.console.level', 'debug'
-
-			if (project.hasProperty('mc_dev_uuid')) args '--uuid', project.mc_dev_uuid
-			if (project.hasProperty('mc_dev_username')) args '--username', project.mc_dev_username
-			if (project.hasProperty('mc_dev_width')) args '--width', project.mc_dev_width
-			if (project.hasProperty('mc_dev_height')) args '--height', project.mc_dev_height
-
-			mods {
-				ftbultimine {
-					source sourceSets.main
-				}
-			}
-		}
-
-		server {
-			workingDirectory project.file('run')
-			//property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-			property 'forge.logging.console.level', 'debug'
-
-			args 'nogui'
-
-			mods {
-				ftbultimine {
-					source sourceSets.main
-				}
-			}
-		}
-
-		data {
-			workingDirectory project.file('run')
-			//property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-			property 'forge.logging.console.level', 'debug'
-
-			args '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/')
-
-			mods {
-				ftbultimine {
-					source sourceSets.main
-				}
-			}
-		}
-	}
-}
-
-configurations.all {
-	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+loom {
+	silentMojangMappingsLicense()
 }
 
 repositories {
 	mavenLocal()
+	maven {
+		url "https://www.cursemaven.com"
+		content {
+			includeGroup "curse.maven"
+		}
+	}
 }
 
 dependencies {
-	minecraft "net.minecraftforge:forge:${forge_version}"
+	minecraft("com.mojang:minecraft:${mc_version}")
+	mappings(minecraft.officialMojangMappings())
+	forge("net.minecraftforge:forge:${mc_version}-${forge_version}")
 }
 
 jar {

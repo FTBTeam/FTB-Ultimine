@@ -1,7 +1,9 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import java.util.function.Consumer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+
+import java.util.function.Consumer;
 
 /**
  * @author LatvianModder
@@ -14,6 +16,6 @@ public class BrokenItemHandler implements Consumer<ServerPlayer>
 	public void accept(ServerPlayer player)
 	{
 		isBroken = true;
-		player.broadcastBreakEvent(EquipmentSlotType.MAINHAND);
+		player.broadcastBreakEvent(EquipmentSlot.MAINHAND);
 	}
 }

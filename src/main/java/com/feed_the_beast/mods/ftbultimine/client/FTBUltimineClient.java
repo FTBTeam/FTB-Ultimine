@@ -7,10 +7,12 @@ import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.ModeChangedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -53,7 +55,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	public FTBUltimineClient()
 	{
 		MinecraftForge.EVENT_BUS.register(this);
-		keyBinding = new KeyMapping("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
+		keyBinding = new KeyMapping("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputConstants.Type.KEYSYM, 96, "key.categories.gameplay");
 		ClientRegistry.registerKeyBinding(keyBinding);
 	}
 
@@ -119,7 +121,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 	private boolean sneak()
 	{
-		return keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+		return keyBinding.getKey().getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
 	private void addPressedInfo(List<MutableComponent> list)
@@ -128,7 +130,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		if (!hasScrolled)
 		{
-			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(TextFormatting.GRAY));
+			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
 		}
 
 		if (SendShapePacket.current != null)
@@ -136,14 +138,14 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			if (sneak())
 			{
 				list.add(new TextComponent(""));
-				list.add(new TextComponent("^ ").withStyle(TextFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
 			list.add(new TextComponent("- ").append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
 
 			if (sneak())
 			{
-				list.add(new TextComponent("v ").withStyle(TextFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
 			}
 		}
 	}
@@ -180,7 +182,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 			for (MutableComponent msg : list)
 			{
 				GuiComponent.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
-				minecraft.font.func_243246_a(event.getMatrixStack(), msg, 2, top, 14737632);
+				minecraft.font.drawShadow(event.getMatrixStack(), msg, 2, top, 14737632);
 				top += minecraft.font.lineHeight;
 			}
 		}

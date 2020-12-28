@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -126,7 +127,7 @@ public class FTBUltimine
 			return;
 		}
 
-		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUniqueID() == null)
+		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUUID() == null)
 		{
 			return;
 		}
@@ -152,7 +153,7 @@ public class FTBUltimine
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
-		if (!(result instanceof BlockHitResult) || result.getType() != RayTraceResult.Type.BLOCK)
+		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK)
 		{
 			return;
 		}
@@ -210,12 +211,12 @@ public class FTBUltimine
 	@SubscribeEvent(priority = EventPriority.LOW)
 	public void blockRightClick(PlayerInteractEvent.RightClickBlock event)
 	{
-		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUniqueID() == null)
+		if (!(event.getPlayer() instanceof ServerPlayer) || event.getPlayer() instanceof FakePlayer || event.getPlayer().getUUID() == null)
 		{
 			return;
 		}
 
-		if (event.getPlayer().getFoodStats().getFoodLevel() <= 0 && !event.getPlayer().isCreative())
+		if (event.getPlayer().getFoodData().getFoodLevel() <= 0 && !event.getPlayer().isCreative())
 		{
 			return;
 		}
@@ -223,7 +224,7 @@ public class FTBUltimine
 		ServerPlayer player = (ServerPlayer) event.getPlayer();
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
-		if (!(result instanceof BlockHitResult) || result.getType() != RayTraceResult.Type.BLOCK)
+		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK)
 		{
 			return;
 		}
@@ -273,7 +274,7 @@ public class FTBUltimine
 
 				if (playSound)
 				{
-					player.level.playSound(player, event.getPos(), SoundEvents.HOE_TILL, SoundCategory.BLOCKS, 1F, 1F);
+					player.level.playSound(player, event.getPos(), SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
 				}
 			}
 
@@ -323,7 +324,7 @@ public class FTBUltimine
 				player.level.setBlock(pos, c.getStateForAge(0), Constants.BlockFlags.DEFAULT);
 			}
 
-			itemCollection.drop(player.level, event.getFace() == null ? event.getPos() : event.getPos().offset(event.getFace()));
+			itemCollection.drop(player.level, event.getFace() == null ? event.getPos() : event.getPos().relative(event.getFace()));
 			player.swing(event.getHand());
 			event.setCanceled(true);
 		}
@@ -332,7 +333,7 @@ public class FTBUltimine
 	@SubscribeEvent
 	public void playerTick(TickEvent.PlayerTickEvent event)
 	{
-		if (event.phase == TickEvent.Phase.START && !event.player.world.isRemote())
+		if (event.phase == TickEvent.Phase.START && !event.player.level.isClientSide())
 		{
 			FTBUltiminePlayerData data = get(event.player);
 			data.checkBlocks((ServerPlayer) event.player, true, getMaxBlocks(event.player));
