@@ -1,5 +1,6 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
+import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineCommon;
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
@@ -28,6 +29,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
@@ -44,19 +46,45 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class FTBUltimineClient extends FTBUltimineCommon
-{
-	private final KeyBinding keyBinding;
+public class FTBUltimineClient extends FTBUltimineCommon {
+	private static final IKeyConflictContext CONTEXT = new IKeyConflictContext() {
+
+		private final KeyConflictContext inGameContext = KeyConflictContext.IN_GAME;
+
+		@Override
+		public boolean isActive() {
+			if (FTBUltimine.instance.proxy instanceof FTBUltimineClient) {
+				FTBUltimineClient client = (FTBUltimineClient) FTBUltimine.instance.proxy;
+				return inGameContext.isActive() && client.pressed;
+			}
+
+			return inGameContext.isActive();
+		}
+
+		@Override
+		public boolean conflicts(IKeyConflictContext other) {
+			return other == this;
+		}
+	};
+
+	private final KeyBinding activateKeyBinding;
+	private final KeyBinding previousShapeKeyBinding;
+	private final KeyBinding nextShapeKeyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private List<CachedEdge> cachedEdges = null;
 	public boolean hasScrolled = false;
 
-	public FTBUltimineClient()
-	{
+	public FTBUltimineClient() {
 		MinecraftForge.EVENT_BUS.register(this);
-		keyBinding = new KeyBinding("key.ftbultimine", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, 96, "key.categories.gameplay");
-		ClientRegistry.registerKeyBinding(keyBinding);
+
+		activateKeyBinding = new KeyBinding("key.ftbultimine.activate", KeyConflictContext.IN_GAME, KeyModifier.NONE, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine");
+		previousShapeKeyBinding = new KeyBinding("ftb.ftbultimine.previous_shape", CONTEXT, KeyModifier.SHIFT, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_BRACKET, "key.categories.ftbultimine");
+		nextShapeKeyBinding = new KeyBinding("ftb.ftbultimine.next_shape", CONTEXT, KeyModifier.SHIFT, InputMappings.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_BRACKET, "key.categories.ftbultimine");
+
+		ClientRegistry.registerKeyBinding(activateKeyBinding);
+		ClientRegistry.registerKeyBinding(previousShapeKeyBinding);
+		ClientRegistry.registerKeyBinding(nextShapeKeyBinding);
 	}
 
 	@Override
@@ -108,24 +136,30 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	}
 
 	@SubscribeEvent
-	public void mouseEvent(InputEvent.MouseScrollEvent event)
-	{
-		if (pressed && event.getScrollDelta() != 0 && sneak())
-		{
+	public void mouseEvent(InputEvent.MouseScrollEvent event) {
+		if (pressed && event.getScrollDelta() != 0 && sneak()) {
 			hasScrolled = true;
 			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(event.getScrollDelta() < 0D));
 			event.setCanceled(true);
 		}
 	}
 
+	@SubscribeEvent
+	public void changeShape(InputEvent.KeyInputEvent event) {
+		if (pressed) {
+			if (previousShapeKeyBinding.isPressed())
+				FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(false));
 
-	private boolean sneak()
-	{
-		return keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+			if (nextShapeKeyBinding.isPressed())
+				FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(true));
+		}
 	}
 
-	private void addPressedInfo(List<IFormattableTextComponent> list)
-	{
+	private boolean sneak() {
+		return activateKeyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_LEFT_SHIFT || activateKeyBinding.getKey().getKeyCode() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+	}
+
+	private void addPressedInfo(List<IFormattableTextComponent> list) {
 		list.add(new TranslationTextComponent("ftbultimine.active"));
 
 		if (!hasScrolled)
@@ -189,19 +223,16 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	}
 
 	@SubscribeEvent
-	public void clientTick(TickEvent.ClientTickEvent event)
-	{
+	public void clientTick(TickEvent.ClientTickEvent event) {
 		Minecraft mc = Minecraft.getInstance();
 
-		if (event.phase != TickEvent.Phase.START || mc.player == null)
-		{
+		if (event.phase != TickEvent.Phase.START || mc.player == null) {
 			return;
 		}
 
 		boolean p = pressed;
 
-		if ((pressed = keyBinding.isKeyDown()) != p)
-		{
+		if ((pressed = activateKeyBinding.isKeyDown()) != p) {
 			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
 		}
 	}

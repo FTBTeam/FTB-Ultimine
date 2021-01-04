@@ -1,5 +1,8 @@
 {
-	"key.ftbultimine": "FTB Ultimine",
+	"key.categories.ftbultimine": "FTB Ultimine",
+	"key.ftbultimine.activate": "Activate FTB Ultimine",
+	"key.ftbultimine.previous_shape": "Previous Shape",
+	"key.ftbultimine.next_shape": "Next Shape",
 	"ftbultimine.active": "FTB Ultimine is active",
 	"ftbultimine.change_shape": "Hold Shift + Scroll Mouse to change shape",
 	"ftbultimine.shape.shapeless": "Shapeless",
