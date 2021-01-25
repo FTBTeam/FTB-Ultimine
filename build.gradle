@@ -1,6 +1,7 @@
 plugins {
-	id "architect-plugin" version "1.2.34"
-	id "forgified-fabric-loom" version "0.5.14" apply false
+	id "architectury-plugin" version "2.0.64"
+	id "forgified-fabric-loom" version "0.6.53" apply false
+	id "com.matthewprenger.cursegradle" version "1.4.0" apply false
 }
 
 architectury {
@@ -17,13 +18,25 @@ subprojects {
 
 allprojects {
 	apply plugin: "java"
-	apply plugin: "architect-plugin"
+	apply plugin: "architectury-plugin"
 	apply from: "https://files.latmod.com/public/markdown-git-changelog.gradle"
 
 	archivesBaseName = rootProject.archives_base_name
 	def ENV = System.getenv()
 	version = version = "${rootProject.mod_version}.${ENV.BUILD_NUMBER ?: "custom"}"
 	group = rootProject.maven_group
+
+	tasks.withType(JavaCompile) {
+		options.encoding = "UTF-8"
+
+		// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
+		// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
+		// We'll use that if it's available, but otherwise we'll use the older option.
+		def targetVersion = 8
+		if (JavaVersion.current().isJava9Compatible()) {
+			options.release = targetVersion
+		}
+	}
 
 	repositories {
 		mavenLocal()
@@ -35,7 +48,4 @@ allprojects {
 		}
 	}
 
-	tasks.withType(JavaCompile) {
-		options.encoding = "UTF-8"
-	}
 }

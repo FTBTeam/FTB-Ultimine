@@ -1,7 +1,6 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineCommon;
-import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.ModeChangedPacket;
@@ -12,8 +11,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
-import me.shedaniel.architectury.event.events.TickEvent;
+import me.shedaniel.architectury.event.events.GuiEvent;
+import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
+import me.shedaniel.architectury.registry.KeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -24,28 +25,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.client.settings.KeyConflictContext;
-import net.minecraftforge.client.settings.KeyModifier;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ResourceBundle;
-
-import static com.feed_the_beast.mods.ftbultimine.FTBUltimine.*;
 
 /**
  * @author LatvianModder
@@ -63,8 +52,15 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	public FTBUltimineClient()
 	{
 		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.gameplay");
-		ClientRegistry.registerKeyBinding(keyBinding);
+
+		KeyBindings.registerKeyBinding(keyBinding);
+
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
+
+		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
+
+		ClientRawInputEvent.MOUSE_SCROLLED.register(this::mouseEvent);
+		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
 	}
 
 	@Override
@@ -75,7 +71,6 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		updateEdges();
 	}
 
-	@SubscribeEvent
 	public void renderInGame(RenderWorldLastEvent event)
 	{
 		if (!pressed || cachedEdges == null || cachedEdges.isEmpty())
@@ -115,40 +110,45 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		ms.popPose();
 	}
 
-	@SubscribeEvent
-	public void mouseEvent(InputEvent.MouseScrollEvent event)
+	public InteractionResult mouseEvent(Minecraft client, double amount)
 	{
-		if (pressed && event.getScrollDelta() != 0 && sneak())
+		if (pressed && amount != 0 && sneak())
 		{
 			hasScrolled = true;
-			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(event.getScrollDelta() < 0D));
-			event.setCanceled(true);
+			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(amount < 0D));
+			return InteractionResult.FAIL;
 		}
+		return InteractionResult.PASS;
 	}
 
-	@SubscribeEvent
-	public void onKeyPress(InputEvent.KeyInputEvent event)
+	public InteractionResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers)
 	{
-		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
-			return;
-		}
+		{
+			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY)
+			{
+				return InteractionResult.PASS;
+			}
 
-		if (event.getKey() != GLFW.GLFW_KEY_UP && event.getKey() != GLFW.GLFW_KEY_DOWN) {
-			return;
-		}
+			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN)
+			{
+				return InteractionResult.PASS;
+			}
 
-		if (!pressed || !sneak()) {
-			return;
-		}
+			if (!pressed || !sneak())
+			{
+				return InteractionResult.PASS;
+			}
 
-		hasScrolled = true;
-		FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(event.getKey() == GLFW.GLFW_KEY_DOWN));
-		lastToggle = System.currentTimeMillis();
+			hasScrolled = true;
+			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN));
+			lastToggle = System.currentTimeMillis();
+		}
+		return InteractionResult.PASS;
 	}
 
 	private boolean sneak()
 	{
-		return keyBinding.getKey().getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.getKey().getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
 	private void addPressedInfo(List<MutableComponent> list)
@@ -179,7 +179,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 	private int infoOffset = 0;
 
-	@SubscribeEvent(priority = EventPriority.LOWEST)
+	// TODO: reimplement if architectury adds support for getting debug text offset
+	/*@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void info(RenderGameOverlayEvent.Text event)
 	{
 		if (FTBUltimineConfig.renderTextManually == -1)
@@ -190,12 +191,11 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		{
 			infoOffset = FTBUltimineConfig.renderTextManually;
 		}
-	}
+	}*/
 
-	@SubscribeEvent
-	public void renderGameOverlay(RenderGameOverlayEvent.Post event)
+	public void renderGameOverlay(PoseStack matrices, float tickDelta)
 	{
-		if (pressed && event.getType() == RenderGameOverlayEvent.ElementType.ALL)
+		if (pressed)
 		{
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -208,8 +208,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 			for (MutableComponent msg : list)
 			{
-				GuiComponent.fill(event.getMatrixStack(), 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
-				minecraft.font.drawShadow(event.getMatrixStack(), msg, 2, top, 14737632);
+				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
+				minecraft.font.drawShadow(matrices, msg, 2, top, 14737632);
 				top += minecraft.font.lineHeight;
 			}
 		}

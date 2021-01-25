@@ -16,21 +16,18 @@ import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
 import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.event.events.TickEvent;
+import me.shedaniel.architectury.registry.Registries;
 import me.shedaniel.architectury.utils.EnvExecutor;
 import me.shedaniel.architectury.utils.IntValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.tags.BlockTagsProvider;
-import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.SerializationTags;
-import net.minecraft.tags.TagCollection;
-import net.minecraft.tags.TagLoader;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -44,18 +41,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -116,7 +105,7 @@ public class FTBUltimine
 
 		if (!data.pressed)
 		{
-			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
+			FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
 		}
 	}
 
@@ -125,7 +114,7 @@ public class FTBUltimine
 		FTBUltiminePlayerData data = get(player);
 		data.shape = next ? data.shape.next : data.shape.prev;
 		data.clearCache();
-		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
+		FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
 	}
 
 	private int getMaxBlocks(Player player)
@@ -150,7 +139,7 @@ public class FTBUltimine
 			return InteractionResult.PASS;
 		}
 
-		if (FTBUltimineConfig.toolBlacklist.contains(player.getMainHandItem().getItem().getRegistryName()))
+		if (FTBUltimineConfig.toolBlacklist.contains(Registries.getId(player.getMainHandItem().getItem(), Registry.ITEM_REGISTRY)))
 		{
 			return InteractionResult.PASS;
 		}
@@ -215,7 +204,7 @@ public class FTBUltimine
 		}
 
 		data.clearCache();
-		FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(data.shape, Collections.emptyList()));
+		FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
 
 		return InteractionResult.FAIL;
 	}
@@ -265,7 +254,8 @@ public class FTBUltimine
 					BlockState state = player.level.getBlockState(p);
 
 					// vanilla
-					if(!BlockTags.getAllTags().getTag(dirtTag).contains(state.getBlock())) {
+					if (!BlockTags.getAllTags().getTag(dirtTag).contains(state.getBlock()))
+					{
 						continue;
 					}
 
@@ -339,6 +329,7 @@ public class FTBUltimine
 			player.swing(hand);
 			return InteractionResult.FAIL;
 		}
+		return InteractionResult.PASS;
 	}
 
 	public void playerTick(Player player)
@@ -348,16 +339,6 @@ public class FTBUltimine
 			FTBUltiminePlayerData data = get(player);
 			data.checkBlocks((ServerPlayer) player, true, getMaxBlocks(player));
 		}
-	}
-
-	@SubscribeEvent
-	public void playerLoaded(PlayerEvent.LoadFromFile event)
-	{
-	}
-
-	@SubscribeEvent
-	public void playerSaved(PlayerEvent.SaveToFile event)
-	{
 	}
 
 	public InteractionResult entityJoinedWorld(Entity entity, Level level)
@@ -375,7 +356,8 @@ public class FTBUltimine
 		return InteractionResult.PASS;
 	}
 
-	public static ResourceLocation id(String path) {
+	public static ResourceLocation id(String path)
+	{
 		return new ResourceLocation(MOD_ID, path);
 	}
 }

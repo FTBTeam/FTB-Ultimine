@@ -1,5 +1,9 @@
+loom {
+	accessWidener = file("src/main/resources/ftbultimine.accessWidener")
+}
+
 dependencies {
-	minecraft "com.mojang:minecraft:${rootProject.architect.minecraft}"
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
 	mappings minecraft.officialMojangMappings()
 	// We depend on fabric loader here to use the fabric @Environment annotations
 	// Do NOT use other classes from fabric loader
@@ -8,6 +12,6 @@ dependencies {
 	compileOnly "com.google.code.findbugs:jsr305:3.+"
 }
 
-architect {
+architectury {
 	common()
 }

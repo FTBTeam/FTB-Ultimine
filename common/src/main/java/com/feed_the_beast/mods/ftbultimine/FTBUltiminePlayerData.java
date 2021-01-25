@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -66,7 +65,7 @@ public class FTBUltiminePlayerData
 
 				if (sendUpdate)
 				{
-					FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(shape, Collections.emptyList()));
+					FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(shape, Collections.emptyList()));
 				}
 			}
 
@@ -116,7 +115,7 @@ public class FTBUltiminePlayerData
 
 		if (sendUpdate)
 		{
-			FTBUltimineNet.MAIN.send(PacketDistributor.PLAYER.with(() -> player), new SendShapePacket(shape, cachedBlocks));
+			FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(shape, cachedBlocks));
 		}
 
 		return context;
