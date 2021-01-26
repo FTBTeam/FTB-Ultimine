@@ -1,6 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
+import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
@@ -53,8 +54,9 @@ public class SendShapePacket
 	{
 		context.get().enqueueWork(() -> {
 			current = shape;
-			
-			if (FTBUltimineConfig.renderOutline) {
+
+			if (FTBUltimineConfig.renderOutline)
+			{
 				FTBUltimine.instance.proxy.setShape(blocks);
 			}
 		});

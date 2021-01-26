@@ -123,15 +123,18 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	@SubscribeEvent
 	public void onKeyPress(InputEvent.KeyInputEvent event)
 	{
-		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
+		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY)
+		{
 			return;
 		}
 
-		if (event.getKey() != GLFW.GLFW_KEY_UP && event.getKey() != GLFW.GLFW_KEY_DOWN) {
+		if (event.getKey() != GLFW.GLFW_KEY_UP && event.getKey() != GLFW.GLFW_KEY_DOWN)
+		{
 			return;
 		}
 
-		if (!pressed || !sneak()) {
+		if (!pressed || !sneak())
+		{
 			return;
 		}
 
