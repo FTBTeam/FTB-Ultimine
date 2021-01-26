@@ -23,6 +23,7 @@ public class FTBUltimineConfig
 	public static boolean mergeStone;
 	public static final HashSet<ResourceLocation> toolBlacklist = new HashSet<>();
 	public static int renderTextManually;
+	public static boolean renderOutline;
 
 	private static Pair<CommonConfig, ForgeConfigSpec> server;
 
@@ -55,6 +56,7 @@ public class FTBUltimineConfig
 			}
 
 			renderTextManually = c.renderTextManually.get();
+			renderOutline = c.renderOutline.get();
 		}
 	}
 
@@ -65,6 +67,7 @@ public class FTBUltimineConfig
 		private final ForgeConfigSpec.BooleanValue mergeStone;
 		private final ForgeConfigSpec.ConfigValue<List<? extends String>> toolBlacklist;
 		private final ForgeConfigSpec.IntValue renderTextManually;
+		private final ForgeConfigSpec.BooleanValue renderOutline;
 
 		private CommonConfig(ForgeConfigSpec.Builder builder)
 		{
@@ -92,6 +95,11 @@ public class FTBUltimineConfig
 					.comment("Required for some modpacks")
 					.translation("ftbultimine.render_text_manually")
 					.defineInRange("render_text_manually", -1, -1, 8);
+
+			renderOutline = builder
+					.comment("Render the white outline around blocks to be mined")
+					.translation("ftbultimine.render_outline")
+					.define("render_outline", true);
 		}
 	}
 }
