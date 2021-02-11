@@ -1,8 +1,9 @@
 package com.feed_the_beast.mods.ftbultimine.forge;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
+import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.event.LevelRenderLastEvent;
-import me.shedaniel.clothconfig2.ClothConfigDemo;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,13 +24,17 @@ public class FTBUltimineForge
 			LevelRenderLastEvent.EVENT.invoker().onRenderLast(event.getMatrixStack());
 		});
 
-		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FTBUltimineForge::registerConfigScreen);
+		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FTBUltimineForgeConfig::registerConfigScreen);
 	}
 
-	private static void registerConfigScreen()
+	private static class FTBUltimineForgeConfig
 	{
-		ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, parent) -> {
-			return ClothConfigDemo.getConfigBuilderWithDemo().setParentScreen(parent).build();
-		});
+		static void registerConfigScreen()
+		{
+			ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, parent) -> {
+				return AutoConfig.getConfigScreen(FTBUltimineConfig.class, parent).get();
+			});
+		}
 	}
+
 }
