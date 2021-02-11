@@ -1,0 +1,41 @@
+modLoader = "javafml"
+loaderVersion = "[35,)"
+issueTrackerURL = "https://github.com/FTBTeam/FTB-Ultimine/issues"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "ftbultimine"
+version = "${version}"
+displayName = "FTB Ultimine"
+authors = "LatvianModder"
+description = '''
+Allows you to break multiple blocks at once
+'''
+
+[[dependencies.ftbultimine]]
+modId = "forge"
+mandatory = true
+versionRange = "[35,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "architectury"
+mandatory = true
+versionRange = "[1.5,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "cloth-config"
+mandatory = true
+versionRange = "[4.9,)"
+ordering = "NONE"
+side = "BOTH"

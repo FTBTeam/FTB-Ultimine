@@ -1,10 +1,10 @@
 package com.feed_the_beast.mods.ftbultimine;
 
+import com.feed_the_beast.mods.ftbultimine.utils.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +78,9 @@ public class ItemCollection
 			return stack;
 		}
 
-		if (!stack.isStackable() || !Objects.equals(stack.getTag(), existing.getTag()) || !stack.areCapsCompatible(existing))
+		// intellij doesn't like that we throw something here
+		//noinspection ConstantConditions
+		if (!stack.isStackable() || !Objects.equals(stack.getTag(), existing.getTag()) || !ItemUtils.areCompatible(stack, existing))
 		{
 			return stack;
 		}
@@ -87,7 +89,7 @@ public class ItemCollection
 
 		if (!existing.isEmpty())
 		{
-			if (!ItemHandlerHelper.canItemStacksStack(stack, existing))
+			if (!ItemUtils.canItemStacksStack(stack, existing))
 			{
 				return stack;
 			}
@@ -104,13 +106,13 @@ public class ItemCollection
 
 		if (existing.isEmpty())
 		{
-			stacks.set(slot, reachedLimit ? ItemHandlerHelper.copyStackWithSize(stack, limit) : stack);
+			stacks.set(slot, reachedLimit ? ItemUtils.copyStackWithSize(stack, limit) : stack);
 		}
 		else
 		{
 			existing.grow(reachedLimit ? limit : stack.getCount());
 		}
 
-		return reachedLimit ? ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - limit) : ItemStack.EMPTY;
+		return reachedLimit ? ItemUtils.copyStackWithSize(stack, stack.getCount() - limit) : ItemStack.EMPTY;
 	}
 }

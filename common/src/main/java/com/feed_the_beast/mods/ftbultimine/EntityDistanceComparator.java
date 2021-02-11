@@ -1,7 +1,8 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import java.util.Comparator;
 import net.minecraft.core.BlockPos;
+
+import java.util.Comparator;
 
 /**
  * @author LatvianModder

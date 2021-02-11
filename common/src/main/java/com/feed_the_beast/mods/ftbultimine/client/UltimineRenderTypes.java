@@ -1,9 +1,10 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import org.lwjgl.opengl.GL11;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+
 import java.util.OptionalDouble;
 
 /**

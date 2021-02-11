@@ -1,105 +1,81 @@
 package com.feed_the_beast.mods.ftbultimine;
 
-import net.minecraft.Util;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.commons.lang3.tuple.Pair;
+import blue.endless.jankson.Comment;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.ConfigHolder;
+import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionResult;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author LatvianModder
  */
-public class FTBUltimineConfig
+@Config(name = FTBUltimine.MOD_ID)
+@Config.Gui.Background("minecraft:textures/block/stone.png")
+public class FTBUltimineConfig implements ConfigData
 {
-	public static int maxBlocks;
-	public static double exhaustionPerBlock;
-	public static boolean mergeStone;
-	public static final HashSet<ResourceLocation> toolBlacklist = new HashSet<>();
-	public static int renderTextManually;
-	public static boolean renderOutline;
+	@ConfigEntry.Gui.Excluded
+	private static ConfigHolder<FTBUltimineConfig> holder = null;
 
-	private static Pair<CommonConfig, ForgeConfigSpec> server;
+	public static FTBUltimineConfig get()
+	{
+		return holder.get();
+	}
+
+	@Comment("Max blocks you can mine at once")
+	public int maxBlocks = 64;
+
+	@Comment("Hunger multiplied for each block mined with ultimine")
+	public double exhaustionPerBlock = 20;
+
+	@Comment("Considers different types of stones the same")
+	public boolean mergeStone = true;
+
+	@Comment("Tools that won't let you active ultimine when held")
+	// TODO: change this back to ResLoc (or even Item?) once dan fixes Jankson stuff
+	public final List<String> toolBlacklist = Collections.singletonList("mininggadgets:mininggadget");
+
+	@Comment("Disable lag warnings")
+	public boolean noLagWarnings = false;
+
+	@Comment("Required for some modpacks")
+	@ConfigEntry.Gui.Excluded
+	public int renderTextManually = -1;
+
+	@Comment("Render the white outline around blocks to be mined")
+	public boolean renderOutline = true;
 
 	public static void init()
 	{
-		FMLJavaModLoadingContext.get().getModEventBus().register(FTBUltimineConfig.class);
-
-		server = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
-
-		ModLoadingContext modLoadingContext = ModLoadingContext.get();
-		modLoadingContext.registerConfig(ModConfig.Type.COMMON, server.getRight());
+		holder = AutoConfig.register(FTBUltimineConfig.class, JanksonConfigSerializer::new);
+		holder.registerSaveListener((manager, data) -> {
+			data.validatePostLoad();
+			return InteractionResult.PASS;
+		});
 	}
 
-	@SubscribeEvent
-	public static void reload(ModConfig.ModConfigEvent event)
+	@Override
+	public void validatePostLoad()
 	{
-		ModConfig config = event.getConfig();
-
-		if (config.getSpec() == server.getRight())
+		maxBlocks = Mth.clamp(maxBlocks, 1, 32768);
+		if (!noLagWarnings && maxBlocks > 8192)
 		{
-			CommonConfig c = server.getLeft();
-			maxBlocks = c.maxBlocks.get();
-			exhaustionPerBlock = c.exhaustionPerBlock.get();
-			mergeStone = c.mergeStone.get();
-			toolBlacklist.clear();
-
-			for (String s : c.toolBlacklist.get())
-			{
-				toolBlacklist.add(new ResourceLocation(s));
-			}
-
-			renderTextManually = c.renderTextManually.get();
-			renderOutline = c.renderOutline.get();
+			FTBUltimine.LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
+			FTBUltimine.LOGGER.warn("This may cause a lot of tick and FPS lag!");
 		}
-	}
 
-	private static class CommonConfig
-	{
-		private final ForgeConfigSpec.IntValue maxBlocks;
-		private final ForgeConfigSpec.DoubleValue exhaustionPerBlock;
-		private final ForgeConfigSpec.BooleanValue mergeStone;
-		private final ForgeConfigSpec.ConfigValue<List<? extends String>> toolBlacklist;
-		private final ForgeConfigSpec.IntValue renderTextManually;
-		private final ForgeConfigSpec.BooleanValue renderOutline;
+		exhaustionPerBlock = Mth.clamp(exhaustionPerBlock, 0, 10000);
 
-		private CommonConfig(ForgeConfigSpec.Builder builder)
+		if (!noLagWarnings && renderOutline && maxBlocks > 512)
 		{
-			maxBlocks = builder
-					.comment("Max blocks you can mine at once")
-					.translation("ftbultimine.max_blocks")
-					.defineInRange("max_blocks", 64, 1, 32768);
-
-			exhaustionPerBlock = builder
-					.comment("Hunger multiplied for each block mined with ultimine")
-					.translation("ftbultimine.exhaustion_per_block")
-					.defineInRange("exhaustion_per_block", 20D, 0D, 10000D);
-
-			mergeStone = builder
-					.comment("Doesn't stop at different types of stones")
-					.translation("ftbultimine.merge_stone")
-					.define("merge_stone", true);
-
-			toolBlacklist = builder
-					.comment("Tools that won't let you active ultimine when held")
-					.translation("ftbultimine.tool_blacklist")
-					.defineList("tool_blacklist", Util.make(new ArrayList<>(), l -> l.add("mininggadgets:mininggadget")), o -> true);
-
-			renderTextManually = builder
-					.comment("Required for some modpacks")
-					.translation("ftbultimine.render_text_manually")
-					.defineInRange("render_text_manually", -1, -1, 8);
-
-			renderOutline = builder
-					.comment("Render the white outline around blocks to be mined")
-					.translation("ftbultimine.render_outline")
-					.define("render_outline", true);
+			FTBUltimine.LOGGER.warn("Outline rendering is enabled for more than 512 blocks per excavation!");
+			FTBUltimine.LOGGER.warn("This will almost definitely cause a lot of FPS lag!");
 		}
 	}
 }

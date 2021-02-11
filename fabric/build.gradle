@@ -20,6 +20,9 @@ dependencies {
 	modCompile("net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
 
 	modCompile "me.shedaniel:architectury:${rootProject.architectury_version}:fabric"
+	modCompile "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}:fabric"
+
+	implementation("me.shedaniel.cloth:basic-math:0.5.1")
 
 	compileOnly(project(path: ":common")) {
 		transitive = false
@@ -31,7 +34,7 @@ dependencies {
 		transitive = false
 	}
 
-	modCompileOnly("io.github.prospector:modmenu:${rootProject.mod_menu_version}")
+	modCompile("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
 }
 
 processResources {

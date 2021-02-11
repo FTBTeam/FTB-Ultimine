@@ -1,13 +1,14 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
 import com.feed_the_beast.mods.ftbultimine.EntityDistanceComparator;
+import net.minecraft.core.BlockPos;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder

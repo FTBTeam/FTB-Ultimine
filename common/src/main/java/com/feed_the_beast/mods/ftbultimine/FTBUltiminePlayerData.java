@@ -5,12 +5,12 @@ import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.feed_the_beast.mods.ftbultimine.shape.BlockMatcher;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
+import com.feed_the_beast.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.ForgeMod;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -44,7 +44,7 @@ public class FTBUltiminePlayerData
 
 	public static HitResult rayTrace(ServerPlayer player)
 	{
-		double distance = player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
+		double distance = PlatformMethods.reach(player);
 		return player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
 	}
 
@@ -101,7 +101,7 @@ public class FTBUltiminePlayerData
 			context.maxBlocks = maxBlocks;
 			context.original = player.level.getBlockState(cachedPos);
 
-			if (FTBUltimineConfig.mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original))
+			if (FTBUltimineConfig.get().mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original))
 			{
 				context.matcher = BlockMatcher.ANY_STONE;
 			}

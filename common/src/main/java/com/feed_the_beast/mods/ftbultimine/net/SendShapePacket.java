@@ -55,7 +55,7 @@ public class SendShapePacket
 		context.get().queue(() -> {
 			current = shape;
 
-			if (FTBUltimineConfig.renderOutline)
+			if (FTBUltimineConfig.get().renderOutline)
 			{
 				FTBUltimine.instance.proxy.setShape(blocks);
 			}

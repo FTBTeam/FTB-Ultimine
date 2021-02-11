@@ -16,6 +16,7 @@ import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
 import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.event.events.TickEvent;
+import me.shedaniel.architectury.hooks.PlayerHooks;
 import me.shedaniel.architectury.registry.Registries;
 import me.shedaniel.architectury.utils.EnvExecutor;
 import me.shedaniel.architectury.utils.IntValue;
@@ -44,13 +45,15 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.util.FakePlayer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -61,6 +64,7 @@ public class FTBUltimine
 	public static FTBUltimine instance;
 
 	public static final String MOD_ID = "ftbultimine";
+	public static final Logger LOGGER = LogManager.getLogger();
 
 	public final FTBUltimineCommon proxy;
 
@@ -119,7 +123,7 @@ public class FTBUltimine
 
 	private int getMaxBlocks(Player player)
 	{
-		return FTBUltimineConfig.maxBlocks;
+		return FTBUltimineConfig.get().maxBlocks;
 	}
 
 	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp)
@@ -129,7 +133,7 @@ public class FTBUltimine
 			return InteractionResult.PASS;
 		}
 
-		if (player instanceof FakePlayer || player.getUUID() == null)
+		if (PlayerHooks.isFake(player) || player.getUUID() == null)
 		{
 			return InteractionResult.PASS;
 		}
@@ -139,7 +143,7 @@ public class FTBUltimine
 			return InteractionResult.PASS;
 		}
 
-		if (FTBUltimineConfig.toolBlacklist.contains(Registries.getId(player.getMainHandItem().getItem(), Registry.ITEM_REGISTRY)))
+		if (FTBUltimineConfig.get().toolBlacklist.contains(Objects.toString(Registries.getId(player.getMainHandItem().getItem(), Registry.ITEM_REGISTRY))))
 		{
 			return InteractionResult.PASS;
 		}
@@ -180,7 +184,7 @@ public class FTBUltimine
 
 			if (!player.isCreative())
 			{
-				player.causeFoodExhaustion((float) (FTBUltimineConfig.exhaustionPerBlock * 0.005D));
+				player.causeFoodExhaustion((float) (FTBUltimineConfig.get().exhaustionPerBlock * 0.005D));
 
 				if (player.getFoodData().getFoodLevel() <= 0)
 				{
@@ -211,7 +215,7 @@ public class FTBUltimine
 
 	public InteractionResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face)
 	{
-		if (!(player instanceof ServerPlayer) || player instanceof FakePlayer || player.getUUID() == null)
+		if (!(player instanceof ServerPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null)
 		{
 			return InteractionResult.PASS;
 		}
@@ -241,20 +245,19 @@ public class FTBUltimine
 
 		if (player.getItemInHand(hand).getItem() instanceof HoeItem)
 		{
-			ResourceLocation dirtTag = new ResourceLocation("forge", "dirt");
+			ResourceLocation dirtTag = new ResourceLocation("ftbultimine", "farmland_tillable");
 
 			if (!player.level.isClientSide())
 			{
 				boolean playSound = false;
 				BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineConfig.maxBlocks); i++)
+				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineConfig.get().maxBlocks); i++)
 				{
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.level.getBlockState(p);
 
-					// vanilla
-					if (!BlockTags.getAllTags().getTag(dirtTag).contains(state.getBlock()))
+					if (!BlockTags.getAllTags().getTagOrEmpty(dirtTag).contains(state.getBlock()))
 					{
 						continue;
 					}
@@ -265,7 +268,7 @@ public class FTBUltimine
 					if (!player.isCreative())
 					{
 						player.getMainHandItem().hurtAndBreak(1, serverPlayer, brokenItemHandler);
-						player.causeFoodExhaustion((float) (FTBUltimineConfig.exhaustionPerBlock * 0.005D));
+						player.causeFoodExhaustion((float) (FTBUltimineConfig.get().exhaustionPerBlock * 0.005D));
 
 						if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0)
 						{

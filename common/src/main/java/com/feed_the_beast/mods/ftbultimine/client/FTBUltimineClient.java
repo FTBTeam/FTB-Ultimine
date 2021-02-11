@@ -1,6 +1,8 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineCommon;
+import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
+import com.feed_the_beast.mods.ftbultimine.event.LevelRenderLastEvent;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
 import com.feed_the_beast.mods.ftbultimine.net.ModeChangedPacket;
@@ -15,6 +17,7 @@ import me.shedaniel.architectury.event.events.GuiEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
 import me.shedaniel.architectury.registry.KeyBindings;
+import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -29,7 +32,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -56,8 +58,10 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		KeyBindings.registerKeyBinding(keyBinding);
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
-
 		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
+
+		// TODO: remove once #6 gets fixed
+		LevelRenderLastEvent.EVENT.register(this::renderInGame);
 
 		ClientRawInputEvent.MOUSE_SCROLLED.register(this::mouseEvent);
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
@@ -71,7 +75,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		updateEdges();
 	}
 
-	public void renderInGame(RenderWorldLastEvent event)
+	public void renderInGame(PoseStack stack)
 	{
 		if (!pressed || cachedEdges == null || cachedEdges.isEmpty())
 		{
@@ -82,10 +86,9 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		Camera activeRenderInfo = mc.getEntityRenderDispatcher().camera;
 		Vec3 projectedView = activeRenderInfo.getPosition();
 
-		PoseStack ms = event.getMatrixStack();
-		ms.pushPose();
-		ms.translate(-projectedView.x, -projectedView.y, -projectedView.z);
-		Matrix4f matrix = ms.last().pose();
+		stack.pushPose();
+		stack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
+		Matrix4f matrix = stack.last().pose();
 
 		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
 
@@ -107,7 +110,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
 
-		ms.popPose();
+		stack.popPose();
 	}
 
 	public InteractionResult mouseEvent(Minecraft client, double amount)
@@ -183,13 +186,13 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	/*@SubscribeEvent(priority = EventPriority.LOWEST)
 	public void info(RenderGameOverlayEvent.Text event)
 	{
-		if (FTBUltimineConfig.renderTextManually == -1)
+		if (FTBUltimineConfig.get().renderTextManually == -1)
 		{
 			infoOffset = event.getLeft().size();
 		}
 		else
 		{
-			infoOffset = FTBUltimineConfig.renderTextManually;
+			infoOffset = FTBUltimineConfig.get().renderTextManually;
 		}
 	}*/
 

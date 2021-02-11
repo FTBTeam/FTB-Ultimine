@@ -1,10 +1,11 @@
 package com.feed_the_beast.mods.ftbultimine.shape;
 
+import net.minecraft.core.BlockPos;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.core.BlockPos;
 
 /**
  * @author LatvianModder

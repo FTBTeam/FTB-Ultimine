@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"icon": "icon.png",
+	"id": "ftbultimine",
+	"version": "${version}",
+	"name": "FTB Ultimine",
+	"description": "Allows you to break multiple blocks at once.",
+	"authors": [
+		"LatvianModder"
+	],
+	"contact": {
+		"sources": "https://github.com/FTBTeam/FTB-Ultimine",
+		"issues": "https://github.com/FTBTeam/FTB-Ultimine/issues"
+	},
+	"license": "All Rights Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.feed_the_beast.mods.ftbultimine.fabric.FTBUltimineFabric"
+		],
+		"modmenu": [
+			"com.feed_the_beast.mods.ftbultimine.fabric.FTBUltimineModMenu"
+		]
+	},
+	"mixins": [
+	],
+	"accessWidener": "ftbultimine.accesswidener",
+	"depends": {
+		"fabricloader": ">=0.10.0",
+		"minecraft": ">=1.16.4",
+		"architectury": ">=1.5",
+		"cloth-config": ">=4.9"
+	}
+}
