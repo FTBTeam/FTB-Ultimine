@@ -1,6 +1,6 @@
 package com.feed_the_beast.mods.ftbultimine.fabric;
 
-import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
+import com.feed_the_beast.mods.ftbultimine.config.FTBUltimineConfig;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.autoconfig.AutoConfig;

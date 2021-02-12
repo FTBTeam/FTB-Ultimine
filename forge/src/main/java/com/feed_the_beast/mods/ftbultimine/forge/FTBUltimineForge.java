@@ -1,7 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.forge;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
-import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
+import com.feed_the_beast.mods.ftbultimine.config.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.event.LevelRenderLastEvent;
 import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraftforge.api.distmarker.Dist;

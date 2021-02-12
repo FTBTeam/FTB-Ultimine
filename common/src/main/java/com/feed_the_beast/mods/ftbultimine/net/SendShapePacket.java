@@ -1,7 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
-import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
+import com.feed_the_beast.mods.ftbultimine.config.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.shape.Shape;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;

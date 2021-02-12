@@ -1,6 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine;
 
 import com.feed_the_beast.mods.ftbultimine.client.FTBUltimineClient;
+import com.feed_the_beast.mods.ftbultimine.config.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.SendShapePacket;
 import com.feed_the_beast.mods.ftbultimine.shape.BlockMatcher;

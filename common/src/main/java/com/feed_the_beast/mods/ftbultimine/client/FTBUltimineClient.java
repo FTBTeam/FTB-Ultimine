@@ -1,7 +1,6 @@
 package com.feed_the_beast.mods.ftbultimine.client;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimineCommon;
-import com.feed_the_beast.mods.ftbultimine.FTBUltimineConfig;
 import com.feed_the_beast.mods.ftbultimine.event.LevelRenderLastEvent;
 import com.feed_the_beast.mods.ftbultimine.net.FTBUltimineNet;
 import com.feed_the_beast.mods.ftbultimine.net.KeyPressedPacket;
@@ -17,7 +16,6 @@ import me.shedaniel.architectury.event.events.GuiEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
 import me.shedaniel.architectury.registry.KeyBindings;
-import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
