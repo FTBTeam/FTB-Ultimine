@@ -13,6 +13,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.minecraft.ChatFormatting;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -21,8 +22,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author LatvianModder
@@ -89,10 +93,29 @@ public class FTBUltimineConfig implements ConfigData
 			toolBlacklist.add("mininggadgets:mininggadget");
 		}
 
-		for (int i = 0; i < toolBlacklist.size(); i++)
+		// Validate all resource locations and remove duplicates
+		Set<String> known = new HashSet<>();
+		for (ListIterator<String> iterator = toolBlacklist.listIterator(); iterator.hasNext(); )
 		{
-			String id = toolBlacklist.get(i);
-			toolBlacklist.set(i, ResourceLocation.tryParse(id).toString());
+			String id = iterator.next();
+			try
+			{
+				id = new ResourceLocation(id.toLowerCase()).toString();
+			}
+			catch (ResourceLocationException rle)
+			{
+				id = null;
+			}
+
+			if (id == null || known.contains(id))
+			{
+				iterator.remove();
+			}
+			else
+			{
+				iterator.set(id);
+				known.add(id);
+			}
 		}
 
 		maxBlocks = Mth.clamp(maxBlocks, 1, 32768);
