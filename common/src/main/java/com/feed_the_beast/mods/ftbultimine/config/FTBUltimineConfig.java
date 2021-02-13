@@ -44,7 +44,7 @@ public class FTBUltimineConfig implements ConfigData
 	}
 
 	@Comment("\r\n" +
-			"Max blocks you can mine at once"
+			"Max amount of blocks that can be ultimined at once"
 			+ "\r\n" + "Range: 1 - 32768")
 	public int maxBlocks = 64;
 
@@ -53,14 +53,14 @@ public class FTBUltimineConfig implements ConfigData
 			+ "\r\n" + "Range: 0 - 10000")
 	public double exhaustionPerBlock = 20;
 
-	@Comment("Considers different types of stones the same")
+	@Comment("Groups stone types together so you can mine all of them at once")
 	public boolean mergeStone = true;
 
 	@ToolList
-	@Comment("Tools that won't let you active ultimine when held")
+	@Comment("Tools that won't let you activate ultimine when held")
 	public List<String> toolBlacklist = null;
 
-	@Comment("Disable lag warnings")
+	@Comment("Disable warnings for potentially laggy config settingsJ")
 	public boolean noLagWarnings = false;
 
 	@Comment("Manual x offset of FTB Ultimine overlay, required for some modpacks")
