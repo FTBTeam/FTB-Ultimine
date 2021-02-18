@@ -51,7 +51,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 	public FTBUltimineClient()
 	{
-		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.gameplay");
+		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
 
 		KeyBindings.registerKeyBinding(keyBinding);
 
