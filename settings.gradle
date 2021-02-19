@@ -1,1 +1,17 @@
+pluginManagement {
+	repositories {
+		maven { url "https://maven.fabricmc.net/" }
+		maven { url "https://maven.shedaniel.me" }
+		maven { url "https://files.minecraftforge.net/maven/" }
+		jcenter()
+		mavenCentral()
+		gradlePluginPortal()
+		mavenLocal()
+	}
+}
+
+include("common")
+include("fabric")
+include("forge")
+
 rootProject.name = 'FTB-Ultimine-1.16.3'

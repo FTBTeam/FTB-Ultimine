@@ -1,0 +1,76 @@
+plugins {
+	id "com.github.johnrengelman.shadow" version "5.0.0"
+	id "com.matthewprenger.cursegradle"
+}
+
+def ENV = System.getenv()
+
+configurations {
+	shadow
+}
+
+architectury {
+	platformSetupLoomIde()
+}
+
+dependencies {
+	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
+	mappings(minecraft.officialMojangMappings())
+	modCompile("net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}")
+	modCompile("net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
+
+	modCompile "me.shedaniel:architectury:${rootProject.architectury_version}:fabric"
+	modCompile "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}:fabric"
+
+	implementation("me.shedaniel.cloth:basic-math:0.5.1")
+
+	compileOnly(project(path: ":common")) {
+		transitive = false
+	}
+	runtimeOnly(project(path: ":common", configuration: "transformDevelopmentFabric")) {
+		transitive = false
+	}
+	shadow(project(path: ":common", configuration: "transformProductionFabric")) {
+		transitive = false
+	}
+
+	modCompile("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
+}
+
+processResources {
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+	inputs.property "version", project.version
+}
+
+shadowJar {
+	configurations = [project.configurations.shadow]
+	classifier "shadow"
+}
+
+remapJar {
+	dependsOn(shadowJar)
+	input.set(shadowJar.archivePath)
+	archiveClassifier = "fabric"
+}
+
+if (ENV.CURSEFORGE_KEY) {
+	curseforge {
+		apiKey = ENV.CURSEFORGE_KEY
+		project {
+			id = project.curseforge_id_fabric
+			releaseType = "beta"
+			addGameVersion "Fabric"
+			addGameVersion "1.16.4"
+			addGameVersion "1.16.5"
+			mainArtifact(remapJar.archivePath)
+			relations {
+				requiredDependency 'architectury-fabric'
+				requiredDependency 'fabric-api'
+			}
+			changelog = getGitChangelog
+			changelogType = 'markdown'
+		}
+	}
+}

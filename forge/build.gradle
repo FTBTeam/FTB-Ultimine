@@ -1,0 +1,74 @@
+plugins {
+	id "com.github.johnrengelman.shadow" version "5.0.0"
+	id "com.matthewprenger.cursegradle"
+}
+
+def ENV = System.getenv()
+
+configurations {
+	shadow
+}
+
+architectury {
+	platformSetupLoomIde()
+}
+
+loom {
+	useFabricMixin = true
+}
+
+dependencies {
+	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
+	mappings(minecraft.officialMojangMappings())
+	forge("net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}")
+
+	modCompile "me.shedaniel:architectury:${rootProject.architectury_version}:forge"
+	modCompile "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}:forge"
+
+	compileOnly(project(path: ":common")) {
+		transitive = false
+	}
+	runtimeOnly(project(path: ":common", configuration: "transformDevelopmentForge")) {
+		transitive = false
+	}
+	shadow(project(path: ":common", configuration: "transformProductionForge")) {
+		transitive = false
+	}
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("META-INF/mods.toml") {
+		expand "version": project.version
+	}
+}
+
+shadowJar {
+	exclude "fabric.mod.json"
+
+	configurations = [project.configurations.shadow]
+	classifier "shadow"
+}
+
+remapJar {
+	dependsOn(shadowJar)
+	input.set(shadowJar.archivePath)
+	archiveClassifier = "forge"
+}
+
+if (ENV.CURSEFORGE_KEY) {
+	curseforge {
+		apiKey = ENV.CURSEFORGE_KEY
+		project {
+			id = project.curseforge_id_forge
+			releaseType = "beta"
+			addGameVersion "Forge"
+			addGameVersion "1.16.4"
+			addGameVersion "1.16.5"
+			requiredDependency 'architectury-forge'
+			changelog = getGitChangelog
+			changelogType = 'markdown'
+		}
+	}
+}

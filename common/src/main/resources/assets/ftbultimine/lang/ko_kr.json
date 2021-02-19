@@ -1,0 +1,11 @@
+{
+	"key.ftbultimine": "FTB Ultimine",
+	"key.categories.ftbultimine": "FTB Ultimine",
+	"ftbultimine.active": "FTB Ultimine이 활성화됨",
+	"ftbultimine.change_shape": "Shift키를 누르고 마우스 스크롤을 돌려 채굴 형태를 변경하십시오",
+	"ftbultimine.shape.shapeless": "모양 없음",
+	"ftbultimine.shape.small_tunnel": "작은 굴",
+	"ftbultimine.shape.small_square": "작은 정사각형",
+	"ftbultimine.shape.mining_tunnel": "채광 굴",
+	"ftbultimine.shape.escape_tunnel": "탈출 굴"
+}
