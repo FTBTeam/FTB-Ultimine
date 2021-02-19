@@ -62,11 +62,14 @@ if (ENV.CURSEFORGE_KEY) {
 		apiKey = ENV.CURSEFORGE_KEY
 		project {
 			id = project.curseforge_id_forge
-			releaseType = "beta"
+			releaseType = "release"
 			addGameVersion "Forge"
 			addGameVersion "1.16.4"
 			addGameVersion "1.16.5"
-			requiredDependency 'architectury-forge'
+			mainArtifact(remapJar.archivePath)
+			relations {
+				requiredDependency 'architectury-forge'
+			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'
 		}
