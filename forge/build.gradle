@@ -69,6 +69,7 @@ if (ENV.CURSEFORGE_KEY) {
 			mainArtifact(remapJar.archivePath)
 			relations {
 				requiredDependency 'architectury-forge'
+				requiredDependency 'cloth-config-forge'
 			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'

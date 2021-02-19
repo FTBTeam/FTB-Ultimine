@@ -68,6 +68,7 @@ if (ENV.CURSEFORGE_KEY) {
 			relations {
 				requiredDependency 'architectury-fabric'
 				requiredDependency 'fabric-api'
+				requiredDependency 'cloth-config'
 			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'
