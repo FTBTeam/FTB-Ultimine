@@ -1,10 +1,6 @@
 package com.feed_the_beast.mods.ftbultimine.config;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
-import com.feed_the_beast.mods.ftbultimine.config.client.FTBUltimineConfigScreen;
-import com.feed_the_beast.mods.ftbultimine.config.client.ToolList;
-import me.shedaniel.architectury.utils.Env;
-import me.shedaniel.architectury.utils.EnvExecutor;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.ConfigHolder;
@@ -12,21 +8,8 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
-import net.minecraft.ChatFormatting;
-import net.minecraft.ResourceLocationException;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author LatvianModder
@@ -54,10 +37,6 @@ public class FTBUltimineConfig implements ConfigData
 	@Comment("Groups stone types together so you can mine all of them at once")
 	public boolean mergeStone = true;
 
-	@ToolList
-	@Comment("Tools that won't let you activate ultimine when held")
-	public List<String> toolBlacklist = null;
-
 	@Comment("Disable warnings for potentially laggy config settings")
 	public boolean noLagWarnings = false;
 
@@ -73,8 +52,6 @@ public class FTBUltimineConfig implements ConfigData
 	{
 		holder = AutoConfig.register(FTBUltimineConfig.class, JanksonConfigSerializer::new);
 
-		EnvExecutor.runInEnv(Env.CLIENT, () -> FTBUltimineConfigScreen::init);
-
 		holder.registerSaveListener((manager, data) -> {
 			data.validatePostLoad();
 			return InteractionResult.PASS;
@@ -84,37 +61,6 @@ public class FTBUltimineConfig implements ConfigData
 	@Override
 	public void validatePostLoad()
 	{
-		if (toolBlacklist == null)
-		{
-			toolBlacklist = new ArrayList<>();
-			toolBlacklist.add("mininggadgets:mininggadget");
-		}
-
-		// Validate all resource locations and remove duplicates
-		Set<String> known = new HashSet<>();
-		for (ListIterator<String> iterator = toolBlacklist.listIterator(); iterator.hasNext(); )
-		{
-			String id = iterator.next();
-			try
-			{
-				id = new ResourceLocation(id.toLowerCase()).toString();
-			}
-			catch (ResourceLocationException rle)
-			{
-				id = null;
-			}
-
-			if (id == null || known.contains(id))
-			{
-				iterator.remove();
-			}
-			else
-			{
-				iterator.set(id);
-				known.add(id);
-			}
-		}
-
 		maxBlocks = Mth.clamp(maxBlocks, 1, 32768);
 		if (!noLagWarnings && maxBlocks > 8192)
 		{
@@ -129,18 +75,5 @@ public class FTBUltimineConfig implements ConfigData
 			FTBUltimine.LOGGER.warn("Outline rendering is enabled for more than 512 blocks per excavation!");
 			FTBUltimine.LOGGER.warn("This will almost definitely cause a lot of FPS lag!");
 		}
-	}
-
-	public static Optional<Component> validateItems(List<String> strings)
-	{
-		for (String id : strings)
-		{
-			if (!Registry.ITEM.containsKey(ResourceLocation.tryParse(id)))
-			{
-				return Optional.of(new TextComponent("Invalid item: " + id).withStyle(ChatFormatting.RED));
-			}
-		}
-
-		return Optional.empty();
 	}
 }
