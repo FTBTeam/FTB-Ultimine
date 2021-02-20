@@ -73,6 +73,9 @@ public class FTBUltimine
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
+	public static final Tag.Named<Item> toolDenyTag = ItemTags.bind(MOD_ID + ":excluded_tools");
+	public static final Tag.Named<Item> toolAllowTag = ItemTags.bind(MOD_ID + ":included_tools");
+
 	public FTBUltimine()
 	{
 		instance = this;
@@ -145,10 +148,9 @@ public class FTBUltimine
 
 		Item tool = player.getMainHandItem().getItem();
 
-		Tag<Item> deny = ItemTags.getAllTags().getTagOrEmpty(new ResourceLocation(MOD_ID, "excluded_tools"));
-		Tag<Item> allow = ItemTags.getAllTags().getTag(new ResourceLocation(MOD_ID, "included_tools"));
+		List<Item> allowedTools = toolAllowTag.getValues();
 
-		if ((allow != null && !tool.is(allow)) || tool.is(deny))
+		if ((!allowedTools.isEmpty() && allowedTools.contains(tool)) || tool.is(toolDenyTag))
 		{
 			return InteractionResult.PASS;
 		}
