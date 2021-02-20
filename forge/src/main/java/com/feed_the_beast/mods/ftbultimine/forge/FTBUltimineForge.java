@@ -20,17 +20,17 @@ public class FTBUltimineForge
 	{
 		new FTBUltimine();
 
-		MinecraftForge.EVENT_BUS.<RenderWorldLastEvent>addListener(event -> {
-			LevelRenderLastEvent.EVENT.invoker().onRenderLast(event.getMatrixStack());
-		});
-
-		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FTBUltimineForgeConfig::registerConfigScreen);
+		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FTBUltimineForgeClient::init);
 	}
 
-	private static class FTBUltimineForgeConfig
-	{
-		static void registerConfigScreen()
+	private static class FTBUltimineForgeClient
+	{		
+		static void init()
 		{
+			MinecraftForge.EVENT_BUS.<RenderWorldLastEvent>addListener(event -> {
+				LevelRenderLastEvent.EVENT.invoker().onRenderLast(event.getMatrixStack());
+			});
+			
 			ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, parent) -> {
 				return AutoConfig.getConfigScreen(FTBUltimineConfig.class, parent).get();
 			});
