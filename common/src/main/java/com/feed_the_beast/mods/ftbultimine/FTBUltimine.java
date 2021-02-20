@@ -12,6 +12,7 @@ import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapelessShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallSquareShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallTunnelShape;
+import me.shedaniel.architectury.event.events.BlockEvent;
 import me.shedaniel.architectury.event.events.EntityEvent;
 import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
@@ -91,7 +92,7 @@ public class FTBUltimine
 		Shape.postinit();
 
 		LifecycleEvent.SERVER_BEFORE_START.register(__ -> cachedDataMap = new HashMap<>());
-		PlayerEvent.BREAK_BLOCK.register(this::blockBroken);
+		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
 		EntityEvent.ADD.register(this::entityJoinedWorld);
