@@ -43,14 +43,12 @@ public class FTBUltimineConfig implements ConfigData
 		return holder.get();
 	}
 
-	@Comment("\r\n" +
-			"Max amount of blocks that can be ultimined at once"
-			+ "\r\n" + "Range: 1 - 32768")
+	@Comment("Max amount of blocks that can be ultimined at once" + "\n"
+			+ "Range: 1 - 32768")
 	public int maxBlocks = 64;
 
-	@Comment("\r\n" +
-			"Hunger multiplied for each block mined with ultimine"
-			+ "\r\n" + "Range: 0 - 10000")
+	@Comment("Hunger multiplied for each block mined with ultimine" + "\n"
+			+ "Range: 0 - 10000")
 	public double exhaustionPerBlock = 20;
 
 	@Comment("Groups stone types together so you can mine all of them at once")
@@ -60,16 +58,15 @@ public class FTBUltimineConfig implements ConfigData
 	@Comment("Tools that won't let you activate ultimine when held")
 	public List<String> toolBlacklist = null;
 
-	@Comment("Disable warnings for potentially laggy config settingsJ")
+	@Comment("Disable warnings for potentially laggy config settings")
 	public boolean noLagWarnings = false;
 
 	@Comment("Manual x offset of FTB Ultimine overlay, required for some modpacks")
 	@ConfigEntry.Gui.Excluded
 	public int renderTextManually = -1;
 
-	@Comment("\r\n" +
-			"Render the white outline around blocks to be mined"
-			+ "\r\n" + "Should be disabled for more than 512 blocks!")
+	@Comment("Render the white outline around blocks to be mined" + "\n"
+			+ "Should be disabled for more than 512 blocks!")
 	public boolean renderOutline = true;
 
 	public static void init()
