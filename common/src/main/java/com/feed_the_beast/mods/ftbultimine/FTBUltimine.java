@@ -12,24 +12,24 @@ import com.feed_the_beast.mods.ftbultimine.shape.ShapeContext;
 import com.feed_the_beast.mods.ftbultimine.shape.ShapelessShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallSquareShape;
 import com.feed_the_beast.mods.ftbultimine.shape.SmallTunnelShape;
+import me.shedaniel.architectury.event.events.BlockEvent;
 import me.shedaniel.architectury.event.events.EntityEvent;
 import me.shedaniel.architectury.event.events.InteractionEvent;
 import me.shedaniel.architectury.event.events.LifecycleEvent;
-import me.shedaniel.architectury.event.events.PlayerEvent;
 import me.shedaniel.architectury.event.events.TickEvent;
 import me.shedaniel.architectury.hooks.PlayerHooks;
-import me.shedaniel.architectury.registry.Registries;
 import me.shedaniel.architectury.utils.EnvExecutor;
 import me.shedaniel.architectury.utils.IntValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -54,7 +54,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -74,6 +73,9 @@ public class FTBUltimine
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
+	public static final Tag.Named<Item> toolDenyTag = ItemTags.bind(MOD_ID + ":excluded_tools");
+	public static final Tag.Named<Item> toolAllowTag = ItemTags.bind(MOD_ID + ":included_tools");
+
 	public FTBUltimine()
 	{
 		instance = this;
@@ -91,7 +93,7 @@ public class FTBUltimine
 		Shape.postinit();
 
 		LifecycleEvent.SERVER_BEFORE_START.register(__ -> cachedDataMap = new HashMap<>());
-		PlayerEvent.BREAK_BLOCK.register(this::blockBroken);
+		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
 		EntityEvent.ADD.register(this::entityJoinedWorld);
@@ -144,7 +146,11 @@ public class FTBUltimine
 			return InteractionResult.PASS;
 		}
 
-		if (FTBUltimineConfig.get().toolBlacklist.contains(Objects.toString(Registries.getId(player.getMainHandItem().getItem(), Registry.ITEM_REGISTRY))))
+		Item tool = player.getMainHandItem().getItem();
+
+		List<Item> allowedTools = toolAllowTag.getValues();
+
+		if ((!allowedTools.isEmpty() && allowedTools.contains(tool)) || tool.is(toolDenyTag))
 		{
 			return InteractionResult.PASS;
 		}

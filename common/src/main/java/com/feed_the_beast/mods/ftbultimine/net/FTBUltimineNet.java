@@ -15,8 +15,8 @@ public class FTBUltimineNet
 	{
 		MAIN = NetworkChannel.create(FTBUltimine.id("main"));
 
-		MAIN.register(NetworkManager.Side.S2C, SendShapePacket.class, SendShapePacket::write, SendShapePacket::new, SendShapePacket::handle);
-		MAIN.register(NetworkManager.Side.C2S, KeyPressedPacket.class, KeyPressedPacket::write, KeyPressedPacket::new, KeyPressedPacket::handle);
-		MAIN.register(NetworkManager.Side.C2S, ModeChangedPacket.class, ModeChangedPacket::write, ModeChangedPacket::new, ModeChangedPacket::handle);
+		MAIN.register(SendShapePacket.class, SendShapePacket::write, SendShapePacket::new, SendShapePacket::handle);
+		MAIN.register(KeyPressedPacket.class, KeyPressedPacket::write, KeyPressedPacket::new, KeyPressedPacket::handle);
+		MAIN.register(ModeChangedPacket.class, ModeChangedPacket::write, ModeChangedPacket::new, ModeChangedPacket::handle);
 	}
 }
