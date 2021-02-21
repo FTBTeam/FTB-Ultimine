@@ -14,6 +14,10 @@ architectury {
 	fabric()
 }
 
+minecraft {
+	accessWidener = file("src/main/resources/ftbultimine.accesswidener")
+}
+
 dependencies {
 	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
 	mappings(minecraft.officialMojangMappings())
