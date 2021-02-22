@@ -24,7 +24,7 @@
 	},
 	"mixins": [
 	],
-	"accessWidener": "ftbultimine.accessWidener",
+	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.10.0",
 		"minecraft": ">=1.16.4",
