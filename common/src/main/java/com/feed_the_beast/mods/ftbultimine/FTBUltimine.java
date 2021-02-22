@@ -150,7 +150,7 @@ public class FTBUltimine
 
 		List<Item> allowedTools = toolAllowTag.getValues();
 
-		if ((!allowedTools.isEmpty() && allowedTools.contains(tool)) || tool.is(toolDenyTag))
+		if ((!allowedTools.isEmpty() && !allowedTools.contains(tool)) || tool.is(toolDenyTag))
 		{
 			return InteractionResult.PASS;
 		}
