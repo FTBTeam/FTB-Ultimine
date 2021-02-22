@@ -6,7 +6,7 @@ plugins {
 def ENV = System.getenv()
 
 configurations {
-	shadow
+	shadowCommon
 }
 
 architectury {
@@ -32,6 +32,10 @@ dependencies {
 	developmentForge(project(path: ":common")) {
 		transitive = false
 	}
+	shadowCommon(project(path: ":common", configuration: "transformProductionForge")) {
+		transitive = false
+	}
+
 }
 
 processResources {
@@ -45,14 +49,30 @@ processResources {
 shadowJar {
 	exclude "fabric.mod.json"
 
-	configurations = [project.configurations.shadow]
-	classifier "shadow"
+	configurations = [project.configurations.shadowCommon]
+	classifier "dev-shadow"
 }
 
 remapJar {
-	dependsOn(shadowJar)
-	input.set(shadowJar.archivePath)
-	archiveClassifier = "forge"
+	input.set shadowJar.archiveFile
+	dependsOn shadowJar
+	classifier "forge"
+}
+
+jar {
+	manifest {
+		attributes([
+				"Specification-Title"     : project.mod_id,
+				"Specification-Vendor"    : project.mod_author,
+				"Specification-Version"   : "1",
+				"Implementation-Title"    : project.name,
+				"Implementation-Version"  : version,
+				"Implementation-Vendor"   : project.mod_author,
+				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+		])
+	}
+
+	classifier "dev"
 }
 
 if (ENV.CURSEFORGE_KEY) {
