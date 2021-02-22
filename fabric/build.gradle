@@ -6,7 +6,7 @@ plugins {
 def ENV = System.getenv()
 
 configurations {
-	shadow
+	shadowCommon
 }
 
 architectury {
@@ -35,6 +35,9 @@ dependencies {
 	developmentFabric(project(path: ":common")) {
 		transitive = false
 	}
+	shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) {
+		transitive = false
+	}
 
 	modCompile("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
 }
@@ -47,14 +50,14 @@ processResources {
 }
 
 shadowJar {
-	configurations = [project.configurations.shadow]
-	classifier "shadow"
+	configurations = [project.configurations.shadowCommon]
+	classifier "dev-shadow"
 }
 
 remapJar {
-	dependsOn(shadowJar)
-	input.set(shadowJar.archivePath)
-	archiveClassifier = "fabric"
+	input.set shadowJar.archiveFile
+	dependsOn shadowJar
+	classifier "fabric"
 }
 
 if (ENV.CURSEFORGE_KEY) {
