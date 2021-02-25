@@ -178,7 +178,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 	}
 
-	private int infoOffset = 0;
+	private final int infoOffset = 0;
 
 	// TODO: reimplement if architectury adds support for getting debug text offset
 	/*@SubscribeEvent(priority = EventPriority.LOWEST)
@@ -218,6 +218,11 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 	public void clientTick(Minecraft mc)
 	{
+		if (Minecraft.getInstance().player == null)
+		{
+			return;
+		}
+
 		boolean p = pressed;
 
 		if ((pressed = keyBinding.isDown()) != p)
