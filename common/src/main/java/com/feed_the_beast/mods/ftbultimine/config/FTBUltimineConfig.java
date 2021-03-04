@@ -1,6 +1,7 @@
 package com.feed_the_beast.mods.ftbultimine.config;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
+import me.shedaniel.architectury.platform.Platform;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.ConfigHolder;
@@ -70,9 +71,11 @@ public class FTBUltimineConfig implements ConfigData
 
 		exhaustionPerBlock = Mth.clamp(exhaustionPerBlock, 0, 10000);
 
-		if (!noLagWarnings && renderOutline && maxBlocks > 512)
+		// lithium makes this perform about twice as good on average
+		int outlineBlockWarning = (Platform.isModLoaded("lithium") ? 512 : 256);
+		if (!noLagWarnings && renderOutline && maxBlocks > outlineBlockWarning)
 		{
-			FTBUltimine.LOGGER.warn("Outline rendering is enabled for more than 512 blocks per excavation!");
+			FTBUltimine.LOGGER.warn("Outline rendering is enabled for more than {} blocks per excavation!", outlineBlockWarning);
 			FTBUltimine.LOGGER.warn("This will almost definitely cause a lot of FPS lag!");
 		}
 	}
