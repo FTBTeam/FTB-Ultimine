@@ -320,11 +320,11 @@ public class FTBUltimine
 				}
 
 				List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, state.getBlock().isEntityBlock() ? player.level.getBlockEntity(pos) : null, player, ItemStack.EMPTY);
-				Item seedItem = c.getCloneItemStack(player.level, pos, state).getItem();
 
 				for (ItemStack stack : drops)
 				{
-					if (stack.getItem() == seedItem)
+					// should work for most if not all modded crop blocks, hopefully
+					if (Block.byItem(stack.getItem()) == c)
 					{
 						stack.shrink(1);
 					}

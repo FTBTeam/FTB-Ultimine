@@ -40,6 +40,8 @@ dependencies {
 	}
 
 	modCompile("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
+
+	modImplementation("curse.maven:lithium-360438:3215441")
 }
 
 processResources {
