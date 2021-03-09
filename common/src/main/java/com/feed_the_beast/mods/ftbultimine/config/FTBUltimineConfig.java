@@ -12,6 +12,8 @@ import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 
+import java.io.File;
+
 /**
  * @author LatvianModder
  */
@@ -52,6 +54,17 @@ public class FTBUltimineConfig implements ConfigData
 	public static void init()
 	{
 		holder = AutoConfig.register(FTBUltimineConfig.class, JanksonConfigSerializer::new);
+
+		holder.registerLoadListener((manager, data) -> {
+			File oldConfig = Platform.getConfigFolder().resolve("ftbultimine-common.toml").toFile();
+			if (oldConfig.exists())
+			{
+				FTBUltimine.LOGGER.warn("Old config file ftbultimine-common.toml found, please use the new config format instead!");
+				FTBUltimine.LOGGER.warn("The old config file will automatically be deleted on exit.");
+				oldConfig.deleteOnExit();
+			}
+			return InteractionResult.PASS;
+		});
 
 		holder.registerSaveListener((manager, data) -> {
 			data.validatePostLoad();
