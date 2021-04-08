@@ -7,19 +7,16 @@ import java.util.Comparator;
 /**
  * @author LatvianModder
  */
-public class EntityDistanceComparator implements Comparator<BlockPos>
-{
+public class EntityDistanceComparator implements Comparator<BlockPos> {
 	private final int x, y, z;
 
-	public EntityDistanceComparator(BlockPos p)
-	{
+	public EntityDistanceComparator(BlockPos p) {
 		x = p.getX();
 		y = p.getY();
 		z = p.getZ();
 	}
 
-	private int distSq(BlockPos p)
-	{
+	private int distSq(BlockPos p) {
 		int dx = (p.getX() - x);
 		int dy = (p.getY() - y);
 		int dz = (p.getZ() - z);
@@ -27,8 +24,7 @@ public class EntityDistanceComparator implements Comparator<BlockPos>
 	}
 
 	@Override
-	public int compare(BlockPos o1, BlockPos o2)
-	{
+	public int compare(BlockPos o1, BlockPos o2) {
 		return distSq(o1) - distSq(o2);
 	}
 }

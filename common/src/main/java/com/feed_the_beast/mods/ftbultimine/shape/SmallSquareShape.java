@@ -8,33 +8,26 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class SmallSquareShape extends Shape
-{
+public class SmallSquareShape extends Shape {
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return "small_square";
 	}
 
 	@Override
-	public List<BlockPos> getBlocks(ShapeContext context)
-	{
+	public List<BlockPos> getBlocks(ShapeContext context) {
 		List<BlockPos> list = new ArrayList<>(9);
 		list.add(context.pos);
 
-		for (int a = -1; a <= 1; a++)
-		{
-			for (int b = -1; b <= 1; b++)
-			{
-				if (a == 0 && b == 0)
-				{
+		for (int a = -1; a <= 1; a++) {
+			for (int b = -1; b <= 1; b++) {
+				if (a == 0 && b == 0) {
 					continue;
 				}
 
 				BlockPos p = null;
 
-				switch (context.face.getAxis())
-				{
+				switch (context.face.getAxis()) {
 					case X:
 						p = context.pos.offset(0, a, b);
 						break;
@@ -46,8 +39,7 @@ public class SmallSquareShape extends Shape
 						break;
 				}
 
-				if (context.check(p))
-				{
+				if (context.check(p)) {
 					list.add(p);
 				}
 			}

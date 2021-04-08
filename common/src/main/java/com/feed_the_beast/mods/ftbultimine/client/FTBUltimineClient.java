@@ -39,8 +39,7 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class FTBUltimineClient extends FTBUltimineCommon
-{
+public class FTBUltimineClient extends FTBUltimineCommon {
 	private final KeyMapping keyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
@@ -49,8 +48,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	private long lastToggle = 0;
 	private final int INPUT_DELAY = 125;
 
-	public FTBUltimineClient()
-	{
+	public FTBUltimineClient() {
 		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
 
 		KeyBindings.registerKeyBinding(keyBinding);
@@ -66,17 +64,14 @@ public class FTBUltimineClient extends FTBUltimineCommon
 	}
 
 	@Override
-	public void setShape(List<BlockPos> blocks)
-	{
+	public void setShape(List<BlockPos> blocks) {
 		shapeBlocks = blocks;
 		cachedEdges = null;
 		updateEdges();
 	}
 
-	public void renderInGame(PoseStack stack)
-	{
-		if (!pressed || cachedEdges == null || cachedEdges.isEmpty())
-		{
+	public void renderInGame(PoseStack stack) {
+		if (!pressed || cachedEdges == null || cachedEdges.isEmpty()) {
 			return;
 		}
 
@@ -90,8 +85,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
 
-		for (CachedEdge edge : cachedEdges)
-		{
+		for (CachedEdge edge : cachedEdges) {
 			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
 			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
 		}
@@ -100,8 +94,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
 
-		for (CachedEdge edge : cachedEdges)
-		{
+		for (CachedEdge edge : cachedEdges) {
 			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
 			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
 		}
@@ -111,10 +104,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		stack.popPose();
 	}
 
-	public InteractionResult mouseEvent(Minecraft client, double amount)
-	{
-		if (pressed && amount != 0 && sneak())
-		{
+	public InteractionResult mouseEvent(Minecraft client, double amount) {
+		if (pressed && amount != 0 && sneak()) {
 			hasScrolled = true;
 			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(amount < 0D));
 			return InteractionResult.FAIL;
@@ -122,21 +113,17 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		return InteractionResult.PASS;
 	}
 
-	public InteractionResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers)
-	{
+	public InteractionResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
 		{
-			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY)
-			{
+			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
 				return InteractionResult.PASS;
 			}
 
-			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN)
-			{
+			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
 				return InteractionResult.PASS;
 			}
 
-			if (!pressed || !sneak())
-			{
+			if (!pressed || !sneak()) {
 				return InteractionResult.PASS;
 			}
 
@@ -147,32 +134,26 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		return InteractionResult.PASS;
 	}
 
-	private boolean sneak()
-	{
+	private boolean sneak() {
 		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
-	private void addPressedInfo(List<MutableComponent> list)
-	{
+	private void addPressedInfo(List<MutableComponent> list) {
 		list.add(new TranslatableComponent("ftbultimine.active"));
 
-		if (!hasScrolled)
-		{
+		if (!hasScrolled) {
 			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
 		}
 
-		if (SendShapePacket.current != null)
-		{
-			if (sneak())
-			{
+		if (SendShapePacket.current != null) {
+			if (sneak()) {
 				list.add(new TextComponent(""));
 				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
 			list.add(new TextComponent("- ").append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
 
-			if (sneak())
-			{
+			if (sneak()) {
 				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
 			}
 		}
@@ -194,10 +175,8 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 	}*/
 
-	public void renderGameOverlay(PoseStack matrices, float tickDelta)
-	{
-		if (pressed)
-		{
+	public void renderGameOverlay(PoseStack matrices, float tickDelta) {
+		if (pressed) {
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
@@ -207,8 +186,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 
 			int top = 2 + minecraft.font.lineHeight * infoOffset;
 
-			for (MutableComponent msg : list)
-			{
+			for (MutableComponent msg : list) {
 				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
 				minecraft.font.drawShadow(matrices, msg, 2, top, 14737632);
 				top += minecraft.font.lineHeight;
@@ -216,29 +194,23 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		}
 	}
 
-	public void clientTick(Minecraft mc)
-	{
-		if (Minecraft.getInstance().player == null)
-		{
+	public void clientTick(Minecraft mc) {
+		if (Minecraft.getInstance().player == null) {
 			return;
 		}
 
 		boolean p = pressed;
 
-		if ((pressed = keyBinding.isDown()) != p)
-		{
+		if ((pressed = keyBinding.isDown()) != p) {
 			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
 		}
 	}
 
-	private void updateEdges()
-	{
-		if (cachedEdges != null)
-		{
+	private void updateEdges() {
+		if (cachedEdges != null) {
 			return;
 		}
-		if (shapeBlocks.isEmpty())
-		{
+		if (shapeBlocks.isEmpty()) {
 			cachedEdges = Collections.emptyList();
 			return;
 		}
@@ -249,8 +221,7 @@ public class FTBUltimineClient extends FTBUltimineCommon
 		VoxelShape shape = Shapes.box(-d, -d, -d, 1D + d, 1D + d, 1D + d);
 		VoxelShape[] extraShapes = new VoxelShape[shapeBlocks.size() - 1];
 
-		for (int i = 1; i < shapeBlocks.size(); i++)
-		{
+		for (int i = 1; i < shapeBlocks.size(); i++) {
 			BlockPos p = shapeBlocks.get(i);
 			extraShapes[i - 1] = shape.move(p.getX() - pos.getX(), p.getY() - pos.getY(), p.getZ() - pos.getZ());
 		}

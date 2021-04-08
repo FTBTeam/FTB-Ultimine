@@ -8,25 +8,20 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class SmallTunnelShape extends Shape
-{
+public class SmallTunnelShape extends Shape {
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return "small_tunnel";
 	}
 
 	@Override
-	public List<BlockPos> getBlocks(ShapeContext context)
-	{
+	public List<BlockPos> getBlocks(ShapeContext context) {
 		List<BlockPos> list = new ArrayList<>(context.maxBlocks);
 
-		for (int i = 0; i < context.maxBlocks; i++)
-		{
+		for (int i = 0; i < context.maxBlocks; i++) {
 			BlockPos p = new BlockPos(context.pos.getX() - context.face.getStepX() * i, context.pos.getY() - context.face.getStepY() * i, context.pos.getZ() - context.face.getStepZ() * i);
 
-			if (!context.check(p))
-			{
+			if (!context.check(p)) {
 				break;
 			}
 

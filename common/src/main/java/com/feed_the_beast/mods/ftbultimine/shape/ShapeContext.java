@@ -8,8 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * @author LatvianModder
  */
-public class ShapeContext
-{
+public class ShapeContext {
 	public ServerPlayer player;
 	public BlockPos pos;
 	public Direction face;
@@ -17,18 +16,15 @@ public class ShapeContext
 	public BlockMatcher matcher;
 	public int maxBlocks;
 
-	public boolean check(BlockState state)
-	{
+	public boolean check(BlockState state) {
 		return matcher.check(original, state);
 	}
 
-	public BlockState block(BlockPos pos)
-	{
+	public BlockState block(BlockPos pos) {
 		return player.level.getBlockState(pos);
 	}
 
-	public boolean check(BlockPos pos)
-	{
+	public boolean check(BlockPos pos) {
 		return check(block(pos));
 	}
 }

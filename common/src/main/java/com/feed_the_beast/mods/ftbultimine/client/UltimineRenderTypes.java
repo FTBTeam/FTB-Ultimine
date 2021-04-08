@@ -10,8 +10,7 @@ import java.util.OptionalDouble;
 /**
  * @author LatvianModder
  */
-public class UltimineRenderTypes extends RenderStateShard
-{
+public class UltimineRenderTypes extends RenderStateShard {
 	public static final RenderType LINES_NORMAL = RenderType.create("ultimine_lines_normal", DefaultVertexFormat.POSITION_COLOR, GL11.GL_LINES, 256, RenderType.CompositeState.builder()
 			.setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
 			.setLayeringState(NO_LAYERING)
@@ -29,8 +28,7 @@ public class UltimineRenderTypes extends RenderStateShard
 			.setDepthTestState(NO_DEPTH_TEST)
 			.createCompositeState(false));
 
-	private UltimineRenderTypes(String s, Runnable r0, Runnable r1)
-	{
+	private UltimineRenderTypes(String s, Runnable r0, Runnable r1) {
 		super(s, r0, r1);
 	}
 }

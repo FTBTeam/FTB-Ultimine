@@ -13,13 +13,11 @@ import java.util.Set;
 /**
  * @author LatvianModder
  */
-public class ShapelessShape extends Shape
-{
+public class ShapelessShape extends Shape {
 	public static final BlockPos[] NEIGHBOR_POSITIONS = new BlockPos[26];
 	public static final BlockPos[] NEIGHBOR_POSITIONS_PLANT = new BlockPos[24];
 
-	static
-	{
+	static {
 		NEIGHBOR_POSITIONS[0] = new BlockPos(1, 0, 0);
 		NEIGHBOR_POSITIONS[1] = new BlockPos(-1, 0, 0);
 		NEIGHBOR_POSITIONS[2] = new BlockPos(0, 0, 1);
@@ -83,58 +81,48 @@ public class ShapelessShape extends Shape
 	}
 
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return "shapeless";
 	}
 
 	@Override
-	public boolean isDefault()
-	{
+	public boolean isDefault() {
 		return true;
 	}
 
 	@Override
-	public List<BlockPos> getBlocks(ShapeContext context)
-	{
+	public List<BlockPos> getBlocks(ShapeContext context) {
 		HashSet<BlockPos> known = new HashSet<>();
 		walk(context, known, context.matcher == BlockMatcher.BUSH);
 
 		List<BlockPos> list = new ArrayList<>(known);
 		list.sort(new EntityDistanceComparator(context.pos));
 
-		if (list.size() > context.maxBlocks)
-		{
+		if (list.size() > context.maxBlocks) {
 			list.subList(context.maxBlocks, list.size()).clear();
 		}
 
 		return list;
 	}
 
-	private void walk(ShapeContext context, HashSet<BlockPos> known, boolean plant)
-	{
+	private void walk(ShapeContext context, HashSet<BlockPos> known, boolean plant) {
 		Set<BlockPos> traversed = new HashSet<>();
 		Deque<BlockPos> openSet = new ArrayDeque<>();
 		openSet.add(context.pos);
 		traversed.add(context.pos);
 
-		while (!openSet.isEmpty())
-		{
+		while (!openSet.isEmpty()) {
 			BlockPos ptr = openSet.pop();
 
-			if (context.check(ptr) && known.add(ptr))
-			{
-				if (known.size() >= context.maxBlocks)
-				{
+			if (context.check(ptr) && known.add(ptr)) {
+				if (known.size() >= context.maxBlocks) {
 					return;
 				}
 
-				for (BlockPos side : plant ? NEIGHBOR_POSITIONS_PLANT : NEIGHBOR_POSITIONS)
-				{
+				for (BlockPos side : plant ? NEIGHBOR_POSITIONS_PLANT : NEIGHBOR_POSITIONS) {
 					BlockPos offset = ptr.offset(side);
 
-					if (traversed.add(offset))
-					{
+					if (traversed.add(offset)) {
 						openSet.add(offset);
 					}
 				}

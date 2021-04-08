@@ -19,13 +19,11 @@ import java.io.File;
  */
 @Config(name = FTBUltimine.MOD_ID)
 @Config.Gui.Background("minecraft:textures/block/stone.png")
-public class FTBUltimineConfig implements ConfigData
-{
+public class FTBUltimineConfig implements ConfigData {
 	@ConfigEntry.Gui.Excluded
 	private static ConfigHolder<FTBUltimineConfig> holder = null;
 
-	public static FTBUltimineConfig get()
-	{
+	public static FTBUltimineConfig get() {
 		return holder.get();
 	}
 
@@ -51,14 +49,12 @@ public class FTBUltimineConfig implements ConfigData
 			+ "Should be disabled for more than 512 blocks!")
 	public boolean renderOutline = true;
 
-	public static void init()
-	{
+	public static void init() {
 		holder = AutoConfig.register(FTBUltimineConfig.class, JanksonConfigSerializer::new);
 
 		holder.registerLoadListener((manager, data) -> {
 			File oldConfig = Platform.getConfigFolder().resolve("ftbultimine-common.toml").toFile();
-			if (oldConfig.exists())
-			{
+			if (oldConfig.exists()) {
 				FTBUltimine.LOGGER.warn("Old config file ftbultimine-common.toml found, please use the new config format instead!");
 				FTBUltimine.LOGGER.warn("The old config file will automatically be deleted on exit.");
 				oldConfig.deleteOnExit();
@@ -73,11 +69,9 @@ public class FTBUltimineConfig implements ConfigData
 	}
 
 	@Override
-	public void validatePostLoad()
-	{
+	public void validatePostLoad() {
 		maxBlocks = Mth.clamp(maxBlocks, 1, 32768);
-		if (!noLagWarnings && maxBlocks > 8192)
-		{
+		if (!noLagWarnings && maxBlocks > 8192) {
 			FTBUltimine.LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
 			FTBUltimine.LOGGER.warn("This may cause a lot of tick and FPS lag!");
 		}
@@ -86,8 +80,7 @@ public class FTBUltimineConfig implements ConfigData
 
 		// lithium makes this perform about twice as good on average
 		int outlineBlockWarning = (Platform.isModLoaded("lithium") ? 512 : 256);
-		if (!noLagWarnings && renderOutline && maxBlocks > outlineBlockWarning)
-		{
+		if (!noLagWarnings && renderOutline && maxBlocks > outlineBlockWarning) {
 			FTBUltimine.LOGGER.warn("Outline rendering is enabled for more than {} blocks per excavation!", outlineBlockWarning);
 			FTBUltimine.LOGGER.warn("This will almost definitely cause a lot of FPS lag!");
 		}

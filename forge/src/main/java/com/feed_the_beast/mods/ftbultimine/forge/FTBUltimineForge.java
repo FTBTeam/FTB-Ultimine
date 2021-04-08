@@ -13,24 +13,20 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod(FTBUltimine.MOD_ID)
-public class FTBUltimineForge
-{
+public class FTBUltimineForge {
 
-	public FTBUltimineForge()
-	{
+	public FTBUltimineForge() {
 		new FTBUltimine();
 
 		DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> FTBUltimineForgeClient::init);
 	}
 
-	private static class FTBUltimineForgeClient
-	{		
-		static void init()
-		{
+	private static class FTBUltimineForgeClient {
+		static void init() {
 			MinecraftForge.EVENT_BUS.<RenderWorldLastEvent>addListener(event -> {
 				LevelRenderLastEvent.EVENT.invoker().onRenderLast(event.getMatrixStack());
 			});
-			
+
 			ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, parent) -> {
 				return AutoConfig.getConfigScreen(FTBUltimineConfig.class, parent).get();
 			});

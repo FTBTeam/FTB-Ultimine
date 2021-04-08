@@ -10,8 +10,7 @@ import me.shedaniel.architectury.event.EventFactory;
  * @see <a href=https://github.com/architectury/architectury-api/issues/6}>PR #6</a>
  * DO NOT use this outside of Ultimine (why would you?)
  */
-public interface LevelRenderLastEvent
-{
+public interface LevelRenderLastEvent {
 	Event<LevelRenderLastEvent> EVENT = EventFactory.createLoop();
 
 	// the pose stack is all we need so fuck it

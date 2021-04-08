@@ -10,25 +10,20 @@ import java.util.Map;
 /**
  * @author LatvianModder
  */
-public abstract class Shape
-{
+public abstract class Shape {
 	private static final Map<String, Shape> MAP = new LinkedHashMap<>();
 	private static Shape defaultShape;
 
-	public static void register(Shape shape)
-	{
+	public static void register(Shape shape) {
 		MAP.put(shape.getName(), shape);
 
-		if (shape.isDefault())
-		{
+		if (shape.isDefault()) {
 			defaultShape = shape;
 		}
 	}
 
-	public static Shape get(String id)
-	{
-		if (id.isEmpty())
-		{
+	public static Shape get(String id) {
+		if (id.isEmpty()) {
 			return defaultShape;
 		}
 
@@ -38,12 +33,10 @@ public abstract class Shape
 	public Shape next;
 	public Shape prev;
 
-	public static void postinit()
-	{
+	public static void postinit() {
 		ArrayList<Shape> list = new ArrayList<>(MAP.values());
 
-		for (int i = 0; i < list.size() - 1; i++)
-		{
+		for (int i = 0; i < list.size() - 1; i++) {
 			list.get(i).next = list.get(i + 1);
 			list.get(i + 1).prev = list.get(i);
 		}
@@ -56,8 +49,7 @@ public abstract class Shape
 
 	public abstract List<BlockPos> getBlocks(ShapeContext context);
 
-	public boolean isDefault()
-	{
+	public boolean isDefault() {
 		return false;
 	}
 }

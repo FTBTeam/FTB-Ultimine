@@ -8,30 +8,24 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class MiningTunnelShape extends Shape
-{
+public class MiningTunnelShape extends Shape {
 	@Override
-	public String getName()
-	{
+	public String getName() {
 		return "mining_tunnel";
 	}
 
 	@Override
-	public List<BlockPos> getBlocks(ShapeContext context)
-	{
-		if (context.face.getAxis().isVertical())
-		{
+	public List<BlockPos> getBlocks(ShapeContext context) {
+		if (context.face.getAxis().isVertical()) {
 			context.face = context.player.getDirection().getOpposite();
 		}
 
 		List<BlockPos> list = new ArrayList<>(context.maxBlocks);
 
-		for (int i = 0; i < context.maxBlocks; i++)
-		{
+		for (int i = 0; i < context.maxBlocks; i++) {
 			BlockPos pTop = new BlockPos(context.pos.getX() - context.face.getStepX() * i, context.pos.getY() - i, context.pos.getZ() - context.face.getStepZ() * i);
 
-			if (!context.check(pTop))
-			{
+			if (!context.check(pTop)) {
 				break;
 			}
 

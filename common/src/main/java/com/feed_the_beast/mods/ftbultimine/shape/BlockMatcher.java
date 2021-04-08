@@ -10,8 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 /**
  * @author LatvianModder
  */
-public interface BlockMatcher
-{
+public interface BlockMatcher {
 	boolean check(BlockState original, BlockState state);
 
 	BlockMatcher MATCH = (original, state) -> original.getBlock() == state.getBlock();
@@ -20,14 +19,10 @@ public interface BlockMatcher
 	BlockMatcher ANY_STONE = (original, state) -> BlockTags.BASE_STONE_OVERWORLD.contains(state.getBlock());
 	BlockMatcher BUSH = (original, state) -> state.getBlock() instanceof BushBlock && getBushType(state.getBlock()) == getBushType(original.getBlock());
 
-	static int getBushType(Block block)
-	{
-		if (block instanceof CropBlock)
-		{
+	static int getBushType(Block block) {
+		if (block instanceof CropBlock) {
 			return 1;
-		}
-		else if (block instanceof SaplingBlock)
-		{
+		} else if (block instanceof SaplingBlock) {
 			return 2;
 		}
 

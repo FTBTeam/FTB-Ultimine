@@ -29,7 +29,7 @@ side = "BOTH"
 [[dependencies.ftbultimine]]
 modId = "architectury"
 mandatory = true
-versionRange = "[1.5,)"
+versionRange = "[1.10,)"
 ordering = "NONE"
 side = "BOTH"
 

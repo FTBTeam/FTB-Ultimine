@@ -2,17 +2,14 @@ package com.feed_the_beast.mods.ftbultimine.net;
 
 import com.feed_the_beast.mods.ftbultimine.FTBUltimine;
 import me.shedaniel.architectury.networking.NetworkChannel;
-import me.shedaniel.architectury.networking.NetworkManager;
 
 /**
  * @author LatvianModder
  */
-public class FTBUltimineNet
-{
+public class FTBUltimineNet {
 	public static NetworkChannel MAIN;
 
-	public static void init()
-	{
+	public static void init() {
 		MAIN = NetworkChannel.create(FTBUltimine.id("main"));
 
 		MAIN.register(SendShapePacket.class, SendShapePacket::write, SendShapePacket::new, SendShapePacket::handle);

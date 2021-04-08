@@ -10,27 +10,22 @@ import java.util.function.Supplier;
 /**
  * @author LatvianModder
  */
-public class KeyPressedPacket
-{
+public class KeyPressedPacket {
 	private final boolean pressed;
 
-	public KeyPressedPacket(boolean p)
-	{
+	public KeyPressedPacket(boolean p) {
 		pressed = p;
 	}
 
-	public KeyPressedPacket(FriendlyByteBuf buf)
-	{
+	public KeyPressedPacket(FriendlyByteBuf buf) {
 		pressed = buf.readBoolean();
 	}
 
-	public void write(FriendlyByteBuf buf)
-	{
+	public void write(FriendlyByteBuf buf) {
 		buf.writeBoolean(pressed);
 	}
 
-	public void handle(Supplier<NetworkManager.PacketContext> context)
-	{
+	public void handle(Supplier<NetworkManager.PacketContext> context) {
 		context.get().queue(() -> FTBUltimine.instance.setKeyPressed((ServerPlayer) context.get().getPlayer(), pressed));
 	}
 }

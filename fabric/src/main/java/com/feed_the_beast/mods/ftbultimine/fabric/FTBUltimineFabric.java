@@ -7,11 +7,9 @@ import me.shedaniel.architectury.utils.EnvExecutor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 
-public class FTBUltimineFabric implements ModInitializer
-{
+public class FTBUltimineFabric implements ModInitializer {
 	@Override
-	public void onInitialize()
-	{
+	public void onInitialize() {
 		new FTBUltimine();
 		EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
 			WorldRenderEvents.AFTER_TRANSLUCENT.register((ctx) -> LevelRenderLastEvent.EVENT.invoker().onRenderLast(ctx.matrixStack()));

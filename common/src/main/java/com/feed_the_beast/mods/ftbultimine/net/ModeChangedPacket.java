@@ -10,27 +10,22 @@ import java.util.function.Supplier;
 /**
  * @author LatvianModder
  */
-public class ModeChangedPacket
-{
+public class ModeChangedPacket {
 	public final boolean next;
 
-	public ModeChangedPacket(boolean n)
-	{
+	public ModeChangedPacket(boolean n) {
 		next = n;
 	}
 
-	public ModeChangedPacket(FriendlyByteBuf buf)
-	{
+	public ModeChangedPacket(FriendlyByteBuf buf) {
 		next = buf.readBoolean();
 	}
 
-	public void write(FriendlyByteBuf buf)
-	{
+	public void write(FriendlyByteBuf buf) {
 		buf.writeBoolean(next);
 	}
 
-	public void handle(Supplier<NetworkManager.PacketContext> context)
-	{
+	public void handle(Supplier<NetworkManager.PacketContext> context) {
 		context.get().queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.get().getPlayer(), next));
 	}
 }
