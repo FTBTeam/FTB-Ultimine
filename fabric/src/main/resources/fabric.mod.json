@@ -16,15 +16,15 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.feed_the_beast.mods.ftbultimine.fabric.FTBUltimineFabric"
+			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineFabric"
 		],
 		"modmenu": [
-			"com.feed_the_beast.mods.ftbultimine.fabric.FTBUltimineModMenu"
+			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineModMenu"
 		]
 	},
 	"mixins": [
+		"ftbultimine-common.mixins.json"
 	],
-	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.10.0",
 		"minecraft": ">=1.16.4",

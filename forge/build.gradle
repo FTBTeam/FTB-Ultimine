@@ -15,16 +15,20 @@ architectury {
 }
 
 loom {
+	mixinConfigs = [
+			"ftbultimine-common.mixins.json"
+	]
 	useFabricMixin = true
 }
 
 dependencies {
 	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
 	mappings(minecraft.officialMojangMappings())
+
 	forge("net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}")
 
-	modCompile "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
-	modCompile "me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}"
+	modImplementation "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
+	modImplementation "me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}"
 
 	implementation(project(path: ":common")) {
 		transitive = false

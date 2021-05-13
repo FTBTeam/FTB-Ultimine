@@ -14,18 +14,15 @@ architectury {
 	fabric()
 }
 
-minecraft {
-	accessWidener = file("src/main/resources/ftbultimine.accesswidener")
-}
-
 dependencies {
 	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
 	mappings(minecraft.officialMojangMappings())
-	modCompile("net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}")
-	modCompile("net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
 
-	modCompile "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
-	modCompile "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
+	modImplementation("net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}")
+	modImplementation("net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
+
+	modImplementation "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
+	modImplementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
 
 	implementation("me.shedaniel.cloth:basic-math:0.5.1")
 
@@ -39,9 +36,9 @@ dependencies {
 		transitive = false
 	}
 
-	modCompile("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
+	modImplementation("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
 
-	modImplementation("curse.maven:lithium-360438:3215441")
+	modRuntime("curse.maven:lithium-360438:3215441")
 }
 
 processResources {
