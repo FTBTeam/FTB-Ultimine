@@ -39,6 +39,10 @@ allprojects {
 		}
 	}
 
+	java {
+		withSourcesJar()
+	}
+
 	repositories {
 		mavenLocal()
 		maven {

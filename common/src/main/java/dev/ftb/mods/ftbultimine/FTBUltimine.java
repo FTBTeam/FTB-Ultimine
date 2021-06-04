@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * @author LatvianModder
@@ -76,6 +77,12 @@ public class FTBUltimine {
 	public static final Tag.Named<Item> strictDenyTag = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
 
 	public static final Tag.Named<Item> allowTag = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "included_tools"));
+
+	private static Predicate<Player> permissionOverride = player -> true;
+
+	public static void setPermissionOverride(Predicate<Player> p) {
+		permissionOverride = p;
+	}
 
 	public FTBUltimine() {
 		instance = this;
@@ -124,33 +131,37 @@ public class FTBUltimine {
 		return FTBUltimineConfig.get().maxBlocks;
 	}
 
-	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
-		if (isBreakingBlock) {
-			return InteractionResult.PASS;
-		}
-
+	public boolean canUltimine(Player player) {
 		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
-			return InteractionResult.PASS;
+			return false;
 		}
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
-			return InteractionResult.PASS;
+			return false;
+		}
+
+		if (!permissionOverride.test(player)) {
+			return false;
 		}
 
 		Item mainHand = player.getMainHandItem().getItem();
 		Item offHand = player.getOffhandItem().getItem();
 
 		if (mainHand.is(strictDenyTag) || offHand.is(strictDenyTag)) {
-			return InteractionResult.PASS;
+			return false;
 		}
 
 		if (mainHand.is(denyTag)) {
-			return InteractionResult.PASS;
+			return false;
 		}
 
 		List<Item> allowedTools = allowTag.getValues();
 
-		if ((!allowedTools.isEmpty() && !allowedTools.contains(mainHand))) {
+		return allowedTools.isEmpty() || allowedTools.contains(mainHand);
+	}
+
+	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
+		if (isBreakingBlock || !canUltimine(player)) {
 			return InteractionResult.PASS;
 		}
 

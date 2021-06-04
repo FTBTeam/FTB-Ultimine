@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
+import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
@@ -78,6 +79,11 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 
 		Minecraft mc = Minecraft.getInstance();
+
+		if (!FTBUltimine.instance.canUltimine(mc.player)) {
+			return;
+		}
+
 		Camera activeRenderInfo = mc.getEntityRenderDispatcher().camera;
 		Vec3 projectedView = activeRenderInfo.getPosition();
 
@@ -112,6 +118,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(amount < 0D));
 			return InteractionResult.FAIL;
 		}
+
 		return InteractionResult.PASS;
 	}
 
