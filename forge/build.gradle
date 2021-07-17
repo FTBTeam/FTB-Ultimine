@@ -89,7 +89,7 @@ if (ENV.CURSEFORGE_KEY) {
 			mainArtifact(remapJar.archivePath)
 			relations {
 				requiredDependency 'architectury-forge'
-				requiredDependency 'cloth-config-forge'
+				requiredDependency 'ftb-library-forge'
 			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'
