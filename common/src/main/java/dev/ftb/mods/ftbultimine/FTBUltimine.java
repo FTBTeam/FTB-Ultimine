@@ -1,7 +1,7 @@
 package dev.ftb.mods.ftbultimine;
 
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
@@ -24,6 +24,7 @@ import me.shedaniel.architectury.utils.IntValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -89,7 +90,6 @@ public class FTBUltimine {
 		FTBUltimineNet.init();
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
-		FTBUltimineConfig.init();
 
 		Shape.register(new ShapelessShape());
 		Shape.register(new SmallTunnelShape());
@@ -99,7 +99,7 @@ public class FTBUltimine {
 
 		Shape.postinit();
 
-		LifecycleEvent.SERVER_BEFORE_START.register(__ -> cachedDataMap = new HashMap<>());
+		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
 		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
@@ -108,6 +108,11 @@ public class FTBUltimine {
 
 	public FTBUltiminePlayerData get(Player player) {
 		return cachedDataMap.computeIfAbsent(player.getUUID(), FTBUltiminePlayerData::new);
+	}
+
+	private void serverStarting(MinecraftServer server) {
+		cachedDataMap = new HashMap<>();
+		FTBUltimineServerConfig.load(server);
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
@@ -128,7 +133,7 @@ public class FTBUltimine {
 	}
 
 	private int getMaxBlocks(Player player) {
-		return FTBUltimineConfig.get().maxBlocks;
+		return FTBUltimineServerConfig.maxBlocks.get();
 	}
 
 	public boolean canUltimine(Player player) {
@@ -195,7 +200,7 @@ public class FTBUltimine {
 			}
 
 			if (!player.isCreative()) {
-				player.causeFoodExhaustion((float) (FTBUltimineConfig.get().exhaustionPerBlock * 0.005D));
+				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.exhaustionPerBlock.get() * 0.005D));
 
 				if (player.getFoodData().getFoodLevel() <= 0) {
 					break;
@@ -253,7 +258,7 @@ public class FTBUltimine {
 				boolean playSound = false;
 				BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineConfig.get().maxBlocks); i++) {
+				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineServerConfig.maxBlocks.get()); i++) {
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.level.getBlockState(p);
 
@@ -266,7 +271,7 @@ public class FTBUltimine {
 
 					if (!player.isCreative()) {
 						player.getMainHandItem().hurtAndBreak(1, serverPlayer, brokenItemHandler);
-						player.causeFoodExhaustion((float) (FTBUltimineConfig.get().exhaustionPerBlock * 0.005D));
+						player.causeFoodExhaustion((float) (FTBUltimineServerConfig.exhaustionPerBlock.get() * 0.005D));
 
 						if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0) {
 							break;

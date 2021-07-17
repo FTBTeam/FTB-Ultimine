@@ -8,12 +8,14 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import me.shedaniel.architectury.event.events.GuiEvent;
+import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
 import me.shedaniel.architectury.registry.KeyBindings;
@@ -29,6 +31,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
@@ -47,6 +50,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private List<CachedEdge> cachedEdges = null;
+	private BlockPos cachedPos = null;
 	public boolean hasScrolled = false;
 	private long lastToggle = 0;
 	private final int INPUT_DELAY = 125;
@@ -55,6 +59,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
 
 		KeyBindings.registerKeyBinding(keyBinding);
+
+		ClientLifecycleEvent.CLIENT_WORLD_LOAD.register(__ -> FTBUltimineClientConfig.load());
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
@@ -74,7 +80,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	public void renderInGame(PoseStack stack) {
-		if (!pressed || cachedEdges == null || cachedEdges.isEmpty()) {
+		if (!pressed || cachedPos == null || cachedEdges == null || cachedEdges.isEmpty()) {
 			return;
 		}
 
@@ -88,7 +94,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		Vec3 projectedView = activeRenderInfo.getPosition();
 
 		stack.pushPose();
-		stack.translate(-projectedView.x, -projectedView.y, -projectedView.z);
+		stack.translate(cachedPos.getX() - projectedView.x, cachedPos.getY() - projectedView.y, cachedPos.getZ() - projectedView.z);
 		Matrix4f matrix = stack.last().pose();
 
 		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
@@ -224,28 +230,36 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return;
 		}
 
-		BlockPos pos = shapeBlocks.get(0);
+		cachedPos = shapeBlocks.get(0);
 
 		double d = 0.005D;
 		VoxelShape shape = Shapes.box(-d, -d, -d, 1D + d, 1D + d, 1D + d);
 		VoxelShape[] extraShapes = new VoxelShape[shapeBlocks.size() - 1];
 
 		for (int i = 1; i < shapeBlocks.size(); i++) {
-			BlockPos p = shapeBlocks.get(i);
-			extraShapes[i - 1] = shape.move(p.getX() - pos.getX(), p.getY() - pos.getY(), p.getZ() - pos.getZ());
+			BlockPos p = shapeBlocks.get(i).subtract(cachedPos);
+			extraShapes[i - 1] = shape.move(p.getX(), p.getY(), p.getZ());
 		}
 
 		cachedEdges = new ArrayList<>();
 
-		(extraShapes.length == 0 ? shape : Shapes.or(shape, extraShapes)).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+		(extraShapes.length == 0 ? shape : orShapes(shape, extraShapes)).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
 			CachedEdge edge = new CachedEdge();
-			edge.x1 = (float) (x1 + pos.getX());
-			edge.y1 = (float) (y1 + pos.getY());
-			edge.z1 = (float) (z1 + pos.getZ());
-			edge.x2 = (float) (x2 + pos.getX());
-			edge.y2 = (float) (y2 + pos.getY());
-			edge.z2 = (float) (z2 + pos.getZ());
+			edge.x1 = (float) x1;
+			edge.y1 = (float) y1;
+			edge.z1 = (float) z1;
+			edge.x2 = (float) x2;
+			edge.y2 = (float) y2;
+			edge.z2 = (float) z2;
 			cachedEdges.add(edge);
 		});
+	}
+
+	static VoxelShape orShapes(VoxelShape initial, VoxelShape... shapes) {
+		VoxelShape combinedShape = initial;
+		for (VoxelShape shape : shapes) {
+			combinedShape = Shapes.joinUnoptimized(combinedShape, shape, BooleanOp.OR);
+		}
+		return combinedShape;
 	}
 }

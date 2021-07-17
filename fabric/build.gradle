@@ -15,16 +15,13 @@ architectury {
 }
 
 dependencies {
-	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
-	mappings(minecraft.officialMojangMappings())
+	modApi "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
-	modImplementation("net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}")
-	modImplementation("net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
+	modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+	modApi "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
+	modApi "dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}"
 
-	modImplementation "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
-	modImplementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
-
-	implementation("me.shedaniel.cloth:basic-math:0.5.1")
+	modImplementation "dev.latvian.mods:kubejs-fabric:${rootProject.kubejs_version}"
 
 	implementation(project(path: ":common")) {
 		transitive = false
@@ -36,16 +33,15 @@ dependencies {
 		transitive = false
 	}
 
-	modImplementation("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
-
 	modRuntime("curse.maven:lithium-360438:3215441")
 }
 
 processResources {
+	inputs.property "version", project.version
+
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version
 	}
-	inputs.property "version", project.version
 }
 
 shadowJar {
@@ -56,8 +52,12 @@ shadowJar {
 remapJar {
 	input.set shadowJar.archiveFile
 	dependsOn shadowJar
-	archiveBaseName.set "${rootProject.mod_name}-${project.name}"
+	archiveBaseName.set "${rootProject.archives_base_name}-${project.name}"
 	archiveClassifier.set null
+}
+
+jar {
+	classifier "dev"
 }
 
 if (ENV.CURSEFORGE_KEY) {
@@ -73,7 +73,7 @@ if (ENV.CURSEFORGE_KEY) {
 			relations {
 				requiredDependency 'architectury-fabric'
 				requiredDependency 'fabric-api'
-				requiredDependency 'cloth-config'
+				requiredDependency 'ftb-library-fabric'
 			}
 			changelog = getGitChangelog
 			changelogType = 'markdown'
@@ -84,7 +84,7 @@ if (ENV.CURSEFORGE_KEY) {
 publishing {
 	publications {
 		mavenFabric(MavenPublication) {
-			artifactId = "${rootProject.mod_name}-${project.name}"
+			artifactId = "${rootProject.archives_base_name}-${project.name}"
 			artifact(remapJar)
 			artifact(sourcesJar) {
 				builtBy remapSourcesJar

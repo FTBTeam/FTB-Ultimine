@@ -17,9 +17,6 @@
 	"entrypoints": {
 		"main": [
 			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineFabric"
-		],
-		"modmenu": [
-			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineModMenu"
 		]
 	},
 	"mixins": [

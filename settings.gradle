@@ -1,8 +1,9 @@
 pluginManagement {
 	repositories {
+		maven { url "https://maven.fabricmc.net/" }
 		maven { url "https://maven.creeperhost.net/" }
-		maven { url "https://maven.shedaniel.me" }
-		jcenter()
+		maven { url "https://maven.architectury.dev" }
+		maven { url "https://server.bbkr.space/artifactory/libs-release" }
 		mavenCentral()
 		gradlePluginPortal()
 		mavenLocal()
@@ -11,4 +12,4 @@ pluginManagement {
 
 include "common", "fabric", "forge"
 
-rootProject.name = 'FTB-Ultimine-1.16.3'
+rootProject.name = 'FTB-Ultimine-1.16.5'

@@ -1,7 +1,8 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
@@ -48,7 +49,7 @@ public class SendShapePacket {
 		context.get().queue(() -> {
 			current = shape;
 
-			if (FTBUltimineConfig.get().renderOutline) {
+			if (blocks.size() < FTBUltimineClientConfig.renderOutline.get()) {
 				FTBUltimine.instance.proxy.setShape(blocks);
 			}
 		});
