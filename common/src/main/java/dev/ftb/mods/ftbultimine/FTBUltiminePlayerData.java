@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbultimine;
 
-import dev.ftb.mods.ftbultimine.config.FTBUltimineConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
@@ -12,8 +12,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -88,7 +88,7 @@ public class FTBUltiminePlayerData {
 			context.maxBlocks = maxBlocks;
 			context.original = player.level.getBlockState(cachedPos);
 
-			if (FTBUltimineConfig.get().mergeStone && BlockMatcher.ANY_STONE.check(context.original, context.original)) {
+			if (FTBUltimineServerConfig.mergeStone.get() && BlockMatcher.ANY_STONE.check(context.original, context.original)) {
 				context.matcher = BlockMatcher.ANY_STONE;
 			} else if (BlockMatcher.BUSH.check(context.original, context.original)) {
 				context.matcher = BlockMatcher.BUSH;

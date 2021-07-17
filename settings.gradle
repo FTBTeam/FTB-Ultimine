@@ -1,7 +1,8 @@
 pluginManagement {
 	repositories {
 		maven { url "https://maven.fabricmc.net/" }
-		maven { url "https://maven.shedaniel.me" }
+		maven { url "https://maven.architectury.dev" }
+		maven { url "https://server.bbkr.space/artifactory/libs-release" }
 		maven { url "https://files.minecraftforge.net/maven/" }
 		jcenter()
 		mavenCentral()
@@ -14,4 +15,4 @@ include("common")
 include("fabric")
 include("forge")
 
-rootProject.name = 'FTB-Ultimine-1.16.3'
+rootProject.name = 'FTB-Ultimine-1.16.5'

@@ -22,13 +22,10 @@ loom {
 }
 
 dependencies {
-	minecraft("com.mojang:minecraft:${rootProject.minecraft_version}")
-	mappings(minecraft.officialMojangMappings())
-
 	forge("net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}")
 
-	modImplementation "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
-	modImplementation "me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}"
+	modApi "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
+	modApi "dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}"
 
 	implementation(project(path: ":common")) {
 		transitive = false
@@ -60,7 +57,8 @@ shadowJar {
 remapJar {
 	input.set shadowJar.archiveFile
 	dependsOn shadowJar
-	classifier "forge"
+	archiveBaseName.set "${rootProject.mod_name}-${project.name}"
+	archiveClassifier.set null
 }
 
 jar {

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
@@ -54,6 +55,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
 
 		KeyBindings.registerKeyBinding(keyBinding);
+
+		FTBUltimineClientConfig.init();
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
