@@ -26,10 +26,13 @@ publishing {
 	}
 
 	repositories {
-		if (ENV.LOCAL_MAVEN) {
+		if (ENV.SAPS_TOKEN) {
 			maven {
-				// upload to local maven repo
-				url = "file://${ENV.LOCAL_MAVEN}"
+				url "https://maven.saps.dev/minecraft"
+				credentials {
+					username = "ftb"
+					password = "${ENV.SAPS_TOKEN}"
+				}
 			}
 		}
 	}
