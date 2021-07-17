@@ -19,7 +19,7 @@ public interface FTBUltimineClientConfig {
 			.comment("Maximum number of blocks the white outline should be rendered for",
 					"Keep in mind this may get *very* laggy for large amounts of blocks!");
 
-	static void init() {
+	static void load() {
 		CONFIG.load(Platform.getGameFolder().resolve("local/ftbultimine/client.snbt"));
 	}
 }

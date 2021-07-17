@@ -112,7 +112,7 @@ public class FTBUltimine {
 
 	private void serverStarting(MinecraftServer server) {
 		cachedDataMap = new HashMap<>();
-		FTBUltimineServerConfig.init(server);
+		FTBUltimineServerConfig.load(server);
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {

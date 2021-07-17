@@ -28,7 +28,7 @@ public interface FTBUltimineServerConfig {
 	// TODO: More merging
 	BooleanValue mergeStone = CONFIG.getBoolean("merge_stone", true);
 
-	static void init(MinecraftServer server) {
+	static void load(MinecraftServer server) {
 		CONFIG.load(server.getWorldPath(CONFIG_FILE_PATH));
 
 		if (maxBlocks.get() > 8192) {

@@ -15,6 +15,7 @@ import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import me.shedaniel.architectury.event.events.GuiEvent;
+import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
 import me.shedaniel.architectury.event.events.client.ClientTickEvent;
 import me.shedaniel.architectury.registry.KeyBindings;
@@ -59,7 +60,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		KeyBindings.registerKeyBinding(keyBinding);
 
-		FTBUltimineClientConfig.init();
+		ClientLifecycleEvent.CLIENT_WORLD_LOAD.register(__ -> FTBUltimineClientConfig.load());
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
