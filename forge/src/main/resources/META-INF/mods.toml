@@ -34,8 +34,8 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
-modId = "cloth-config"
+modId = "ftblibrary"
 mandatory = true
-versionRange = "[4.9,)"
+versionRange = "[1605.3.1-build.40,)"
 ordering = "NONE"
 side = "BOTH"

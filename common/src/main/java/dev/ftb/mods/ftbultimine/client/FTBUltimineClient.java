@@ -14,6 +14,7 @@ import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
+import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
 import me.shedaniel.architectury.event.events.GuiEvent;
 import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
@@ -30,6 +31,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -37,7 +39,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static dev.ftb.mods.ftbultimine.utils.AccessUtil.getKey;
@@ -49,6 +53,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private final KeyMapping keyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
+	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
 	private BlockPos cachedPos = null;
 	public boolean hasScrolled = false;
@@ -74,7 +79,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	@Override
 	public void setShape(List<BlockPos> blocks) {
-		shapeBlocks = blocks;
+		actualBlocks = blocks.size();
+		int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.renderOutline.get());
+		shapeBlocks = blocks.subList(0, maxRendered);
 		cachedEdges = null;
 		updateEdges();
 	}
@@ -166,7 +173,17 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
-			list.add(new TextComponent("- ").append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
+			MutableComponent mining = new TextComponent("- ")
+					.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName()));
+
+			if (actualBlocks != 0) {
+				mining.append(" (").append(new TranslatableComponent("ftbultimine.info", actualBlocks));
+				if (actualBlocks > shapeBlocks.size()) {
+					mining.append(", ").append(new TranslatableComponent("ftbultimine.info.partial_render", shapeBlocks.size()));
+				}
+				mining.append(")");
+			}
+			list.add(mining);
 
 			if (sneak()) {
 				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
@@ -233,17 +250,15 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		cachedPos = shapeBlocks.get(0);
 
 		double d = 0.005D;
-		VoxelShape shape = Shapes.box(-d, -d, -d, 1D + d, 1D + d, 1D + d);
-		VoxelShape[] extraShapes = new VoxelShape[shapeBlocks.size() - 1];
-
-		for (int i = 1; i < shapeBlocks.size(); i++) {
-			BlockPos p = shapeBlocks.get(i).subtract(cachedPos);
-			extraShapes[i - 1] = shape.move(p.getX(), p.getY(), p.getZ());
-		}
 
 		cachedEdges = new ArrayList<>();
 
-		(extraShapes.length == 0 ? shape : orShapes(shape, extraShapes)).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+		Collection<VoxelShape> shapes = new HashSet<>();
+		for (AABB aabb : ShapeMerger.merge(shapeBlocks, cachedPos)) {
+			shapes.add(Shapes.create(aabb.inflate(d)));
+		}
+
+		orShapes(shapes).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
 			CachedEdge edge = new CachedEdge();
 			edge.x1 = (float) x1;
 			edge.y1 = (float) y1;
@@ -255,8 +270,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		});
 	}
 
-	static VoxelShape orShapes(VoxelShape initial, VoxelShape... shapes) {
-		VoxelShape combinedShape = initial;
+	static VoxelShape orShapes(Collection<VoxelShape> shapes) {
+		VoxelShape combinedShape = Shapes.empty();
 		for (VoxelShape shape : shapes) {
 			combinedShape = Shapes.joinUnoptimized(combinedShape, shape, BooleanOp.OR);
 		}
