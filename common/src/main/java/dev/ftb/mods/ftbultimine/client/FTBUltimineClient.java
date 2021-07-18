@@ -31,6 +31,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -38,7 +39,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static dev.ftb.mods.ftbultimine.utils.AccessUtil.getKey;
@@ -250,15 +253,12 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		cachedEdges = new ArrayList<>();
 
-		long time = System.nanoTime();
+		Collection<VoxelShape> shapes = new HashSet<>();
+		for (AABB aabb : ShapeMerger.merge(shapeBlocks, cachedPos)) {
+			shapes.add(Shapes.create(aabb.inflate(d)));
+		}
 
-		VoxelShape shape = ShapeMerger.merge(shapeBlocks, cachedPos)
-				.parallelStream()
-				.map(aabb -> aabb.inflate(d))
-				.map(Shapes::create)
-				.reduce(Shapes.empty(), (s1, s2) -> Shapes.joinUnoptimized(s1, s2, BooleanOp.OR));
-
-		shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+		orShapes(shapes).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
 			CachedEdge edge = new CachedEdge();
 			edge.x1 = (float) x1;
 			edge.y1 = (float) y1;
@@ -268,5 +268,13 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			edge.z2 = (float) z2;
 			cachedEdges.add(edge);
 		});
+	}
+
+	static VoxelShape orShapes(Collection<VoxelShape> shapes) {
+		VoxelShape combinedShape = Shapes.empty();
+		for (VoxelShape shape : shapes) {
+			combinedShape = Shapes.joinUnoptimized(combinedShape, shape, BooleanOp.OR);
+		}
+		return combinedShape;
 	}
 }
