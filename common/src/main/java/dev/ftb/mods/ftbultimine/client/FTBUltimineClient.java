@@ -14,6 +14,7 @@ import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
+import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
 import me.shedaniel.architectury.event.events.GuiEvent;
 import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
 import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
@@ -49,6 +50,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private final KeyMapping keyBinding;
 	private boolean pressed;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
+	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
 	private BlockPos cachedPos = null;
 	public boolean hasScrolled = false;
@@ -74,7 +76,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	@Override
 	public void setShape(List<BlockPos> blocks) {
-		shapeBlocks = blocks;
+		actualBlocks = blocks.size();
+		int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.renderOutline.get());
+		shapeBlocks = blocks.subList(0, maxRendered);
 		cachedEdges = null;
 		updateEdges();
 	}
@@ -166,7 +170,17 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
-			list.add(new TextComponent("- ").append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName())));
+			MutableComponent mining = new TextComponent("- ")
+					.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName()));
+
+			if (actualBlocks != 0) {
+				mining.append(" (").append(new TranslatableComponent("ftbultimine.info", actualBlocks));
+				if (actualBlocks > shapeBlocks.size()) {
+					mining.append(", ").append(new TranslatableComponent("ftbultimine.info.partial_render", shapeBlocks.size()));
+				}
+				mining.append(")");
+			}
+			list.add(mining);
 
 			if (sneak()) {
 				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
@@ -233,17 +247,18 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		cachedPos = shapeBlocks.get(0);
 
 		double d = 0.005D;
-		VoxelShape shape = Shapes.box(-d, -d, -d, 1D + d, 1D + d, 1D + d);
-		VoxelShape[] extraShapes = new VoxelShape[shapeBlocks.size() - 1];
-
-		for (int i = 1; i < shapeBlocks.size(); i++) {
-			BlockPos p = shapeBlocks.get(i).subtract(cachedPos);
-			extraShapes[i - 1] = shape.move(p.getX(), p.getY(), p.getZ());
-		}
 
 		cachedEdges = new ArrayList<>();
 
-		(extraShapes.length == 0 ? shape : orShapes(shape, extraShapes)).forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+		long time = System.nanoTime();
+
+		VoxelShape shape = ShapeMerger.merge(shapeBlocks, cachedPos)
+				.parallelStream()
+				.map(aabb -> aabb.inflate(d))
+				.map(Shapes::create)
+				.reduce(Shapes.empty(), (s1, s2) -> Shapes.joinUnoptimized(s1, s2, BooleanOp.OR));
+
+		shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
 			CachedEdge edge = new CachedEdge();
 			edge.x1 = (float) x1;
 			edge.y1 = (float) y1;
@@ -253,13 +268,5 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			edge.z2 = (float) z2;
 			cachedEdges.add(edge);
 		});
-	}
-
-	static VoxelShape orShapes(VoxelShape initial, VoxelShape... shapes) {
-		VoxelShape combinedShape = initial;
-		for (VoxelShape shape : shapes) {
-			combinedShape = Shapes.joinUnoptimized(combinedShape, shape, BooleanOp.OR);
-		}
-		return combinedShape;
 	}
 }

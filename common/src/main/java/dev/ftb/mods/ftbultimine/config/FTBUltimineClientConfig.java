@@ -15,7 +15,8 @@ public interface FTBUltimineClientConfig {
 	IntValue xOffset = CONFIG.getInt("x_offset", -1)
 			.comment("Manual x offset of FTB Ultimine overlay, required for some modpacks");
 
-	IntValue renderOutline = CONFIG.getInt("render_outline", 512)
+	IntValue renderOutline = CONFIG.getInt("render_outline", 256)
+			.range(0, Integer.MAX_VALUE)
 			.comment("Maximum number of blocks the white outline should be rendered for",
 					"Keep in mind this may get *very* laggy for large amounts of blocks!");
 

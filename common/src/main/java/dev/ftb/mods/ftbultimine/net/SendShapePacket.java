@@ -1,14 +1,12 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -48,12 +46,7 @@ public class SendShapePacket {
 	public void handle(Supplier<NetworkManager.PacketContext> context) {
 		context.get().queue(() -> {
 			current = shape;
-
-			if (blocks.size() <= FTBUltimineClientConfig.renderOutline.get()) {
-				FTBUltimine.instance.proxy.setShape(blocks);
-			} else {
-				FTBUltimine.instance.proxy.setShape(Collections.emptyList());
-			}
+			FTBUltimine.instance.proxy.setShape(blocks);
 		});
 	}
 }
