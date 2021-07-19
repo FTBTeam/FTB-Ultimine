@@ -15,18 +15,11 @@ architectury {
 	common()
 }
 
-java {
-	withSourcesJar()
-}
-
 publishing {
 	publications {
 		mavenCommon(MavenPublication) {
 			artifactId = rootProject.archivesBaseName
 			artifact remapJar
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
 		}
 	}
 
