@@ -163,8 +163,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	private void addPressedInfo(List<MutableComponent> list) {
 		list.add(new TranslatableComponent("ftbultimine.info.base",
-				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0x7FB069)))
-						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xF25F5C)))
+				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
+						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
 		));
 
 		if (!hasScrolled) {
@@ -225,8 +225,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 			for (MutableComponent msg : list) {
 				FormattedCharSequence formatted = msg.getVisualOrderText();
-				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(formatted) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
-				minecraft.font.drawShadow(matrices, formatted, 2, top, 14737632);
+				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(formatted) + 1, top + minecraft.font.lineHeight - 1, 0xAA_2E3440);
+				minecraft.font.drawShadow(matrices, formatted, 2, top, 0xECEFF4);
 				top += minecraft.font.lineHeight;
 			}
 		}
