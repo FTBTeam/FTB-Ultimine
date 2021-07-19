@@ -28,8 +28,10 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +52,7 @@ import java.util.List;
 public class FTBUltimineClient extends FTBUltimineCommon {
 	private final KeyMapping keyBinding;
 	private boolean pressed;
+	private boolean canUltimine;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
@@ -91,7 +94,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		Minecraft mc = Minecraft.getInstance();
 
-		if (!FTBUltimine.instance.canUltimine(mc.player)) {
+		if (!canUltimine) {
 			return;
 		}
 
@@ -159,7 +162,10 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	private void addPressedInfo(List<MutableComponent> list) {
-		list.add(new TranslatableComponent("ftbultimine.active"));
+		list.add(new TranslatableComponent("ftbultimine.info.base",
+				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0x7FB069)))
+						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xF25F5C)))
+		));
 
 		if (!hasScrolled) {
 			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
@@ -168,14 +174,15 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		if (SendShapePacket.current != null) {
 			if (sneak()) {
 				list.add(new TextComponent(""));
-				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY)
+						.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
 			MutableComponent mining = new TextComponent("- ")
 					.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName()));
 
-			if (actualBlocks != 0) {
-				mining.append(" (").append(new TranslatableComponent("ftbultimine.info", actualBlocks));
+			if (canUltimine && actualBlocks != 0) {
+				mining.append(" (").append(new TranslatableComponent("ftbultimine.info.blocks", actualBlocks));
 				if (actualBlocks > shapeBlocks.size()) {
 					mining.append(", ").append(new TranslatableComponent("ftbultimine.info.partial_render", shapeBlocks.size()));
 				}
@@ -217,8 +224,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			int top = 2 + minecraft.font.lineHeight * infoOffset;
 
 			for (MutableComponent msg : list) {
-				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(msg.getString()) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
-				minecraft.font.drawShadow(matrices, msg, 2, top, 14737632);
+				FormattedCharSequence formatted = msg.getVisualOrderText();
+				GuiComponent.fill(matrices, 1, top - 1, 2 + minecraft.font.width(formatted) + 1, top + minecraft.font.lineHeight - 1, -1873784752);
+				minecraft.font.drawShadow(matrices, formatted, 2, top, 14737632);
 				top += minecraft.font.lineHeight;
 			}
 		}
@@ -234,6 +242,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		if ((pressed = keyBinding.isDown()) != p) {
 			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
 		}
+
+		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);
 	}
 
 	private void updateEdges() {
