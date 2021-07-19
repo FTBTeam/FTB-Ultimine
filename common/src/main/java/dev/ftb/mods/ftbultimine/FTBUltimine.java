@@ -1,7 +1,9 @@
 package dev.ftb.mods.ftbultimine;
 
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
@@ -40,7 +42,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -91,6 +92,9 @@ public class FTBUltimine {
 		FTBUltimineNet.init();
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
+
+		FTBUltimineCommonConfig.load();
+		FTBUltiminePlugins.init();
 
 		Shape.register(new ShapelessShape());
 		Shape.register(new SmallTunnelShape());
@@ -163,7 +167,11 @@ public class FTBUltimine {
 
 		List<Item> allowedTools = allowTag.getValues();
 
-		return allowedTools.isEmpty() || allowedTools.contains(mainHand);
+		if (!allowedTools.isEmpty() && !allowedTools.contains(mainHand)) {
+			return false;
+		}
+
+		return FTBUltiminePlugins.canUltimine(player);
 	}
 
 	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {

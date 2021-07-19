@@ -10,7 +10,10 @@ import me.shedaniel.architectury.platform.Platform;
  */
 public interface FTBUltimineClientConfig {
 
-	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-client");
+	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-client")
+			.comment("Client-specific configuration for FTB Ultimine",
+					"This file is meant for users to control Ultimine's clientside behaviour and rendering.",
+					"Changes to this file require you to reload the world");;
 
 	IntValue xOffset = CONFIG.getInt("x_offset", -1)
 			.comment("Manual x offset of FTB Ultimine overlay, required for some modpacks");

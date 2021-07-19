@@ -14,7 +14,10 @@ import net.minecraft.world.level.storage.LevelResource;
  */
 public interface FTBUltimineServerConfig {
 
-	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server");
+	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
+			.comment("Server-specific configuration for FTB Ultimine",
+					"This file is meant for server administrators to control user behaviour.",
+					"Changes in this file currently require a server restart to take effect");
 	LevelResource CONFIG_FILE_PATH = LevelResourceHooks.create("serverconfig/" + CONFIG.key + ".snbt");
 
 	IntValue maxBlocks = CONFIG.getInt("max_blocks", 64)

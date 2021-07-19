@@ -44,8 +44,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-import static dev.ftb.mods.ftbultimine.utils.AccessUtil.getKey;
-
 /**
  * @author LatvianModder
  */
@@ -157,7 +155,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	private boolean sneak() {
-		return getKey(keyBinding).getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || getKey(keyBinding).getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
 	private void addPressedInfo(List<MutableComponent> list) {

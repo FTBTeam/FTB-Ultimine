@@ -1,12 +1,16 @@
 plugins {
 	id "com.github.johnrengelman.shadow" version "5.0.0"
-	id "com.matthewprenger.cursegradle"
+	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 def ENV = System.getenv()
 
 configurations {
 	shadowCommon
+}
+
+loom {
+	accessWidener = file("src/main/resources/ftbultimine.accesswidener")
 }
 
 architectury {
@@ -19,9 +23,8 @@ dependencies {
 
 	modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 	modApi "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
-	modApi "dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}"
 
-	modImplementation "dev.latvian.mods:kubejs-fabric:${rootProject.kubejs_version}"
+	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
 
 	implementation(project(path: ":common")) {
 		transitive = false
@@ -58,6 +61,16 @@ remapJar {
 
 jar {
 	classifier "dev"
+}
+
+java {
+	withSourcesJar()
+}
+
+sourcesJar {
+	def commonSources = project(":common").sourcesJar
+	dependsOn commonSources
+	from commonSources.archiveFile.map { zipTree(it) }
 }
 
 if (ENV.CURSEFORGE_KEY) {

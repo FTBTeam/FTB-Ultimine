@@ -1,6 +1,6 @@
 plugins {
 	id "com.github.johnrengelman.shadow" version "5.0.0"
-	id "com.matthewprenger.cursegradle"
+	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 def ENV = System.getenv()
@@ -15,17 +15,17 @@ architectury {
 }
 
 loom {
-	mixinConfigs = [
-			"ftbultimine-common.mixins.json"
-	]
 	useFabricMixin = true
 }
 
 dependencies {
-	forge("net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}")
+	forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
 
 	modApi "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
-	modApi "dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}"
+	modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive = false }
+
+	modOptional("curse.maven:lollipop-347954:3232534")
+	modOptional("curse.maven:lost-trinkets-404038:3242497")
 
 	implementation(project(path: ":common")) {
 		transitive = false
@@ -62,19 +62,17 @@ remapJar {
 }
 
 jar {
-	manifest {
-		attributes([
-				"Specification-Title"     : project.mod_id,
-				"Specification-Vendor"    : project.mod_author,
-				"Specification-Version"   : "1",
-				"Implementation-Title"    : project.name,
-				"Implementation-Version"  : version,
-				"Implementation-Vendor"   : project.mod_author,
-				"Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-		])
-	}
-
 	classifier "dev"
+}
+
+java {
+	withSourcesJar()
+}
+
+sourcesJar {
+	def commonSources = project(":common").sourcesJar
+	dependsOn commonSources
+	from commonSources.archiveFile.map { zipTree(it) }
 }
 
 if (ENV.CURSEFORGE_KEY) {
