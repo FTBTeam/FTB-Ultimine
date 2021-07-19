@@ -1,7 +1,0 @@
-{
-	"_comment": "This file is here to make fabric loader load this on the Knot classloader.",
-	"schemaVersion": 1,
-	"id": "ftbultimine-common",
-	"accessWidener": "ftbultimine.accesswidener",
-	"version": "0.0.1"
-}
