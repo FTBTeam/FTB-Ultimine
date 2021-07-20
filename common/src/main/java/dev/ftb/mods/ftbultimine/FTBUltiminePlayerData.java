@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbultimine;
 
-import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
@@ -88,8 +87,8 @@ public class FTBUltiminePlayerData {
 			context.maxBlocks = maxBlocks;
 			context.original = player.level.getBlockState(cachedPos);
 
-			if (FTBUltimineServerConfig.mergeStone.get() && BlockMatcher.ANY_STONE.check(context.original, context.original)) {
-				context.matcher = BlockMatcher.ANY_STONE;
+			if (BlockMatcher.TAGS_MATCH.check(context.original, context.original)) {
+				context.matcher = BlockMatcher.TAGS_MATCH;
 			} else if (BlockMatcher.BUSH.check(context.original, context.original)) {
 				context.matcher = BlockMatcher.BUSH;
 			}
