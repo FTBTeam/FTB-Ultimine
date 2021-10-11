@@ -76,10 +76,10 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
-	public static final Tag.Named<Item> denyTag = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools"));
-	public static final Tag.Named<Item> strictDenyTag = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
+	public static final Tag.Named<Item> DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools"));
+	public static final Tag.Named<Item> STRICT_DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
 
-	public static final Tag.Named<Item> allowTag = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "included_tools"));
+	public static final Tag.Named<Item> ALLOW_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "included_tools"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -138,7 +138,7 @@ public class FTBUltimine {
 	}
 
 	private int getMaxBlocks(Player player) {
-		return FTBUltimineServerConfig.maxBlocks.get();
+		return FTBUltimineServerConfig.MAX_BLOCKS.get();
 	}
 
 	public boolean canUltimine(Player player) {
@@ -157,15 +157,15 @@ public class FTBUltimine {
 		Item mainHand = player.getMainHandItem().getItem();
 		Item offHand = player.getOffhandItem().getItem();
 
-		if (mainHand.is(strictDenyTag) || offHand.is(strictDenyTag)) {
+		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG)) {
 			return false;
 		}
 
-		if (mainHand.is(denyTag)) {
+		if (mainHand.is(DENY_TAG)) {
 			return false;
 		}
 
-		List<Item> allowedTools = allowTag.getValues();
+		List<Item> allowedTools = ALLOW_TAG.getValues();
 
 		if (!allowedTools.isEmpty() && !allowedTools.contains(mainHand)) {
 			return false;
@@ -205,18 +205,26 @@ public class FTBUltimine {
 
 		for (BlockPos p : data.cachedBlocks) {
 			if (!player.gameMode.destroyBlock(p)) {
-				continue;
+				if (FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+					break;
+				} else {
+					continue;
+				}
 			}
 
 			if (!player.isCreative()) {
-				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.exhaustionPerBlock.get() * 0.005D));
+				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
 
 				if (player.getFoodData().getFoodLevel() <= 0) {
 					break;
 				}
 			}
 
-			if (hadItem && player.getMainHandItem().isEmpty()) {
+			ItemStack stack = player.getMainHandItem();
+
+			if (hadItem && stack.isEmpty()) {
+				break;
+			} else if (hadItem && FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
 		}
@@ -267,7 +275,7 @@ public class FTBUltimine {
 				boolean playSound = false;
 				BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineServerConfig.maxBlocks.get()); i++) {
+				for (int i = 0; i < Math.min(data.cachedBlocks.size(), FTBUltimineServerConfig.MAX_BLOCKS.get()); i++) {
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.level.getBlockState(p);
 
@@ -280,7 +288,7 @@ public class FTBUltimine {
 
 					if (!player.isCreative()) {
 						player.getMainHandItem().hurtAndBreak(1, serverPlayer, brokenItemHandler);
-						player.causeFoodExhaustion((float) (FTBUltimineServerConfig.exhaustionPerBlock.get() * 0.005D));
+						player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
 
 						if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0) {
 							break;

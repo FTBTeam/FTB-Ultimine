@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbultimine.forge.plugin.losttrinkets;
 
-import dev.ftb.mods.ftblibrary.snbt.config.BooleanValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugin;
@@ -17,18 +16,13 @@ public class LostTrinketsFTBUltiminePlugin implements FTBUltiminePlugin {
 
 	private static RegistryObject<UltiminerTrinket> TRINKET;
 
-	private static final BooleanValue useTrinket = FTBUltimineCommonConfig.CONFIG.getBoolean("use_trinket", false)
-			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
-					"Adds a custom 'Ultiminer' trinket players will need to activate to be able to use Ultimine",
-					"Make sure you disable the 'Octopick' trinket if this is enabled!");
-
 	public LostTrinketsFTBUltiminePlugin() {
 		ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
 	}
 
 	@Override
 	public void init() {
-		if (!useTrinket.get()) {
+		if (!FTBUltimineCommonConfig.USE_TRINKET.get()) {
 			return;
 		}
 		TRINKET = ITEMS.register("ultiminer", UltiminerTrinket::new);
@@ -36,6 +30,6 @@ public class LostTrinketsFTBUltiminePlugin implements FTBUltiminePlugin {
 
 	@Override
 	public boolean canUltimine(Player player) {
-		return !useTrinket.get() || LostTrinketsAPI.getTrinkets(player).isActive(TRINKET.get());
+		return !FTBUltimineCommonConfig.USE_TRINKET.get() || LostTrinketsAPI.getTrinkets(player).isActive(TRINKET.get());
 	}
 }

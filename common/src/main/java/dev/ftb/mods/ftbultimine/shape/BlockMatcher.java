@@ -14,7 +14,7 @@ public interface BlockMatcher {
 	boolean check(BlockState original, BlockState state);
 
 	BlockMatcher MATCH = (original, state) -> original.getBlock() == state.getBlock();
-	BlockMatcher TAGS_MATCH = (original, state) -> FTBUltimineServerConfig.mergeTags.getTags().stream().filter(original::is).anyMatch(state::is);
+	BlockMatcher TAGS_MATCH = (original, state) -> FTBUltimineServerConfig.MERGE_TAGS.getTags().stream().filter(original::is).anyMatch(state::is);
 	BlockMatcher BUSH = (original, state) -> state.getBlock() instanceof BushBlock && getBushType(state.getBlock()) == getBushType(original.getBlock());
 
 	static int getBushType(Block block) {
