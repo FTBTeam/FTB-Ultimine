@@ -78,8 +78,8 @@ public class FTBUltimine {
 
 	public static final Tag.Named<Item> DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools"));
 	public static final Tag.Named<Item> STRICT_DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-
 	public static final Tag.Named<Item> ALLOW_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "included_tools"));
+	public static final Tag.Named<Block> EXCLUDED_BLOCKS = TagHooks.getBlockOptional(new ResourceLocation(MOD_ID, "excluded_blocks"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 

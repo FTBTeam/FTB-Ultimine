@@ -17,7 +17,7 @@ public class ShapeContext {
 	public int maxBlocks;
 
 	public boolean check(BlockState state) {
-		return matcher.check(original, state);
+		return matcher.actualCheck(original, state);
 	}
 
 	public BlockState block(BlockPos pos) {
