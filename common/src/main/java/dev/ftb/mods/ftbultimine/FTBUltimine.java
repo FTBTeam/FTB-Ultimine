@@ -224,6 +224,8 @@ public class FTBUltimine {
 
 			if (hadItem && stack.isEmpty()) {
 				break;
+			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
+				break;
 			} else if (hadItem && FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
