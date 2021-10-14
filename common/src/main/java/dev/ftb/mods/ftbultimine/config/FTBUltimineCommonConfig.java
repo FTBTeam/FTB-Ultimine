@@ -24,7 +24,7 @@ public interface FTBUltimineCommonConfig {
 					"Make sure you disable the 'Octopick' trinket if this is enabled!");
 
 	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.getBoolean("cancel_on_block_break_fail", false)
-			.comment("This is an advanced option, that you better leave alone unless you disable vanilla tools.");
+			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
 	static void load() {
 		CONFIG.load(Platform.getConfigFolder().resolve(CONFIG.key + ".snbt"));

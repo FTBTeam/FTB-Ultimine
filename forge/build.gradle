@@ -27,6 +27,10 @@ dependencies {
 	modOptional("curse.maven:lollipop-347954:3232534")
 	modOptional("curse.maven:lost-trinkets-404038:3242497")
 
+	modOptional("curse.maven:mantle-74924:3482897")
+	modOptional("curse.maven:tinkers-construct-74072:3482903")
+	modOptional("curse.maven:jei-238222:3192904")
+
 	implementation(project(path: ":common")) {
 		transitive = false
 	}

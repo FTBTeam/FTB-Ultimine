@@ -204,12 +204,8 @@ public class FTBUltimine {
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
 		for (BlockPos p : data.cachedBlocks) {
-			if (!player.gameMode.destroyBlock(p)) {
-				if (FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
-					break;
-				} else {
-					continue;
-				}
+			if (!player.gameMode.destroyBlock(p) && FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+				break;
 			}
 
 			if (!player.isCreative()) {
