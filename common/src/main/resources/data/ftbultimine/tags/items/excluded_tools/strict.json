@@ -6,6 +6,14 @@
 			"required": false
 		},
 		{
+			"id": "mininggadgets:mininggadget_simple",
+			"required": false
+		},
+		{
+			"id": "mininggadgets:mininggadget_fancy",
+			"required": false
+		},
+		{
 			"id": "ars_nouveau:wand",
 			"required": false
 		},
