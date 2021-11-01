@@ -4,7 +4,9 @@ import dev.ftb.mods.ftblibrary.snbt.config.BooleanValue;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.platform.Platform;
+
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.CONFIG_DIR;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
 /**
  * @author LatvianModder
@@ -27,6 +29,6 @@ public interface FTBUltimineCommonConfig {
 			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
 	static void load() {
-		CONFIG.load(Platform.getConfigFolder().resolve(CONFIG.key + ".snbt"));
+		loadDefaulted(CONFIG, CONFIG_DIR);
 	}
 }

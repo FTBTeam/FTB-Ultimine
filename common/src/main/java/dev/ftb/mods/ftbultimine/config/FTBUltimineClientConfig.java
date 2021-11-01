@@ -2,18 +2,20 @@ package dev.ftb.mods.ftbultimine.config;
 
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
-import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.platform.Platform;
+
+import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.LOCAL_DIR;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
 /**
  * @author LatvianModder
  */
 public interface FTBUltimineClientConfig {
 
-	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-client")
+	SNBTConfig CONFIG = SNBTConfig.create(MOD_ID + "-client")
 			.comment("Client-specific configuration for FTB Ultimine",
 					"This file is meant for users to control Ultimine's clientside behaviour and rendering.",
-					"Changes to this file require you to reload the world");;
+					"Changes to this file require you to reload the world");
 
 	IntValue xOffset = CONFIG.getInt("x_offset", -1)
 			.comment("Manual x offset of FTB Ultimine overlay, required for some modpacks");
@@ -24,6 +26,6 @@ public interface FTBUltimineClientConfig {
 					"Keep in mind this may get *very* laggy for large amounts of blocks!");
 
 	static void load() {
-		CONFIG.load(Platform.getGameFolder().resolve("local/ftbultimine/client.snbt"));
+		loadDefaulted(CONFIG, LOCAL_DIR);
 	}
 }

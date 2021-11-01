@@ -5,19 +5,20 @@ import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.StringListValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.hooks.LevelResourceHooks;
 import me.shedaniel.architectury.hooks.TagHooks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.LevelResource;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.List;
+
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.SERVER_CONFIG_DIR;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
 /**
  * @author LatvianModder
@@ -28,7 +29,6 @@ public interface FTBUltimineServerConfig {
 			.comment("Server-specific configuration for FTB Ultimine",
 					"This file is meant for server administrators to control user behaviour.",
 					"Changes in this file currently require a server restart to take effect");
-	LevelResource CONFIG_FILE_PATH = LevelResourceHooks.create("serverconfig/" + CONFIG.key + ".snbt");
 
 	IntValue MAX_BLOCKS = CONFIG.getInt("max_blocks", 64)
 			.range(32768)
@@ -42,7 +42,7 @@ public interface FTBUltimineServerConfig {
     "These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
-		CONFIG.load(server.getWorldPath(CONFIG_FILE_PATH));
+		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR));
 		MERGE_TAGS.tags = null;
 
 		if (MAX_BLOCKS.get() > 8192) {

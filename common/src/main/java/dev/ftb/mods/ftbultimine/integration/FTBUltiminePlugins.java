@@ -14,7 +14,7 @@ public class FTBUltiminePlugins {
 
 	public static boolean canUltimine(Player player) {
 		for (FTBUltiminePlugin plugin : plugins) {
-			if(!plugin.canUltimine(player)) {
+			if (!plugin.canUltimine(player)) {
 				return false;
 			}
 		}

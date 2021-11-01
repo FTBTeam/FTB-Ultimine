@@ -1,21 +1,30 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "5.0.0"
+	id "com.github.johnrengelman.shadow" version "7.0.0"
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 def ENV = System.getenv()
 
-configurations {
-	shadowCommon
-}
-
-loom {
-	accessWidener = file("src/main/resources/ftbultimine.accesswidener")
-}
-
 architectury {
 	platformSetupLoomIde()
 	fabric()
+}
+
+configurations {
+	common
+	shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+	compileClasspath.extendsFrom common
+	runtimeClasspath.extendsFrom common
+	developmentFabric.extendsFrom common
+	dev
+}
+
+artifacts {
+	dev(jar)
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/ftbultimine.accesswidener")
 }
 
 dependencies {
@@ -26,17 +35,11 @@ dependencies {
 
 	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
 
-	implementation(project(path: ":common")) {
-		transitive = false
-	}
-	developmentFabric(project(path: ":common")) {
-		transitive = false
-	}
-	shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) {
-		transitive = false
-	}
+	common(project(path: ":common", configuration: "dev")) { transitive false }
+	shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
-	modRuntime("curse.maven:lithium-360438:3215441")
+	// TODO: move to custom.gradle
+	// modRuntime("curse.maven:lithium-360438:3215441")
 }
 
 processResources {
@@ -61,6 +64,12 @@ remapJar {
 
 jar {
 	classifier "dev"
+}
+
+components.java {
+	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+		skip()
+	}
 }
 
 if (ENV.CURSEFORGE_KEY) {
@@ -88,7 +97,7 @@ publishing {
 	publications {
 		mavenFabric(MavenPublication) {
 			artifactId = "${rootProject.archives_base_name}-${project.name}"
-			artifact(remapJar)
+			from components.java
 		}
 	}
 

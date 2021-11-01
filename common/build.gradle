@@ -6,20 +6,27 @@ dependencies {
 
 def ENV = System.getenv()
 
-
-loom {
-	accessWidener = file("src/main/resources/ftbultimine.accesswidener")
-}
-
 architectury {
 	common()
+}
+
+configurations {
+	dev
+}
+
+artifacts {
+	dev(jar)
+}
+
+loom {
+	accessWidenerPath = file("src/main/resources/ftbultimine.accesswidener")
 }
 
 publishing {
 	publications {
 		mavenCommon(MavenPublication) {
 			artifactId = rootProject.archivesBaseName
-			artifact remapJar
+			from components.java
 		}
 	}
 

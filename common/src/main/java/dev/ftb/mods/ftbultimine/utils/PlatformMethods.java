@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbultimine.utils;
 
-import me.shedaniel.architectury.annotations.ExpectPlatform;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.server.level.ServerPlayer;
 
 public class PlatformMethods {

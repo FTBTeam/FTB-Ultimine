@@ -1,6 +1,6 @@
 plugins {
-	id "architectury-plugin" version "3.1-SNAPSHOT"
-	id "dev.architectury.loom" version "0.7.2-SNAPSHOT" apply false
+	id "architectury-plugin" version "3.4-SNAPSHOT"
+	id "dev.architectury.loom" version "0.10.0-SNAPSHOT" apply false
 }
 
 architectury {
@@ -12,7 +12,6 @@ subprojects {
 
 	loom {
 		silentMojangMappingsLicense()
-		useFabricMixin = true
 	}
 
 	dependencies {
@@ -33,16 +32,6 @@ allprojects {
 	archivesBaseName = project.archives_base_name
 
 	sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
-
-	configurations {
-		modOptional
-		modCompileOnly.extendsFrom(modOptional)
-		modRuntime.extendsFrom(modOptional)
-
-		optional
-		compileOnly.extendsFrom(optional)
-		runtime.extendsFrom(optional)
-	}
 
 	tasks.withType(JavaCompile) {
 		options.encoding = "UTF-8"
@@ -75,6 +64,10 @@ allprojects {
 				includeGroup "dev.ftb.mods"
 			}
 		}
+	}
+
+	java {
+		withSourcesJar()
 	}
 }
 

@@ -1,21 +1,26 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "5.0.0"
+	id "com.github.johnrengelman.shadow" version "7.0.0"
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
 def ENV = System.getenv()
-
-configurations {
-	shadowCommon
-}
 
 architectury {
 	platformSetupLoomIde()
 	forge()
 }
 
-loom {
-	useFabricMixin = true
+configurations {
+	common
+	shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+	compileClasspath.extendsFrom common
+	runtimeClasspath.extendsFrom common
+	developmentForge.extendsFrom common
+	dev
+}
+
+artifacts {
+	dev(jar)
 }
 
 dependencies {
@@ -24,22 +29,16 @@ dependencies {
 	modApi "me.shedaniel:architectury-forge:${rootProject.architectury_version}"
 	modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive = false }
 
-	modOptional("curse.maven:lollipop-347954:3232534")
-	modOptional("curse.maven:lost-trinkets-404038:3242497")
+	modCompileOnly("curse.maven:lollipop-347954:3232534")
+	modCompileOnly("curse.maven:lost-trinkets-404038:3242497")
 
-	modOptional("curse.maven:mantle-74924:3482897")
-	modOptional("curse.maven:tinkers-construct-74072:3482903")
-	modOptional("curse.maven:jei-238222:3192904")
+	// TODO: move to custom.gradle
+	// modOptional("curse.maven:mantle-74924:3482897")
+	// modOptional("curse.maven:tinkers-construct-74072:3482903")
+	// modOptional("curse.maven:jei-238222:3192904")
 
-	implementation(project(path: ":common")) {
-		transitive = false
-	}
-	developmentForge(project(path: ":common")) {
-		transitive = false
-	}
-	shadowCommon(project(path: ":common", configuration: "transformProductionForge")) {
-		transitive = false
-	}
+	common(project(path: ":common", configuration: "dev")) { transitive false }
+	shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
 
 }
 
@@ -67,6 +66,12 @@ remapJar {
 
 jar {
 	classifier "dev"
+}
+
+components.java {
+	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+		skip()
+	}
 }
 
 if (ENV.CURSEFORGE_KEY) {
