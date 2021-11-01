@@ -2,15 +2,15 @@ package dev.ftb.mods.ftbultimine.net;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import me.shedaniel.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.networking.simple.BaseC2SMessage;
+import me.shedaniel.architectury.networking.simple.MessageType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-
-import java.util.function.Supplier;
 
 /**
  * @author LatvianModder
  */
-public class KeyPressedPacket {
+public class KeyPressedPacket extends BaseC2SMessage {
 	private final boolean pressed;
 
 	public KeyPressedPacket(boolean p) {
@@ -25,7 +25,13 @@ public class KeyPressedPacket {
 		buf.writeBoolean(pressed);
 	}
 
-	public void handle(Supplier<NetworkManager.PacketContext> context) {
-		context.get().queue(() -> FTBUltimine.instance.setKeyPressed((ServerPlayer) context.get().getPlayer(), pressed));
+	@Override
+	public MessageType getType() {
+		return FTBUltimineNet.KEY_PRESSED;
+	}
+
+	@Override
+	public void handle(NetworkManager.PacketContext context) {
+		context.queue(() -> FTBUltimine.instance.setKeyPressed((ServerPlayer) context.getPlayer(), pressed));
 	}
 }

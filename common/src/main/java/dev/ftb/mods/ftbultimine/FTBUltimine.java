@@ -126,7 +126,7 @@ public class FTBUltimine {
 		data.clearCache();
 
 		if (!data.pressed) {
-			FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
+			new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class FTBUltimine {
 		FTBUltiminePlayerData data = get(player);
 		data.shape = next ? data.shape.next : data.shape.prev;
 		data.clearCache();
-		FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
+		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
 	}
 
 	private int getMaxBlocks(Player player) {
@@ -236,7 +236,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(data.shape, Collections.emptyList()));
+		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
 
 		return InteractionResult.FAIL;
 	}

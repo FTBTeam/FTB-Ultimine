@@ -56,7 +56,7 @@ public class FTBUltiminePlayerData {
 				clearCache();
 
 				if (sendUpdate) {
-					FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(shape, Collections.emptyList()));
+					new SendShapePacket(shape, Collections.emptyList()).sendTo(player);
 				}
 			}
 
@@ -97,7 +97,7 @@ public class FTBUltiminePlayerData {
 		}
 
 		if (sendUpdate) {
-			FTBUltimineNet.MAIN.sendToPlayer(player, new SendShapePacket(shape, cachedBlocks));
+			new SendShapePacket(shape, cachedBlocks).sendTo(player);
 		}
 
 		return context;
