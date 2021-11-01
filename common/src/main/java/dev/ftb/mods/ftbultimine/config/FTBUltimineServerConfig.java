@@ -9,13 +9,14 @@ import me.shedaniel.architectury.hooks.LevelResourceHooks;
 import me.shedaniel.architectury.hooks.TagHooks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.LevelResource;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,8 +38,8 @@ public interface FTBUltimineServerConfig {
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
 
-	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags", Collections.singletonList("minecraft:base_stone_overworld"),
-			"These tags will be considered the same block when checking for blocks to Ultimine");
+	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags", Arrays.asList("minecraft:base_stone_overworld", "forge:ores/*"),
+    "These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
 		CONFIG.load(server.getWorldPath(CONFIG_FILE_PATH));
@@ -66,7 +67,17 @@ public interface FTBUltimineServerConfig {
 		public Collection<Tag<Block>> getTags() {
 			if (tags == null) {
 				tags = new HashSet<>();
-				value.get().forEach(s -> tags.add(TagHooks.getBlockOptional(new ResourceLocation(s))));
+				value.get().forEach(s -> {
+                    if(s.endsWith("*")){
+                        BlockTags.getAllTags().getAllTags().forEach(((resourceLocation, blockTag) -> {
+                            if (resourceLocation.toString().startsWith(s.substring(0, s.length() - 1))) {
+                                tags.add(TagHooks.getBlockOptional(resourceLocation));
+                            }
+                        }));
+                    } else {
+                        tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
+                    }
+                });
 			}
 			return tags;
 		}
