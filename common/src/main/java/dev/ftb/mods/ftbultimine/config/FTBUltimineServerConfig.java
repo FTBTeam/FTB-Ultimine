@@ -12,11 +12,12 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.Block;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Arrays;
 import java.util.List;
 
+import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
 import static dev.ftb.mods.ftbultimine.utils.IOUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
@@ -39,15 +40,15 @@ public interface FTBUltimineServerConfig {
 			.comment("Hunger multiplied for each block mined with ultimine");
 
 	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags", Arrays.asList("minecraft:base_stone_overworld", "forge:ores/*"),
-    "These tags will be considered the same block when checking for blocks to Ultimine");
+			"These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
 		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR));
 		MERGE_TAGS.tags = null;
 
 		if (MAX_BLOCKS.get() > 8192) {
-			FTBUltimine.LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
-			FTBUltimine.LOGGER.warn("This may cause a lot of tick and FPS lag!");
+			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
+			LOGGER.warn("This may cause a lot of tick and FPS lag!");
 		}
 	}
 
@@ -68,16 +69,20 @@ public interface FTBUltimineServerConfig {
 			if (tags == null) {
 				tags = new HashSet<>();
 				value.get().forEach(s -> {
-                    if(s.endsWith("*")){
-                        BlockTags.getAllTags().getAllTags().forEach(((resourceLocation, blockTag) -> {
-                            if (resourceLocation.toString().startsWith(s.substring(0, s.length() - 1))) {
-                                tags.add(TagHooks.getBlockOptional(resourceLocation));
-                            }
-                        }));
-                    } else {
-                        tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
-                    }
-                });
+					if (ResourceLocation.isValidResourceLocation(s)) {
+						tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
+					} else
+						// TODO: proper globbing support?
+						if (s.endsWith("*")) {
+						BlockTags.getAllTags().getAvailableTags().forEach(id -> {
+							if (id.toString().startsWith(s.substring(0, s.length() - 1))) {
+								tags.add(TagHooks.getBlockOptional(id));
+							}
+						});
+					} else {
+							LOGGER.warn("Invalid value for block tag: " + s + "! Values may only be tags that can optionally end with a wildcard");
+					}
+				});
 			}
 			return tags;
 		}
