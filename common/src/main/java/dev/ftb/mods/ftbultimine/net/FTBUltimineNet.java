@@ -1,19 +1,19 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.networking.NetworkChannel;
+import me.shedaniel.architectury.networking.simple.MessageType;
+import me.shedaniel.architectury.networking.simple.SimpleNetworkManager;
 
 /**
  * @author LatvianModder
  */
-public class FTBUltimineNet {
-	public static NetworkChannel MAIN;
+public interface FTBUltimineNet {
+	SimpleNetworkManager NET = SimpleNetworkManager.create(FTBUltimine.MOD_ID);
 
-	public static void init() {
-		MAIN = NetworkChannel.create(FTBUltimine.id("main"));
+	MessageType SEND_SHAPE = NET.registerS2C("send_shape", SendShapePacket::new);
+	MessageType KEY_PRESSED = NET.registerC2S("key_pressed", KeyPressedPacket::new);
+	MessageType MODE_CHANGED = NET.registerC2S("mode_changed", ModeChangedPacket::new);
 
-		MAIN.register(SendShapePacket.class, SendShapePacket::write, SendShapePacket::new, SendShapePacket::handle);
-		MAIN.register(KeyPressedPacket.class, KeyPressedPacket::write, KeyPressedPacket::new, KeyPressedPacket::handle);
-		MAIN.register(ModeChangedPacket.class, ModeChangedPacket::write, ModeChangedPacket::new, ModeChangedPacket::handle);
+	static void init() {
 	}
 }

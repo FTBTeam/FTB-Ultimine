@@ -3,17 +3,18 @@ package dev.ftb.mods.ftbultimine.net;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import me.shedaniel.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.networking.simple.BaseS2CMessage;
+import me.shedaniel.architectury.networking.simple.MessageType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author LatvianModder
  */
-public class SendShapePacket {
+public class SendShapePacket extends BaseS2CMessage {
 	public static Shape current = null;
 
 	private final Shape shape;
@@ -43,8 +44,14 @@ public class SendShapePacket {
 		}
 	}
 
-	public void handle(Supplier<NetworkManager.PacketContext> context) {
-		context.get().queue(() -> {
+	@Override
+	public MessageType getType() {
+		return FTBUltimineNet.SEND_SHAPE;
+	}
+
+	@Override
+	public void handle(NetworkManager.PacketContext context) {
+		context.queue(() -> {
 			current = shape;
 			FTBUltimine.instance.proxy.setShape(blocks);
 		});

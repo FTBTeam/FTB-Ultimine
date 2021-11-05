@@ -165,7 +165,7 @@ public final class ShapeMerger {
 						merger.setCurrentBox(null, null);
 					}
 					merger.setFaceBuildingAxisValue(aabb.minY);
-					
+
 					final Optional<Vec3> previousCenterPoint = merger.getLastCenter();
 					final Vec3 centerPoint = aabb.getCenter();
 					merger.onNextEntry(centerPoint);

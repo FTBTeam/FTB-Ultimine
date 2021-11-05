@@ -129,7 +129,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public InteractionResult mouseEvent(Minecraft client, double amount) {
 		if (pressed && amount != 0 && sneak()) {
 			hasScrolled = true;
-			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(amount < 0D));
+			new ModeChangedPacket(amount < 0D).sendToServer();
 			return InteractionResult.FAIL;
 		}
 
@@ -151,7 +151,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			}
 
 			hasScrolled = true;
-			FTBUltimineNet.MAIN.sendToServer(new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN));
+			new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
 			lastToggle = System.currentTimeMillis();
 		}
 		return InteractionResult.PASS;
@@ -240,7 +240,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		boolean p = pressed;
 
 		if ((pressed = keyBinding.isDown()) != p) {
-			FTBUltimineNet.MAIN.sendToServer(new KeyPressedPacket(pressed));
+			new KeyPressedPacket(pressed).sendToServer();
 		}
 
 		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);

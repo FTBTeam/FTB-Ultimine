@@ -2,15 +2,15 @@ package dev.ftb.mods.ftbultimine.net;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import me.shedaniel.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.networking.simple.BaseC2SMessage;
+import me.shedaniel.architectury.networking.simple.MessageType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-
-import java.util.function.Supplier;
 
 /**
  * @author LatvianModder
  */
-public class ModeChangedPacket {
+public class ModeChangedPacket extends BaseC2SMessage {
 	public final boolean next;
 
 	public ModeChangedPacket(boolean n) {
@@ -25,7 +25,13 @@ public class ModeChangedPacket {
 		buf.writeBoolean(next);
 	}
 
-	public void handle(Supplier<NetworkManager.PacketContext> context) {
-		context.get().queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.get().getPlayer(), next));
+	@Override
+	public MessageType getType() {
+		return FTBUltimineNet.MODE_CHANGED;
+	}
+
+	@Override
+	public void handle(NetworkManager.PacketContext context) {
+		context.queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.getPlayer(), next));
 	}
 }

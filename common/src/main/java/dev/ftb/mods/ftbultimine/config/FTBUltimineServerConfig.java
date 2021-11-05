@@ -5,18 +5,22 @@ import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.StringListValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.hooks.LevelResourceHooks;
 import me.shedaniel.architectury.hooks.TagHooks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.LevelResource;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
+
+import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.SERVER_CONFIG_DIR;
+import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
 /**
  * @author LatvianModder
@@ -27,7 +31,6 @@ public interface FTBUltimineServerConfig {
 			.comment("Server-specific configuration for FTB Ultimine",
 					"This file is meant for server administrators to control user behaviour.",
 					"Changes in this file currently require a server restart to take effect");
-	LevelResource CONFIG_FILE_PATH = LevelResourceHooks.create("serverconfig/" + CONFIG.key + ".snbt");
 
 	IntValue MAX_BLOCKS = CONFIG.getInt("max_blocks", 64)
 			.range(32768)
@@ -37,16 +40,21 @@ public interface FTBUltimineServerConfig {
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
 
-	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags", Collections.singletonList("minecraft:base_stone_overworld"),
+	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags",
+			Arrays.asList(
+					"minecraft:base_stone_overworld",
+					"c:*_ores",
+					"forge:ores/*"
+			),
 			"These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
-		CONFIG.load(server.getWorldPath(CONFIG_FILE_PATH));
+		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR));
 		MERGE_TAGS.tags = null;
 
 		if (MAX_BLOCKS.get() > 8192) {
-			FTBUltimine.LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
-			FTBUltimine.LOGGER.warn("This may cause a lot of tick and FPS lag!");
+			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
+			LOGGER.warn("This may cause a lot of tick and FPS lag!");
 		}
 	}
 
@@ -66,9 +74,41 @@ public interface FTBUltimineServerConfig {
 		public Collection<Tag<Block>> getTags() {
 			if (tags == null) {
 				tags = new HashSet<>();
-				value.get().forEach(s -> tags.add(TagHooks.getBlockOptional(new ResourceLocation(s))));
+				value.get().forEach(s -> {
+					if (ResourceLocation.isValidResourceLocation(s)) {
+						tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
+					} else {
+						Pattern pattern = regexFromGlobString(s);
+						BlockTags.getAllTags().getAllTags().forEach((id, tag) -> {
+							if (pattern.asPredicate().test(id.toString())) {
+								tags.add(tag);
+							}
+						});
+					}
+				});
 			}
 			return tags;
+		}
+
+		public Pattern regexFromGlobString(String glob) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("^");
+			for (int i = 0; i < glob.length(); i++) {
+				char c = glob.charAt(i);
+				if (c == '*') {
+					sb.append(".*");
+				} else if (c == '?') {
+					sb.append(".");
+				} else if (c == '.') {
+					sb.append("\\.");
+				} else if (c == '\\') {
+					sb.append("\\\\");
+				} else {
+					sb.append(c);
+				}
+			}
+			sb.append("$");
+			return Pattern.compile(sb.toString());
 		}
 	}
 }
