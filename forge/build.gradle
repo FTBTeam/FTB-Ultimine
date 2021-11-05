@@ -32,11 +32,6 @@ dependencies {
 	modCompileOnly("curse.maven:lollipop-347954:3232534")
 	modCompileOnly("curse.maven:lost-trinkets-404038:3242497")
 
-	// TODO: move to custom.gradle
-	// modOptional("curse.maven:mantle-74924:3482897")
-	// modOptional("curse.maven:tinkers-construct-74072:3482903")
-	// modOptional("curse.maven:jei-238222:3192904")
-
 	common(project(path: ":common", configuration: "dev")) { transitive false }
 	shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
 
@@ -126,3 +121,9 @@ publishing {
 }
 
 rootProject.tasks.getByName("curseforgePublish").dependsOn tasks.getByName("curseforge")
+
+// Used to temporarily add mods to the workspace for debugging
+def customGradle = project.file('custom.gradle');
+if (customGradle.exists()) {
+	apply from: customGradle;
+}
