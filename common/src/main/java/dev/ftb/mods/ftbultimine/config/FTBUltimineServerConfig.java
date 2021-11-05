@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
 import static dev.ftb.mods.ftbultimine.utils.IOUtil.SERVER_CONFIG_DIR;
@@ -39,7 +40,12 @@ public interface FTBUltimineServerConfig {
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
 
-	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags", Arrays.asList("minecraft:base_stone_overworld", "forge:ores/*"),
+	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags",
+			Arrays.asList(
+					"minecraft:base_stone_overworld",
+					"c:*_ores",
+					"forge:ores/*"
+			),
 			"These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
@@ -71,20 +77,38 @@ public interface FTBUltimineServerConfig {
 				value.get().forEach(s -> {
 					if (ResourceLocation.isValidResourceLocation(s)) {
 						tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
-					} else
-						// TODO: proper globbing support?
-						if (s.endsWith("*")) {
-						BlockTags.getAllTags().getAvailableTags().forEach(id -> {
-							if (id.toString().startsWith(s.substring(0, s.length() - 1))) {
-								tags.add(TagHooks.getBlockOptional(id));
+					} else {
+						Pattern pattern = regexFromGlobString(s);
+						BlockTags.getAllTags().getAllTags().forEach((id, tag) -> {
+							if (pattern.asPredicate().test(id.toString())) {
+								tags.add(tag);
 							}
 						});
-					} else {
-							LOGGER.warn("Invalid value for block tag: " + s + "! Values may only be tags that can optionally end with a wildcard");
 					}
 				});
 			}
 			return tags;
+		}
+
+		public Pattern regexFromGlobString(String glob) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("^");
+			for (int i = 0; i < glob.length(); i++) {
+				char c = glob.charAt(i);
+				if (c == '*') {
+					sb.append(".*");
+				} else if (c == '?') {
+					sb.append(".");
+				} else if (c == '.') {
+					sb.append("\\.");
+				} else if (c == '\\') {
+					sb.append("\\\\");
+				} else {
+					sb.append(c);
+				}
+			}
+			sb.append("$");
+			return Pattern.compile(sb.toString());
 		}
 	}
 }
