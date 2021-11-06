@@ -75,8 +75,9 @@ public interface FTBUltimineServerConfig {
 			if (tags == null) {
 				tags = new HashSet<>();
 				value.get().forEach(s -> {
-					if (ResourceLocation.isValidResourceLocation(s)) {
-						tags.add(TagHooks.getBlockOptional(new ResourceLocation(s)));
+					ResourceLocation rl = ResourceLocation.tryParse(s);
+					if (rl != null) {
+						tags.add(TagHooks.getBlockOptional(rl));
 					} else {
 						Pattern pattern = regexFromGlobString(s);
 						BlockTags.getAllTags().getAllTags().forEach((id, tag) -> {
