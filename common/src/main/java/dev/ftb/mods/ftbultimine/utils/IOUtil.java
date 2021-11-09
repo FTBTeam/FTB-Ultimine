@@ -20,13 +20,13 @@ public interface IOUtil {
 
 	static void loadDefaulted(SNBTConfig config, Path configDir) {
 		String filename = config.key + ".snbt";
-		Path configPath = configDir.resolve(filename);
+		Path configPath = configDir.resolve(filename).toAbsolutePath();
 		Path defaultPath = DEFAULT_CONFIG_DIR.resolve(MOD_ID).resolve(filename);
 		config.load(
 				configPath,
 				defaultPath,
 				() -> new String[]{
-						"Default config file that will be copied to " + configPath + " if it doesn't exist!",
+						"Default config file that will be copied to " + ROOT_DIR.relativize(configPath) + " if it doesn't exist!",
 						"Just copy any values you wish to override in here!",
 				}
 		);
