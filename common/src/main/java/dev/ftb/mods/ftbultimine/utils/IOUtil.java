@@ -1,8 +1,7 @@
 package dev.ftb.mods.ftbultimine.utils;
 
+import dev.architectury.platform.Platform;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
-import me.shedaniel.architectury.hooks.LevelResourceHooks;
-import me.shedaniel.architectury.platform.Platform;
 import net.minecraft.world.level.storage.LevelResource;
 
 import java.nio.file.Path;
@@ -16,7 +15,7 @@ public interface IOUtil {
 	Path CONFIG_DIR = ROOT_DIR.resolve("config");
 	Path LOCAL_DIR = ROOT_DIR.resolve("local");
 
-	LevelResource SERVER_CONFIG_DIR = LevelResourceHooks.create("serverconfig");
+	LevelResource SERVER_CONFIG_DIR = new LevelResource("serverconfig");
 
 	static void loadDefaulted(SNBTConfig config, Path configDir) {
 		String filename = config.key + ".snbt";

@@ -1,28 +1,18 @@
 package dev.ftb.mods.ftbultimine;
 
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.common.*;
+import dev.architectury.hooks.level.entity.PlayerHooks;
+import dev.architectury.hooks.tags.TagHooks;
+import dev.architectury.utils.EnvExecutor;
+import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
-import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
-import dev.ftb.mods.ftbultimine.shape.EscapeTunnelShape;
-import dev.ftb.mods.ftbultimine.shape.MiningTunnelShape;
-import dev.ftb.mods.ftbultimine.shape.Shape;
-import dev.ftb.mods.ftbultimine.shape.ShapeContext;
-import dev.ftb.mods.ftbultimine.shape.ShapelessShape;
-import dev.ftb.mods.ftbultimine.shape.SmallSquareShape;
-import dev.ftb.mods.ftbultimine.shape.SmallTunnelShape;
-import me.shedaniel.architectury.event.events.BlockEvent;
-import me.shedaniel.architectury.event.events.EntityEvent;
-import me.shedaniel.architectury.event.events.InteractionEvent;
-import me.shedaniel.architectury.event.events.LifecycleEvent;
-import me.shedaniel.architectury.event.events.TickEvent;
-import me.shedaniel.architectury.hooks.PlayerHooks;
-import me.shedaniel.architectury.hooks.TagHooks;
-import me.shedaniel.architectury.utils.EnvExecutor;
-import me.shedaniel.architectury.utils.IntValue;
+import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +24,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -53,11 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -76,10 +61,10 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
-	public static final Tag.Named<Item> DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools"));
-	public static final Tag.Named<Item> STRICT_DENY_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-	public static final Tag.Named<Item> ALLOW_TAG = TagHooks.getItemOptional(new ResourceLocation(MOD_ID, "included_tools"));
-	public static final Tag.Named<Block> EXCLUDED_BLOCKS = TagHooks.getBlockOptional(new ResourceLocation(MOD_ID, "excluded_blocks"));
+	public static final Tag.Named<Item> DENY_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "excluded_tools"));
+	public static final Tag.Named<Item> STRICT_DENY_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
+	public static final Tag.Named<Item> ALLOW_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "included_tools"));
+	public static final Tag.Named<Block> EXCLUDED_BLOCKS = TagHooks.optionalBlock(new ResourceLocation(MOD_ID, "excluded_blocks"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -157,11 +142,11 @@ public class FTBUltimine {
 		Item mainHand = player.getMainHandItem().getItem();
 		Item offHand = player.getOffhandItem().getItem();
 
-		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG)) {
+		if (STRICT_DENY_TAG.contains(mainHand) || STRICT_DENY_TAG.contains(offHand)) {
 			return false;
 		}
 
-		if (mainHand.is(DENY_TAG)) {
+		if (DENY_TAG.contains(mainHand)) {
 			return false;
 		}
 
@@ -174,28 +159,28 @@ public class FTBUltimine {
 		return FTBUltiminePlugins.canUltimine(player);
 	}
 
-	public InteractionResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
+	public EventResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
 		if (isBreakingBlock || !canUltimine(player)) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		FTBUltiminePlayerData data = get(player);
 
 		if (!data.pressed) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		data.clearCache();
 		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		isBreakingBlock = true;
@@ -238,24 +223,24 @@ public class FTBUltimine {
 		data.clearCache();
 		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
 
-		return InteractionResult.FAIL;
+		return EventResult.interruptFalse();
 	}
 
-	public InteractionResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
+	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
 		if (!(player instanceof ServerPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		ServerPlayer serverPlayer = (ServerPlayer) player;
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(serverPlayer);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		FTBUltiminePlayerData data = get(player);
@@ -263,7 +248,7 @@ public class FTBUltimine {
 		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (shapeContext == null || !data.pressed || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
-			return InteractionResult.PASS;
+			return EventResult.interruptTrue();
 		}
 
 		if (player.getItemInHand(hand).getItem() instanceof HoeItem) {
@@ -300,7 +285,7 @@ public class FTBUltimine {
 			}
 
 			player.swing(hand);
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		} else if (shapeContext.matcher == BlockMatcher.BUSH) {
 			ItemCollection itemCollection = new ItemCollection();
 
@@ -322,7 +307,7 @@ public class FTBUltimine {
 					continue;
 				}
 
-				List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, state.getBlock().isEntityBlock() ? player.level.getBlockEntity(pos) : null, player, ItemStack.EMPTY);
+				List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, state.hasBlockEntity() ? player.level.getBlockEntity(pos) : null, player, ItemStack.EMPTY);
 
 				for (ItemStack stack : drops) {
 					// should work for most if not all modded crop blocks, hopefully
@@ -338,9 +323,9 @@ public class FTBUltimine {
 
 			itemCollection.drop(player.level, face == null ? clickPos : clickPos.relative(face));
 			player.swing(hand);
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		}
-		return InteractionResult.PASS;
+		return EventResult.interruptTrue();
 	}
 
 	public void playerTick(Player player) {
@@ -350,15 +335,15 @@ public class FTBUltimine {
 		}
 	}
 
-	public InteractionResult entityJoinedWorld(Entity entity, Level level) {
+	public EventResult entityJoinedWorld(Entity entity, Level level) {
 		if (isBreakingBlock && entity instanceof ItemEntity) {
 			tempBlockDropsList.add(((ItemEntity) entity).getItem());
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		} else if (isBreakingBlock && entity instanceof ExperienceOrb) {
 			tempBlockDroppedXp += ((ExperienceOrb) entity).getValue();
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		}
-		return InteractionResult.PASS;
+		return EventResult.interruptTrue();
 	}
 
 	public static ResourceLocation id(String path) {

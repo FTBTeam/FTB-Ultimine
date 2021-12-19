@@ -1,8 +1,8 @@
 package dev.ftb.mods.ftbultimine.event;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import me.shedaniel.architectury.event.Event;
-import me.shedaniel.architectury.event.EventFactory;
+import dev.architectury.event.Event;
+import dev.architectury.event.EventFactory;
 
 /**
  * This is a temp interface until World Render Events are implemented in Architectury.

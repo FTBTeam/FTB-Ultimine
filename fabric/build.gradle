@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "7.0.0"
+	id "com.github.johnrengelman.shadow" version "7.1.0"
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
 
@@ -31,7 +31,7 @@ dependencies {
 	modApi "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
 	modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-	modApi "me.shedaniel:architectury-fabric:${rootProject.architectury_version}"
+	modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
 	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
 
@@ -79,8 +79,7 @@ if (ENV.CURSEFORGE_KEY) {
 			id = project.curseforge_id_fabric
 			releaseType = project.curseforge_type
 			addGameVersion "Fabric"
-			addGameVersion "1.16.4"
-			addGameVersion "1.16.5"
+			addGameVersion "1.18.1"
 			mainArtifact(remapJar.archivePath)
 			relations {
 				requiredDependency 'architectury-fabric'

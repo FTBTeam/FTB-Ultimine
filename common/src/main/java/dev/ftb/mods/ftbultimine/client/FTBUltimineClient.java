@@ -4,22 +4,21 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.client.ClientGuiEvent;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
+import dev.architectury.event.events.client.ClientRawInputEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
+import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
-import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
-import me.shedaniel.architectury.event.events.GuiEvent;
-import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
-import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
-import me.shedaniel.architectury.event.events.client.ClientTickEvent;
-import me.shedaniel.architectury.registry.KeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -32,7 +31,6 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -40,17 +38,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author LatvianModder
  */
 public class FTBUltimineClient extends FTBUltimineCommon {
-	private final KeyMapping keyBinding;
+	public static KeyMapping keyBinding;
 	private boolean pressed;
 	private boolean canUltimine;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
@@ -62,20 +56,22 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private final int INPUT_DELAY = 125;
 
 	public FTBUltimineClient() {
-		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
+		ClientLifecycleEvent.CLIENT_SETUP.register(this::setup);
 
-		KeyBindings.registerKeyBinding(keyBinding);
-
-		ClientLifecycleEvent.CLIENT_WORLD_LOAD.register(__ -> FTBUltimineClientConfig.load());
+		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
-		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
+		ClientGuiEvent.RENDER_HUD.register(this::renderGameOverlay);
 
 		// TODO: remove once #6 gets fixed
 		LevelRenderLastEvent.EVENT.register(this::renderInGame);
 
 		ClientRawInputEvent.MOUSE_SCROLLED.register(this::mouseEvent);
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
+	}
+
+	private void setup(Minecraft minecraft) {
+		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
 	}
 
 	@Override
@@ -105,56 +101,57 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		stack.translate(cachedPos.getX() - projectedView.x, cachedPos.getY() - projectedView.y, cachedPos.getZ() - projectedView.z);
 		Matrix4f matrix = stack.last().pose();
 
-		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
+		//TODO Add back after fixing render type
+//		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
+//
+//		for (CachedEdge edge : cachedEdges) {
+//			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
+//			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
+//		}
+//
+//		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
 
-		for (CachedEdge edge : cachedEdges) {
-			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
-			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
-		}
+//		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
 
-		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
+//		for (CachedEdge edge : cachedEdges) {
+//			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
+//			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
+//		}
 
-		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
-
-		for (CachedEdge edge : cachedEdges) {
-			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
-			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
-		}
-
-		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
+//		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
 
 		stack.popPose();
 	}
 
-	public InteractionResult mouseEvent(Minecraft client, double amount) {
+	public EventResult mouseEvent(Minecraft client, double amount) {
 		if (pressed && amount != 0 && sneak()) {
 			hasScrolled = true;
 			new ModeChangedPacket(amount < 0D).sendToServer();
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		}
 
-		return InteractionResult.PASS;
+		return EventResult.interruptTrue();
 	}
 
-	public InteractionResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
+	public EventResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
 		{
 			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
-				return InteractionResult.PASS;
+				return EventResult.interruptTrue();
 			}
 
 			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
-				return InteractionResult.PASS;
+				return EventResult.interruptTrue();
 			}
 
 			if (!pressed || !sneak()) {
-				return InteractionResult.PASS;
+				return EventResult.interruptTrue();
 			}
 
 			hasScrolled = true;
 			new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
 			lastToggle = System.currentTimeMillis();
 		}
-		return InteractionResult.PASS;
+		return EventResult.interruptTrue();
 	}
 
 	private boolean sneak() {

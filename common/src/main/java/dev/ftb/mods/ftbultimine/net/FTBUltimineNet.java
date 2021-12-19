@@ -1,8 +1,8 @@
 package dev.ftb.mods.ftbultimine.net;
 
+import dev.architectury.networking.simple.MessageType;
+import dev.architectury.networking.simple.SimpleNetworkManager;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.networking.simple.MessageType;
-import me.shedaniel.architectury.networking.simple.SimpleNetworkManager;
 
 /**
  * @author LatvianModder

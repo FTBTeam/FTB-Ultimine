@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbultimine;
 
-import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
 import dev.ftb.mods.ftbultimine.shape.Shape;
