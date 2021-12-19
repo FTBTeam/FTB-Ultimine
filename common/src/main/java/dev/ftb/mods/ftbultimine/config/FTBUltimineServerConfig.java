@@ -18,9 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
+import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
-import static dev.ftb.mods.ftbultimine.utils.IOUtil.SERVER_CONFIG_DIR;
-import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
 
 /**
  * @author LatvianModder
@@ -49,7 +50,7 @@ public interface FTBUltimineServerConfig {
 			"These tags will be considered the same block when checking for blocks to Ultimine");
 
 	static void load(MinecraftServer server) {
-		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR));
+		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR), MOD_ID);
 		MERGE_TAGS.tags = null;
 
 		if (MAX_BLOCKS.get() > 8192) {

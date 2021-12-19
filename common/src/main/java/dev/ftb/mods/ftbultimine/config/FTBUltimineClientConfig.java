@@ -1,11 +1,11 @@
 package dev.ftb.mods.ftbultimine.config;
 
+import dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 
+import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.*;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
-import static dev.ftb.mods.ftbultimine.utils.IOUtil.LOCAL_DIR;
-import static dev.ftb.mods.ftbultimine.utils.IOUtil.loadDefaulted;
 
 /**
  * @author LatvianModder
@@ -26,6 +26,6 @@ public interface FTBUltimineClientConfig {
 					"Keep in mind this may get *very* laggy for large amounts of blocks!");
 
 	static void load() {
-		loadDefaulted(CONFIG, LOCAL_DIR);
+		loadDefaulted(CONFIG, LOCAL_DIR, MOD_ID);
 	}
 }
