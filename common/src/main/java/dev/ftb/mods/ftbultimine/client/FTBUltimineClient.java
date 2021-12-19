@@ -130,28 +130,28 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return EventResult.interruptFalse();
 		}
 
-		return EventResult.interruptTrue();
+		return EventResult.pass();
 	}
 
 	public EventResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
 		{
 			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
-				return EventResult.interruptTrue();
+				return EventResult.pass();
 			}
 
 			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
-				return EventResult.interruptTrue();
+				return EventResult.pass();
 			}
 
 			if (!pressed || !sneak()) {
-				return EventResult.interruptTrue();
+				return EventResult.pass();
 			}
 
 			hasScrolled = true;
 			new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
 			lastToggle = System.currentTimeMillis();
 		}
-		return EventResult.interruptTrue();
+		return EventResult.pass();
 	}
 
 	private boolean sneak() {
