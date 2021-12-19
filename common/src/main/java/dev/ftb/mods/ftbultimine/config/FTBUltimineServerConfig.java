@@ -1,11 +1,11 @@
 package dev.ftb.mods.ftbultimine.config;
 
+import dev.architectury.hooks.tags.TagHooks;
 import dev.ftb.mods.ftblibrary.snbt.config.DoubleValue;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.StringListValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import me.shedaniel.architectury.hooks.TagHooks;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BlockTags;
@@ -78,7 +78,7 @@ public interface FTBUltimineServerConfig {
 				value.get().forEach(s -> {
 					ResourceLocation rl = ResourceLocation.tryParse(s);
 					if (rl != null) {
-						tags.add(TagHooks.getBlockOptional(rl));
+						tags.add(TagHooks.optionalBlock(rl));
 					} else {
 						Pattern pattern = regexFromGlobString(s);
 						BlockTags.getAllTags().getAllTags().forEach((id, tag) -> {
