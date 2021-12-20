@@ -24,6 +24,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -161,26 +162,26 @@ public class FTBUltimine {
 
 	public EventResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
 		if (isBreakingBlock || !canUltimine(player)) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		FTBUltiminePlayerData data = get(player);
 
 		if (!data.pressed) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		data.clearCache();
 		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		isBreakingBlock = true;
@@ -228,19 +229,19 @@ public class FTBUltimine {
 
 	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
 		if (!(player instanceof ServerPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		ServerPlayer serverPlayer = (ServerPlayer) player;
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(serverPlayer);
 
 		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		FTBUltiminePlayerData data = get(player);
@@ -248,7 +249,7 @@ public class FTBUltimine {
 		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
 		if (shapeContext == null || !data.pressed || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
-			return EventResult.interruptTrue();
+			return EventResult.pass();
 		}
 
 		if (player.getItemInHand(hand).getItem() instanceof HoeItem) {
@@ -325,7 +326,7 @@ public class FTBUltimine {
 			player.swing(hand);
 			return EventResult.interruptFalse();
 		}
-		return EventResult.interruptTrue();
+		return EventResult.pass();
 	}
 
 	public void playerTick(Player player) {
@@ -343,7 +344,7 @@ public class FTBUltimine {
 			tempBlockDroppedXp += ((ExperienceOrb) entity).getValue();
 			return EventResult.interruptFalse();
 		}
-		return EventResult.interruptTrue();
+		return EventResult.pass();
 	}
 
 	public static ResourceLocation id(String path) {
