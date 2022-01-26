@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientGuiEvent;
@@ -38,7 +39,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * @author LatvianModder
@@ -53,7 +58,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private BlockPos cachedPos = null;
 	public boolean hasScrolled = false;
 	private long lastToggle = 0;
-	private final int INPUT_DELAY = 125;
+	public final int INPUT_DELAY = 125;
 
 	public FTBUltimineClient() {
 		ClientLifecycleEvent.CLIENT_SETUP.register(this::setup);
@@ -94,6 +99,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return;
 		}
 
+		// Rewrite this to use shader that does outline instead
+
 		Camera activeRenderInfo = mc.getEntityRenderDispatcher().camera;
 		Vec3 projectedView = activeRenderInfo.getPosition();
 
@@ -101,24 +108,23 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		stack.translate(cachedPos.getX() - projectedView.x, cachedPos.getY() - projectedView.y, cachedPos.getZ() - projectedView.z);
 		Matrix4f matrix = stack.last().pose();
 
-		//TODO Add back after fixing render type
-//		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
-//
-//		for (CachedEdge edge : cachedEdges) {
-//			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
-//			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
-//		}
-//
-//		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
+		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
 
-//		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
+		for (CachedEdge edge : cachedEdges) {
+			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
+			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
+		}
 
-//		for (CachedEdge edge : cachedEdges) {
-//			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
-//			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
-//		}
+		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
 
-//		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
+		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
+
+		for (CachedEdge edge : cachedEdges) {
+			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
+			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
+		}
+
+		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
 
 		stack.popPose();
 	}

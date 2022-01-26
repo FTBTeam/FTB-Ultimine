@@ -12,4 +12,4 @@ pluginManagement {
 
 include "common", "fabric", "forge"
 
-rootProject.name = 'FTB-Ultimine-1.16.5'
+rootProject.name = 'FTB-Ultimine-1.18'
