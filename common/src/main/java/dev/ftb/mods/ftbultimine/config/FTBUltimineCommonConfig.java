@@ -29,6 +29,9 @@ public interface FTBUltimineCommonConfig {
 	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.getBoolean("cancel_on_block_break_fail", false)
 			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
+	BooleanValue REQUIRE_TOOL = CONFIG.getBoolean("require_tool", false)
+			.comment("Require damageable tools or items added to ftbultimine:tools tag to ultimine.");
+
 	static void load() {
 		loadDefaulted(CONFIG, CONFIG_DIR, MOD_ID);
 	}

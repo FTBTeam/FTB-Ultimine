@@ -1,7 +1,11 @@
 package dev.ftb.mods.ftbultimine;
 
 import dev.architectury.event.EventResult;
-import dev.architectury.event.events.common.*;
+import dev.architectury.event.events.common.BlockEvent;
+import dev.architectury.event.events.common.EntityEvent;
+import dev.architectury.event.events.common.InteractionEvent;
+import dev.architectury.event.events.common.LifecycleEvent;
+import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.hooks.tags.TagHooks;
 import dev.architectury.utils.EnvExecutor;
@@ -12,7 +16,14 @@ import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
-import dev.ftb.mods.ftbultimine.shape.*;
+import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
+import dev.ftb.mods.ftbultimine.shape.EscapeTunnelShape;
+import dev.ftb.mods.ftbultimine.shape.MiningTunnelShape;
+import dev.ftb.mods.ftbultimine.shape.Shape;
+import dev.ftb.mods.ftbultimine.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.shape.ShapelessShape;
+import dev.ftb.mods.ftbultimine.shape.SmallSquareShape;
+import dev.ftb.mods.ftbultimine.shape.SmallTunnelShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +35,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -32,6 +42,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -43,7 +55,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 /**
@@ -127,6 +143,28 @@ public class FTBUltimine {
 		return FTBUltimineServerConfig.MAX_BLOCKS.get();
 	}
 
+	public static boolean isValidTool(Item mainHand, Item offHand) {
+		if (STRICT_DENY_TAG.contains(mainHand) || STRICT_DENY_TAG.contains(offHand)) {
+			return false;
+		}
+
+		if (DENY_TAG.contains(mainHand)) {
+			return false;
+		}
+
+		List<Item> allowedTools = ALLOW_TAG.getValues();
+
+		if (FTBUltimineCommonConfig.REQUIRE_TOOL.get()) {
+			if (mainHand == Items.AIR) {
+				return false;
+			}
+
+			return mainHand instanceof TieredItem || mainHand.getMaxDamage() > 0 || allowedTools.contains(mainHand);
+		}
+
+		return allowedTools.isEmpty() || allowedTools.contains(mainHand);
+	}
+
 	public boolean canUltimine(Player player) {
 		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
 			return false;
@@ -142,22 +180,7 @@ public class FTBUltimine {
 
 		Item mainHand = player.getMainHandItem().getItem();
 		Item offHand = player.getOffhandItem().getItem();
-
-		if (STRICT_DENY_TAG.contains(mainHand) || STRICT_DENY_TAG.contains(offHand)) {
-			return false;
-		}
-
-		if (DENY_TAG.contains(mainHand)) {
-			return false;
-		}
-
-		List<Item> allowedTools = ALLOW_TAG.getValues();
-
-		if (!allowedTools.isEmpty() && !allowedTools.contains(mainHand)) {
-			return false;
-		}
-
-		return FTBUltiminePlugins.canUltimine(player);
+		return isValidTool(mainHand, offHand) && FTBUltiminePlugins.canUltimine(player);
 	}
 
 	public EventResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
