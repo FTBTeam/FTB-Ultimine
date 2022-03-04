@@ -1,15 +1,16 @@
 package dev.ftb.mods.ftbultimine.config;
 
-import dev.architectury.hooks.tags.TagHooks;
 import dev.ftb.mods.ftblibrary.snbt.config.DoubleValue;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.StringListValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
 import java.util.Arrays;
@@ -64,7 +65,7 @@ public interface FTBUltimineServerConfig {
 		public final SNBTConfig config;
 		public final StringListValue value;
 
-		private Collection<Tag<Block>> tags = null;
+		private Collection<TagKey<Block>> tags = null;
 
 		public BlockTagsConfig(SNBTConfig parent, String name, List<String> defaults, String... comment) {
 			this.name = name;
@@ -72,18 +73,18 @@ public interface FTBUltimineServerConfig {
 			this.value = config.getStringList(name, defaults).comment(comment);
 		}
 
-		public Collection<Tag<Block>> getTags() {
+		public Collection<TagKey<Block>> getTags() {
 			if (tags == null) {
 				tags = new HashSet<>();
 				value.get().forEach(s -> {
 					ResourceLocation rl = ResourceLocation.tryParse(s);
 					if (rl != null) {
-						tags.add(TagHooks.optionalBlock(rl));
+						tags.add(TagKey.create(Registry.BLOCK_REGISTRY, rl));
 					} else {
 						Pattern pattern = regexFromGlobString(s);
-						BlockTags.getAllTags().getAllTags().forEach((id, tag) -> {
-							if (pattern.asPredicate().test(id.toString())) {
-								tags.add(tag);
+						Registry.BLOCK.getTags().forEach((tag) -> {
+							if (pattern.asPredicate().test(tag.getFirst().location().toString())) {
+								tags.add(tag.getFirst());
 							}
 						});
 					}

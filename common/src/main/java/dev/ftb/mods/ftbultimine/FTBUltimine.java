@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine;
 
+import com.google.common.collect.Lists;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.BlockEvent;
 import dev.architectury.event.events.common.EntityEvent;
@@ -7,7 +8,6 @@ import dev.architectury.event.events.common.InteractionEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.TickEvent;
 import dev.architectury.hooks.level.entity.PlayerHooks;
-import dev.architectury.hooks.tags.TagHooks;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
@@ -26,6 +26,8 @@ import dev.ftb.mods.ftbultimine.shape.SmallSquareShape;
 import dev.ftb.mods.ftbultimine.shape.SmallTunnelShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +35,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -55,11 +57,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -78,10 +76,10 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
-	public static final Tag.Named<Item> DENY_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "excluded_tools"));
-	public static final Tag.Named<Item> STRICT_DENY_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-	public static final Tag.Named<Item> ALLOW_TAG = TagHooks.optionalItem(new ResourceLocation(MOD_ID, "included_tools"));
-	public static final Tag.Named<Block> EXCLUDED_BLOCKS = TagHooks.optionalBlock(new ResourceLocation(MOD_ID, "excluded_blocks"));
+	public static final TagKey<Item> DENY_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "excluded_tools"));
+	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
+	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "included_tools"));
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(MOD_ID, "excluded_blocks"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -144,25 +142,26 @@ public class FTBUltimine {
 	}
 
 	public static boolean isValidTool(Item mainHand, Item offHand) {
-		if (STRICT_DENY_TAG.contains(mainHand) || STRICT_DENY_TAG.contains(offHand)) {
+		if (mainHand.builtInRegistryHolder().is(STRICT_DENY_TAG) || offHand.builtInRegistryHolder().is(STRICT_DENY_TAG)) {
 			return false;
 		}
 
-		if (DENY_TAG.contains(mainHand)) {
+		if (mainHand.builtInRegistryHolder().is(DENY_TAG)) {
 			return false;
 		}
 
-		List<Item> allowedTools = ALLOW_TAG.getValues();
+		List<Holder<Item>> allowedTools = Lists.newArrayList(Registry.ITEM.getTagOrEmpty(ALLOW_TAG));
+		Holder<Item> mainHandHolder = Holder.direct(mainHand);
 
 		if (FTBUltimineCommonConfig.REQUIRE_TOOL.get()) {
 			if (mainHand == Items.AIR) {
 				return false;
 			}
 
-			return mainHand instanceof TieredItem || mainHand.getMaxDamage() > 0 || allowedTools.contains(mainHand);
+			return mainHand instanceof TieredItem || mainHand.getMaxDamage() > 0 || allowedTools.contains(mainHandHolder);
 		}
 
-		return allowedTools.isEmpty() || allowedTools.contains(mainHand);
+		return allowedTools.isEmpty() || allowedTools.contains(mainHandHolder);
 	}
 
 	public boolean canUltimine(Player player) {
@@ -277,6 +276,7 @@ public class FTBUltimine {
 
 		if (player.getItemInHand(hand).getItem() instanceof HoeItem) {
 			ResourceLocation dirtTag = new ResourceLocation("ftbultimine", "farmland_tillable");
+			TagKey<Block> dirtKey = TagKey.create(Registry.BLOCK_REGISTRY, dirtTag);
 
 			if (!player.level.isClientSide()) {
 				boolean playSound = false;
@@ -286,7 +286,8 @@ public class FTBUltimine {
 					BlockPos p = data.cachedBlocks.get(i);
 					BlockState state = player.level.getBlockState(p);
 
-					if (!BlockTags.getAllTags().getTagOrEmpty(dirtTag).contains(state.getBlock())) {
+					//!BlockTags.getAllTags().getTagOrEmpty(dirtTag).contains(state.getBlock())
+					if (!state.is(dirtKey)) {
 						continue;
 					}
 

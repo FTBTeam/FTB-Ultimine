@@ -15,7 +15,7 @@ public interface BlockMatcher {
 	boolean check(BlockState original, BlockState state);
 
 	default boolean actualCheck(BlockState original, BlockState state) {
-		if (FTBUltimine.EXCLUDED_BLOCKS.contains(state.getBlock())) {
+		if (state.is(FTBUltimine.EXCLUDED_BLOCKS)) {
 			return false;
 		}
 
