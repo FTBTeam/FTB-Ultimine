@@ -22,7 +22,7 @@
 	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.12.12",
-		"minecraft": ">=1.18.2",
+		"minecraft": ">=1.19",
 		"architectury": ">=3.2.52",
 		"ftblibrary": ">=1801.3.5-build.99"
 	}
