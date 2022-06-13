@@ -79,7 +79,7 @@ if (ENV.CURSEFORGE_KEY) {
 			addGameVersion "1.19"
 			mainArtifact(remapJar.archivePath)
 			relations {
-				requiredDependency 'architectury-forge'
+				requiredDependency 'architectury-api'
 				requiredDependency 'ftb-library-forge'
 			}
 			changelog = getGitChangelog
