@@ -27,10 +27,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -39,11 +38,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author LatvianModder
@@ -165,36 +160,36 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	private void addPressedInfo(List<MutableComponent> list) {
-		list.add(new TranslatableComponent("ftbultimine.info.base",
-				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
-						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
+		list.add(Component.translatable("ftbultimine.info.base",
+				canUltimine ? Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
+						: Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
 		));
 
 		if (!hasScrolled) {
-			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
+			list.add(Component.translatable("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
 		}
 
 		if (SendShapePacket.current != null) {
 			if (sneak()) {
-				list.add(new TextComponent(""));
-				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY)
-						.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+				list.add(Component.literal(""));
+				list.add(Component.literal("^ ").withStyle(ChatFormatting.GRAY)
+						.append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
 			}
 
-			MutableComponent mining = new TextComponent("- ")
-					.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName()));
+			MutableComponent mining = Component.literal("- ")
+					.append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.getName()));
 
 			if (canUltimine && actualBlocks != 0) {
-				mining.append(" (").append(new TranslatableComponent("ftbultimine.info.blocks", actualBlocks));
+				mining.append(" (").append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
 				if (actualBlocks > shapeBlocks.size()) {
-					mining.append(", ").append(new TranslatableComponent("ftbultimine.info.partial_render", shapeBlocks.size()));
+					mining.append(", ").append(Component.translatable("ftbultimine.info.partial_render", shapeBlocks.size()));
 				}
 				mining.append(")");
 			}
 			list.add(mining);
 
 			if (sneak()) {
-				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+				list.add(Component.literal("v ").withStyle(ChatFormatting.GRAY).append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.next.getName())));
 			}
 		}
 	}
