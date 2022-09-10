@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[39,)"
+loaderVersion = "[43,)"
 issueTrackerURL = "https://github.com/FTBTeam/FTB-Ultimine/issues"
 license = "All Rights Reserved"
 
@@ -15,14 +15,14 @@ Allows you to break multiple blocks at once
 [[dependencies.ftbultimine]]
 modId = "forge"
 mandatory = true
-versionRange = "[39,)"
+versionRange = "[43,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.19,)"
+versionRange = "[1.19.2,)"
 ordering = "NONE"
 side = "BOTH"
 
