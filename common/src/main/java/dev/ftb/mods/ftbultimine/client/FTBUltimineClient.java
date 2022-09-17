@@ -56,7 +56,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public final int INPUT_DELAY = 125;
 
 	public FTBUltimineClient() {
-		ClientLifecycleEvent.CLIENT_SETUP.register(this::setup);
+		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
 
 		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
 
@@ -68,10 +68,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		ClientRawInputEvent.MOUSE_SCROLLED.register(this::mouseEvent);
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
-	}
-
-	private void setup(Minecraft minecraft) {
-		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
 	}
 
 	@Override
