@@ -135,23 +135,21 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	public EventResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
-		{
-			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
-				return EventResult.pass();
-			}
-
-			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
-				return EventResult.pass();
-			}
-
-			if (!pressed || !sneak()) {
-				return EventResult.pass();
-			}
-
-			hasScrolled = true;
-			new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
-			lastToggle = System.currentTimeMillis();
+		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
+			return EventResult.pass();
 		}
+
+		if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
+			return EventResult.pass();
+		}
+
+		if (!pressed || !sneak()) {
+			return EventResult.pass();
+		}
+
+		hasScrolled = true;
+		new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
+		lastToggle = System.currentTimeMillis();
 		return EventResult.pass();
 	}
 
