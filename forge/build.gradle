@@ -77,9 +77,10 @@ if (ENV.CURSEFORGE_KEY) {
 			releaseType = project.curseforge_type
 			addGameVersion "Forge"
 			addGameVersion "1.18.2"
+			addGameVersion "Java 17"
 			mainArtifact(remapJar.archivePath)
 			relations {
-				requiredDependency 'architectury-forge'
+				requiredDependency 'architectury-api'
 				requiredDependency 'ftb-library-forge'
 			}
 			changelog = getGitChangelog
