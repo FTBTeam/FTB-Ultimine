@@ -1,12 +1,7 @@
 package dev.ftb.mods.ftbultimine;
 
-import com.google.common.collect.Lists;
 import dev.architectury.event.EventResult;
-import dev.architectury.event.events.common.BlockEvent;
-import dev.architectury.event.events.common.EntityEvent;
-import dev.architectury.event.events.common.InteractionEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.TickEvent;
+import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
@@ -16,17 +11,9 @@ import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
-import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
-import dev.ftb.mods.ftbultimine.shape.EscapeTunnelShape;
-import dev.ftb.mods.ftbultimine.shape.MiningTunnelShape;
-import dev.ftb.mods.ftbultimine.shape.Shape;
-import dev.ftb.mods.ftbultimine.shape.ShapeContext;
-import dev.ftb.mods.ftbultimine.shape.ShapelessShape;
-import dev.ftb.mods.ftbultimine.shape.SmallSquareShape;
-import dev.ftb.mods.ftbultimine.shape.SmallTunnelShape;
+import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -34,7 +21,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -44,7 +30,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -141,27 +126,32 @@ public class FTBUltimine {
 		return FTBUltimineServerConfig.MAX_BLOCKS.get();
 	}
 
-	public static boolean isValidTool(Item mainHand, Item offHand) {
-		if (mainHand.builtInRegistryHolder().is(STRICT_DENY_TAG) || offHand.builtInRegistryHolder().is(STRICT_DENY_TAG)) {
+	/**
+	 * Validates if a tool is correct to use. If the strict tag is on an item it applies to the main and offhand slots.
+	 * If to deny tag is on an item it'll deny the main hand item, not sure where this would be required... If the required
+	 * tool config is on, we have to be either a {@link TieredItem} or have a max damage, or be added to the ALLOW_TAG.
+	 *
+	 * If no strict deny and no normal deny, and we do not require a tool via config then let everything through
+	 *
+	 * @param mainHand item in the main hand
+	 * @param offHand  item in the offhand
+	 *
+	 * @return if the tool is valid to be used
+	 */
+	public static boolean isValidTool(ItemStack mainHand, ItemStack offHand) {
+		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG) || mainHand.is(DENY_TAG)) {
 			return false;
 		}
-
-		if (mainHand.builtInRegistryHolder().is(DENY_TAG)) {
-			return false;
-		}
-
-		List<Holder<Item>> allowedTools = Lists.newArrayList(Registry.ITEM.getTagOrEmpty(ALLOW_TAG));
-		Holder<Item> mainHandHolder = Holder.direct(mainHand);
 
 		if (FTBUltimineCommonConfig.REQUIRE_TOOL.get()) {
-			if (mainHand == Items.AIR) {
+			if (mainHand.isEmpty()) {
 				return false;
 			}
 
-			return mainHand instanceof TieredItem || mainHand.getMaxDamage() > 0 || allowedTools.contains(mainHandHolder);
+			return mainHand.getItem() instanceof TieredItem || mainHand.getMaxDamage() > 0 || mainHand.is(ALLOW_TAG);
 		}
 
-		return allowedTools.isEmpty() || allowedTools.contains(mainHandHolder);
+		return true;
 	}
 
 	public boolean canUltimine(Player player) {
@@ -177,8 +167,8 @@ public class FTBUltimine {
 			return false;
 		}
 
-		Item mainHand = player.getMainHandItem().getItem();
-		Item offHand = player.getOffhandItem().getItem();
+		var mainHand = player.getMainHandItem();
+		var offHand = player.getOffhandItem();
 		return isValidTool(mainHand, offHand) && FTBUltiminePlugins.canUltimine(player);
 	}
 
