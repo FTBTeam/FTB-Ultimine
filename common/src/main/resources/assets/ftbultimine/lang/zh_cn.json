@@ -1,0 +1,18 @@
+{
+  "key.ftbultimine": "FTB 连锁破坏",
+  "key.categories.ftbultimine": "FTB 连锁破坏",
+  "ftbultimine.info.base": "FTB 连锁破坏 %s",
+  "ftbultimine.info.active": "激活",
+  "ftbultimine.info.not_active": "未激活",
+  "ftbultimine.info.blocks": "破坏 %d 个方块",
+  "ftbultimine.info.partial_render": "已描绘 %d 个方块",
+  "ftbultimine.change_shape": "按住 Shift + (鼠标滚轮上/下) 选择挖掘形状",
+  "ftbultimine.shape.shapeless": "无形状",
+  "ftbultimine.shape.small_tunnel": "小型隧道",
+  "ftbultimine.shape.small_square": "小型方格",
+  "ftbultimine.shape.mining_tunnel": "挖掘隧道",
+  "ftbultimine.shape.escape_tunnel": "逃生隧道",
+  "ftbultimine.config": "FTB 连锁破坏 配置",
+  "item.ftbultimine.ultiminer": "连锁破坏",
+  "item.ftbultimine.ultiminer.tooltip": "启用时使用 %s 键激活"
+}
