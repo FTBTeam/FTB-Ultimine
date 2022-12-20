@@ -353,6 +353,7 @@ public class FTBUltimine {
 	public EventResult entityJoinedWorld(Entity entity, Level level) {
 		if (isBreakingBlock && entity instanceof ItemEntity) {
 			tempBlockDropsList.add(((ItemEntity) entity).getItem());
+			((ItemEntity) entity).setItem(ItemStack.EMPTY);
 			return EventResult.interruptFalse();
 		} else if (isBreakingBlock && entity instanceof ExperienceOrb) {
 			tempBlockDroppedXp += ((ExperienceOrb) entity).getValue();
