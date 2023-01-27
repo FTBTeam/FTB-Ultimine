@@ -40,7 +40,7 @@ public class FTBUltiminePlayerData {
 
 	public static HitResult rayTrace(ServerPlayer player) {
 		double distance = PlatformMethods.reach(player);
-		return player.pick(player.isCreative() ? distance : distance - 0.5D, 1F, false);
+		return player.pick(player.isCreative() ? distance + 0.5D : distance, 1F, false);
 	}
 
 	public void checkBlocks(ServerPlayer player, boolean sendUpdate, int maxBlocks) {
