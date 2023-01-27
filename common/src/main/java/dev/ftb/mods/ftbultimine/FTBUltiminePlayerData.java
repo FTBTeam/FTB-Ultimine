@@ -86,8 +86,8 @@ public class FTBUltiminePlayerData {
 			context.maxBlocks = maxBlocks;
 			context.original = player.level.getBlockState(cachedPos);
 
-			if (BlockMatcher.TAGS_MATCH.actualCheck(context.original, context.original)) {
-				context.matcher = BlockMatcher.TAGS_MATCH;
+			if (shape.getTagMatcher().actualCheck(context.original, context.original)) {
+				context.matcher = shape.getTagMatcher();
 			} else if (BlockMatcher.BUSH.actualCheck(context.original, context.original)) {
 				context.matcher = BlockMatcher.BUSH;
 			}

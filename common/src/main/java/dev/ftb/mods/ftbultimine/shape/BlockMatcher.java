@@ -23,7 +23,8 @@ public interface BlockMatcher {
 	}
 
 	BlockMatcher MATCH = (original, state) -> original.getBlock() == state.getBlock();
-	BlockMatcher TAGS_MATCH = (original, state) -> FTBUltimineServerConfig.MERGE_TAGS.getTags().stream().filter(original::is).anyMatch(state::is);
+	BlockMatcher TAGS_MATCH_SHAPELESS = (original, state) -> FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS.getTags().stream().filter(original::is).anyMatch(state::is);
+	BlockMatcher TAGS_MATCH_SHAPED = (original, state) -> FTBUltimineServerConfig.MERGE_TAGS_SHAPED.getTags().stream().filter(original::is).anyMatch(state::is);
 	BlockMatcher BUSH = (original, state) -> state.getBlock() instanceof BushBlock && getBushType(state.getBlock()) == getBushType(original.getBlock());
 
 	static int getBushType(Block block) {

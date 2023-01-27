@@ -86,6 +86,11 @@ public class ShapelessShape extends Shape {
 	}
 
 	@Override
+	public BlockMatcher getTagMatcher() {
+		return BlockMatcher.TAGS_MATCH_SHAPELESS;
+	}
+
+	@Override
 	public List<BlockPos> getBlocks(ShapeContext context) {
 		HashSet<BlockPos> known = new HashSet<>();
 		walk(context, known, context.matcher == BlockMatcher.BUSH);

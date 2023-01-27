@@ -52,4 +52,8 @@ public abstract class Shape {
 	public boolean isDefault() {
 		return false;
 	}
+
+	public BlockMatcher getTagMatcher() {
+		return BlockMatcher.TAGS_MATCH_SHAPED;
+	}
 }

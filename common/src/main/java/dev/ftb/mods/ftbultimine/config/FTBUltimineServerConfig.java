@@ -11,10 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
@@ -40,17 +37,23 @@ public interface FTBUltimineServerConfig {
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
 
-	BlockTagsConfig MERGE_TAGS = new BlockTagsConfig(CONFIG, "merge_tags",
-			Arrays.asList(
+	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(CONFIG, "merge_tags",
+			new ArrayList<>(List.of(
 					"minecraft:base_stone_overworld",
 					"c:*_ores",
 					"forge:ores/*"
-			),
-			"These tags will be considered the same block when checking for blocks to Ultimine");
+			)),
+			"These tags will be considered the same block when checking for blocks to Ultimine in shapeless mining mode");
+	BlockTagsConfig MERGE_TAGS_SHAPED = new BlockTagsConfig(CONFIG, "merge_tags_shaped",
+			new ArrayList<>(List.of(
+					"*"
+			)),
+			"These tags will be considered the same block when checking for blocks to Ultimine in shaped mining modes");
 
 	static void load(MinecraftServer server) {
 		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR), MOD_ID);
-		MERGE_TAGS.tags = null;
+		MERGE_TAGS_SHAPELESS.tags = null;
+		MERGE_TAGS_SHAPED.tags = null;
 
 		if (MAX_BLOCKS.get() > 8192) {
 			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
