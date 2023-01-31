@@ -5,12 +5,14 @@ import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
+import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
+import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -89,15 +91,23 @@ public class FTBUltimine {
 
 		Shape.postinit();
 
+		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
 		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
 		EntityEvent.ADD.register(this::entityJoinedWorld);
+		CommandRegistrationEvent.EVENT.register(FTBUltimineCommands::registerCommands);
 	}
 
 	public FTBUltiminePlayerData get(Player player) {
 		return cachedDataMap.computeIfAbsent(player.getUUID(), FTBUltiminePlayerData::new);
+	}
+
+	private void playerJoined(ServerPlayer serverPlayer) {
+		SNBTCompoundTag config = new SNBTCompoundTag();
+		FTBUltimineServerConfig.CONFIG.write(config);
+		new SyncConfigFromServerPacket(config).sendTo(serverPlayer);
 	}
 
 	private void serverStarting(MinecraftServer server) {
@@ -143,7 +153,7 @@ public class FTBUltimine {
 			return false;
 		}
 
-		if (FTBUltimineCommonConfig.REQUIRE_TOOL.get()) {
+		if (FTBUltimineServerConfig.REQUIRE_TOOL.get()) {
 			if (mainHand.isEmpty()) {
 				return false;
 			}
@@ -201,8 +211,13 @@ public class FTBUltimine {
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
+		float baseSpeed = state.getDestroySpeed(world, pos);
 		for (BlockPos p : data.cachedBlocks) {
-			if (!player.gameMode.destroyBlock(p) && FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
+			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
+				continue;
+			}
+			if (!player.gameMode.destroyBlock(p) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -220,7 +235,7 @@ public class FTBUltimine {
 				break;
 			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
 				break;
-			} else if (hadItem && FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get()) {
+			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
 		}

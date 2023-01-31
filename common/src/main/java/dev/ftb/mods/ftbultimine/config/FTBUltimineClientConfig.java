@@ -1,10 +1,13 @@
 package dev.ftb.mods.ftbultimine.config;
 
-import dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil;
+import dev.architectury.platform.Platform;
+import dev.ftb.mods.ftblibrary.config.ConfigGroup;
+import dev.ftb.mods.ftblibrary.config.IntConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.*;
+import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.LOCAL_DIR;
+import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
 
 /**
@@ -27,5 +30,18 @@ public interface FTBUltimineClientConfig {
 
 	static void load() {
 		loadDefaulted(CONFIG, LOCAL_DIR, MOD_ID);
+	}
+
+	static ConfigGroup getConfigGroup() {
+		ConfigGroup group = new ConfigGroup(MOD_ID + ".client_settings");
+
+		CONFIG.createClientConfig(group);
+
+		group.savedCallback = accepted -> {
+			if (accepted) {
+				CONFIG.save(Platform.getGameFolder().resolve("local/" + MOD_ID + "-client.snbt"));
+			}
+		};
+		return group;
 	}
 }

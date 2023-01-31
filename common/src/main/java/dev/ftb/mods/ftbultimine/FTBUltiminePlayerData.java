@@ -20,7 +20,7 @@ import java.util.UUID;
  * @author LatvianModder
  */
 public class FTBUltiminePlayerData {
-	public final UUID id;
+	private final UUID id;
 	public boolean pressed = false;
 	public Shape shape = Shape.get("");
 
@@ -50,7 +50,7 @@ public class FTBUltiminePlayerData {
 
 		HitResult result = rayTrace(player);
 
-		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
+		if (!(result instanceof BlockHitResult hitResult) || result.getType() != HitResult.Type.BLOCK) {
 			if (cachedBlocks != null && !cachedBlocks.isEmpty()) {
 				clearCache();
 
@@ -62,10 +62,8 @@ public class FTBUltiminePlayerData {
 			return;
 		}
 
-		BlockHitResult r = (BlockHitResult) result;
-
-		if (cachedDirection != r.getDirection() || cachedPos == null || !cachedPos.equals(r.getBlockPos())) {
-			updateBlocks(player, r.getBlockPos(), r.getDirection(), sendUpdate, maxBlocks);
+		if (cachedDirection != hitResult.getDirection() || cachedPos == null || !cachedPos.equals(hitResult.getBlockPos())) {
+			updateBlocks(player, hitResult.getBlockPos(), hitResult.getDirection(), sendUpdate, maxBlocks);
 		}
 	}
 

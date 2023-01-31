@@ -13,6 +13,9 @@ public interface FTBUltimineNet {
 	MessageType SEND_SHAPE = NET.registerS2C("send_shape", SendShapePacket::new);
 	MessageType KEY_PRESSED = NET.registerC2S("key_pressed", KeyPressedPacket::new);
 	MessageType MODE_CHANGED = NET.registerC2S("mode_changed", ModeChangedPacket::new);
+	MessageType SYNC_CONFIG_FROM_SERVER = NET.registerS2C("sync_config_from_server", SyncConfigFromServerPacket::new);
+	MessageType SYNC_CONFIG_TO_SERVER = NET.registerC2S("sync_config_to_server", SyncConfigToServerPacket::new);
+	MessageType EDIT_CONFIG = NET.registerS2C("edit_config", EditConfigPacket::new);
 
 	static void init() {
 	}

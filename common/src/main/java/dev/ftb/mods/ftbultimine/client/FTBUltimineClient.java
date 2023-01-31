@@ -12,9 +12,11 @@ import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
+import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
@@ -77,6 +79,15 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		shapeBlocks = blocks.subList(0, maxRendered);
 		cachedEdges = null;
 		updateEdges();
+	}
+
+	@Override
+	public void editConfig(boolean isClientConfig) {
+		if (isClientConfig) {
+			new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup()).openGui();
+		} else {
+			new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup()).openGui();
+		}
 	}
 
 	public void renderInGame(PoseStack stack) {

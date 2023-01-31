@@ -1,16 +1,20 @@
 package dev.ftb.mods.ftbultimine.config;
 
 import dev.ftb.mods.ftblibrary.snbt.config.BooleanValue;
+import dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.CONFIG_DIR;
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
 
 /**
  * @author LatvianModder
+ *
+ * TODO: remove this in 1.19.3 release - migrated into server config
  */
 public interface FTBUltimineCommonConfig {
 	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID)
@@ -33,6 +37,10 @@ public interface FTBUltimineCommonConfig {
 			.comment("Require damageable tools or items added to ftbultimine:tools tag to ultimine.");
 
 	static void load() {
-		loadDefaulted(CONFIG, CONFIG_DIR, MOD_ID);
+		// backwards compat: we load this only if it exists, for merging into the server config
+		Path commonPath = ConfigUtil.CONFIG_DIR.resolve(MOD_ID + ".snbt").toAbsolutePath();
+		if (Files.exists(commonPath)) {
+			CONFIG.load(commonPath);
+		}
 	}
 }
