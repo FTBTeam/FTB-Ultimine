@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -62,7 +63,7 @@ public interface FTBUltimineServerConfig {
 			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
 	BooleanValue REQUIRE_TOOL = CONFIG.getBoolean("require_tool", false)
-			.comment("Require damageable tools or items added to ftbultimine:tools tag to ultimine.");
+			.comment("Require a damageable tool, or an item in the ftbultimine:tools tag, to ultimine.");
 
 //	BooleanValue USE_TRINKET = CONFIG.getBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
@@ -130,7 +131,7 @@ public interface FTBUltimineServerConfig {
 
 		public boolean match(BlockState original, BlockState toTest) {
 			var tags = getTags();
-			return matchAny && !toTest.isAir() && !(toTest.getBlock() instanceof LiquidBlock)
+			return matchAny && !toTest.isAir() && !(toTest.getBlock() instanceof LiquidBlock) && !(original.getBlock() instanceof EntityBlock)
 					|| tags.stream().filter(original::is).anyMatch(toTest::is);
 		}
 

@@ -86,6 +86,7 @@ public class FTBUltimine {
 		Shape.register(new ShapelessShape());
 		Shape.register(new SmallTunnelShape());
 		Shape.register(new SmallSquareShape());
+		Shape.register(new LargeTunnelShape());
 		Shape.register(new MiningTunnelShape());
 		Shape.register(new EscapeTunnelShape());
 
@@ -255,11 +256,9 @@ public class FTBUltimine {
 	}
 
 	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
-		if (!(player instanceof ServerPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
+		if (!(player instanceof ServerPlayer serverPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
 			return EventResult.pass();
 		}
-
-		ServerPlayer serverPlayer = (ServerPlayer) player;
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
 			return EventResult.pass();
@@ -316,7 +315,7 @@ public class FTBUltimine {
 
 			player.swing(hand);
 			return EventResult.interruptFalse();
-		} else if (shapeContext.matcher == BlockMatcher.BUSH) {
+		} else if (shapeContext.matcher() == BlockMatcher.BUSH) {
 			ItemCollection itemCollection = new ItemCollection();
 
 			for (BlockPos pos : data.cachedBlocks) {

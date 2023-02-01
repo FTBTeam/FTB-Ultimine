@@ -8,6 +8,7 @@ import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -68,28 +69,24 @@ public class FTBUltiminePlayerData {
 	}
 
 	@Nullable
-	public ShapeContext updateBlocks(ServerPlayer player, BlockPos p, Direction d, boolean sendUpdate, int maxBlocks) {
+	public ShapeContext updateBlocks(ServerPlayer player, BlockPos pos, Direction dir, boolean sendUpdate, int maxBlocks) {
 		ShapeContext context = null;
-		cachedPos = p;
-		cachedDirection = d;
+		cachedPos = pos.immutable();
+		cachedDirection = dir;
 
 		if (maxBlocks <= 0) {
 			cachedBlocks = Collections.emptyList();
 		} else {
-			context = new ShapeContext();
-			context.player = player;
-			context.pos = cachedPos;
-			context.face = cachedDirection;
-			context.matcher = BlockMatcher.MATCH;
-			context.maxBlocks = maxBlocks;
-			context.original = player.level.getBlockState(cachedPos);
-
-			if (shape.getTagMatcher().actualCheck(context.original, context.original)) {
-				context.matcher = shape.getTagMatcher();
-			} else if (BlockMatcher.BUSH.actualCheck(context.original, context.original)) {
-				context.matcher = BlockMatcher.BUSH;
+			BlockState origState = player.level.getBlockState(cachedPos);
+			BlockMatcher matcher;
+			if (shape.getTagMatcher().actualCheck(origState, origState)) {
+				matcher = shape.getTagMatcher();
+			} else if (BlockMatcher.BUSH.actualCheck(origState, origState)) {
+				matcher = BlockMatcher.BUSH;
+			} else {
+				matcher = BlockMatcher.MATCH;
 			}
-
+			context = new ShapeContext(player, cachedPos, cachedDirection, player.level.getBlockState(cachedPos), matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
 		}
 

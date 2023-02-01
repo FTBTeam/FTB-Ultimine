@@ -34,7 +34,7 @@ public abstract class Shape {
 	public Shape prev;
 
 	public static void postinit() {
-		ArrayList<Shape> list = new ArrayList<>(MAP.values());
+		List<Shape> list = new ArrayList<>(MAP.values());
 
 		for (int i = 0; i < list.size() - 1; i++) {
 			list.get(i).next = list.get(i + 1);

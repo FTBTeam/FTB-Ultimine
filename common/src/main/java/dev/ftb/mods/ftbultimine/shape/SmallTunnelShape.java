@@ -16,16 +16,16 @@ public class SmallTunnelShape extends Shape {
 
 	@Override
 	public List<BlockPos> getBlocks(ShapeContext context) {
-		List<BlockPos> list = new ArrayList<>(context.maxBlocks);
+		List<BlockPos> list = new ArrayList<>(context.maxBlocks());
 
-		for (int i = 0; i < context.maxBlocks; i++) {
-			BlockPos p = new BlockPos(context.pos.getX() - context.face.getStepX() * i, context.pos.getY() - context.face.getStepY() * i, context.pos.getZ() - context.face.getStepZ() * i);
+		for (int i = 0; i < context.maxBlocks(); i++) {
+			BlockPos pos = context.pos().relative(context.face(), -i);
 
-			if (!context.check(p)) {
+			if (!context.check(pos)) {
 				break;
 			}
 
-			list.add(p);
+			list.add(pos);
 		}
 
 		return list;
