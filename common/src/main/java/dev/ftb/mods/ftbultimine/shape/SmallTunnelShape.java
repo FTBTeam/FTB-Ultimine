@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author LatvianModder
  */
-public class SmallTunnelShape extends Shape {
+public class SmallTunnelShape implements Shape {
 	@Override
 	public String getName() {
 		return "small_tunnel";

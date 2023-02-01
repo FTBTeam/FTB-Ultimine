@@ -23,6 +23,11 @@ public interface FTBUltimineClientConfig {
 	IntValue xOffset = CONFIG.getInt("x_offset", -1)
 			.comment("Manual x offset of FTB Ultimine overlay, required for some modpacks");
 
+	IntValue shapeMenuContextLines = CONFIG.getInt("shape_menu_context_lines", 2)
+			.range(1, 5)
+			.comment("When displaying the shape selection menu by holding the Ultimine key",
+					"and sneaking at the same time, the number of shape names to display",
+					"above and below the selected shape");
 	IntValue renderOutline = CONFIG.getInt("render_outline", 256)
 			.range(0, Integer.MAX_VALUE)
 			.comment("Maximum number of blocks the white outline should be rendered for",

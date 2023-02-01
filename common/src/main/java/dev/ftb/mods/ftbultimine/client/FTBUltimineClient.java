@@ -21,6 +21,7 @@ import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
+import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
@@ -56,11 +57,13 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public boolean hasScrolled = false;
 	private long lastToggle = 0;
 	public final int INPUT_DELAY = 125;
+	private int shapeIdx = 0;  // shape index of client player's current shape
 
 	public FTBUltimineClient() {
 		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
 
 		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
+		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 		ClientGuiEvent.RENDER_HUD.register(this::renderGameOverlay);
@@ -72,8 +75,13 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
 	}
 
+	private void onClientSetup(Minecraft minecraft) {
+		ShapeRegistry.freeze();
+	}
+
 	@Override
-	public void setShape(List<BlockPos> blocks) {
+	public void setShape(int shapeIdx, List<BlockPos> blocks) {
+		this.shapeIdx = shapeIdx;
 		actualBlocks = blocks.size();
 		int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.renderOutline.get());
 		shapeBlocks = blocks.subList(0, maxRendered);
@@ -174,27 +182,33 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			list.add(Component.translatable("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
 		}
 
-		if (SendShapePacket.current != null) {
-			if (sneak()) {
-				list.add(Component.literal(""));
-				list.add(Component.literal("^ ").withStyle(ChatFormatting.GRAY)
-						.append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.shapeMenuContextLines.get());
+
+		if (sneak()) {
+			list.add(Component.literal(""));
+			for (int i = -context; i < 0; i++) {
+				String prefix = i == -context ? "^ " : " | ";
+				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
+						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
 			}
+		}
 
-			MutableComponent mining = Component.literal("- ")
-					.append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.getName()));
+		MutableComponent mining = Component.literal("- ")
+				.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx).getName()));
 
-			if (canUltimine && actualBlocks != 0) {
-				mining.append(" (").append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
-				if (actualBlocks > shapeBlocks.size()) {
-					mining.append(", ").append(Component.translatable("ftbultimine.info.partial_render", shapeBlocks.size()));
-				}
-				mining.append(")");
+		if (canUltimine && actualBlocks != 0) {
+			mining.append(" (").append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
+			if (actualBlocks > shapeBlocks.size()) {
+				mining.append(", ").append(Component.translatable("ftbultimine.info.partial_render", shapeBlocks.size()));
 			}
-			list.add(mining);
+			mining.append(")");
+		}
+		list.add(mining);
 
-			if (sneak()) {
-				list.add(Component.literal("v ").withStyle(ChatFormatting.GRAY).append(Component.translatable("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+		if (sneak()) {
+			for (int i = 1; i <= context; i++) {
+				String prefix = i == context ? "v " : " | ";
+				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY).append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
 			}
 		}
 	}

@@ -18,6 +18,8 @@
 	"item.ftbultimine.ultiminer.tooltip": "Enables the use of %s when active",
 	"ftbultimine.client_settings": "Client Settings",
 	"ftbultimine.client_settings.render_outline": "Max. Blocks to Render Outline for",
+	"ftbultimine.client_settings.shape_menu_context_lines": "Shape Menu Context Lines",
+	"ftbultimine.client_settings.shape_menu_context_lines.tooltip": "When displaying the shape selection menu by holding the Ultimine key and sneaking at the same time, the number of shape names to display above and below the selected shape",
 	"ftbultimine.client_settings.x_offset": "Render Offset (currently unused)",
 	"ftbultimine.server_settings": "Server Settings",
 	"ftbultimine.server_settings.max_blocks": "Max Blocks per Operation",

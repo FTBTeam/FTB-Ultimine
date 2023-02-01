@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class DiagonalTunnelShape extends Shape {
+public abstract class DiagonalTunnelShape implements Shape {
     @Override
     public List<BlockPos> getBlocks(ShapeContext context) {
         Direction face = context.face().getAxis().isVertical() ? context.player().getDirection().getOpposite() : context.face();

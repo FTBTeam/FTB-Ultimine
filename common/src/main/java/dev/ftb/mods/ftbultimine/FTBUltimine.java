@@ -83,14 +83,12 @@ public class FTBUltimine {
 		FTBUltimineCommonConfig.load();
 		FTBUltiminePlugins.init();
 
-		Shape.register(new ShapelessShape());
-		Shape.register(new SmallTunnelShape());
-		Shape.register(new SmallSquareShape());
-		Shape.register(new LargeTunnelShape());
-		Shape.register(new MiningTunnelShape());
-		Shape.register(new EscapeTunnelShape());
-
-		Shape.postinit();
+		ShapeRegistry.register(new ShapelessShape(), true);
+		ShapeRegistry.register(new SmallTunnelShape());
+		ShapeRegistry.register(new SmallSquareShape());
+		ShapeRegistry.register(new LargeTunnelShape());
+		ShapeRegistry.register(new MiningTunnelShape());
+		ShapeRegistry.register(new EscapeTunnelShape());
 
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
@@ -112,25 +110,26 @@ public class FTBUltimine {
 	}
 
 	private void serverStarting(MinecraftServer server) {
+		ShapeRegistry.freeze();
 		cachedDataMap = new HashMap<>();
 		FTBUltimineServerConfig.load(server);
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
 		FTBUltiminePlayerData data = get(player);
-		data.pressed = pressed;
+		data.setPressed(pressed);
 		data.clearCache();
 
-		if (!data.pressed) {
-			new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
+		if (!data.isPressed()) {
+			new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
 		}
 	}
 
 	public void modeChanged(ServerPlayer player, boolean next) {
 		FTBUltiminePlayerData data = get(player);
-		data.shape = next ? data.shape.next : data.shape.prev;
+		data.cycleShape(next);
 		data.clearCache();
-		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
+		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
 	}
 
 	private int getMaxBlocks(Player player) {
@@ -190,7 +189,7 @@ public class FTBUltimine {
 
 		FTBUltiminePlayerData data = get(player);
 
-		if (!data.pressed) {
+		if (!data.isPressed()) {
 			return EventResult.pass();
 		}
 
@@ -250,7 +249,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
+		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
 
 		return EventResult.interruptFalse();
 	}
@@ -274,7 +273,7 @@ public class FTBUltimine {
 		data.clearCache();
 		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
 
-		if (shapeContext == null || !data.pressed || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
+		if (shapeContext == null || !data.isPressed() || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
 			return EventResult.pass();
 		}
 
@@ -321,11 +320,9 @@ public class FTBUltimine {
 			for (BlockPos pos : data.cachedBlocks) {
 				BlockState state = player.level.getBlockState(pos);
 
-				if (!(state.getBlock() instanceof CropBlock)) {
+				if (!(state.getBlock() instanceof CropBlock c)) {
 					continue;
 				}
-
-				CropBlock c = (CropBlock) state.getBlock();
 
 				if (!c.isMaxAge(state)) {
 					continue;

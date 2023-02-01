@@ -4,6 +4,7 @@ import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import dev.ftb.mods.ftbultimine.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,8 +23,8 @@ import java.util.UUID;
  */
 public class FTBUltiminePlayerData {
 	private final UUID id;
-	public boolean pressed = false;
-	public Shape shape = Shape.get("");
+	private boolean pressed = false;
+	private int shapeIndex = 0;
 
 	public BlockPos cachedPos;
 	public Direction cachedDirection;
@@ -39,9 +40,37 @@ public class FTBUltiminePlayerData {
 		cachedBlocks = null;
 	}
 
+	public boolean isPressed() {
+		return pressed;
+	}
+
+	public void setPressed(boolean pressed) {
+		this.pressed = pressed;
+	}
+
 	public static HitResult rayTrace(ServerPlayer player) {
 		double distance = PlatformMethods.reach(player);
 		return player.pick(player.isCreative() ? distance + 0.5D : distance, 1F, false);
+	}
+
+	public Shape getCurrentShape() {
+		return ShapeRegistry.getShape(shapeIndex);
+	}
+
+	public int getCurrentShapeIndex() {
+		return shapeIndex;
+	}
+
+	public void cycleShape(boolean next) {
+		if (next) {
+			if (++shapeIndex >= ShapeRegistry.shapeCount()) {
+				shapeIndex = 0;
+			}
+		} else {
+			if (--shapeIndex < 0) {
+				shapeIndex = ShapeRegistry.shapeCount() - 1;
+			}
+		}
 	}
 
 	public void checkBlocks(ServerPlayer player, boolean sendUpdate, int maxBlocks) {
@@ -56,7 +85,7 @@ public class FTBUltiminePlayerData {
 				clearCache();
 
 				if (sendUpdate) {
-					new SendShapePacket(shape, Collections.emptyList()).sendTo(player);
+					new SendShapePacket(getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
 				}
 			}
 
@@ -73,6 +102,8 @@ public class FTBUltiminePlayerData {
 		ShapeContext context = null;
 		cachedPos = pos.immutable();
 		cachedDirection = dir;
+
+		Shape shape = getCurrentShape();
 
 		if (maxBlocks <= 0) {
 			cachedBlocks = Collections.emptyList();
@@ -91,9 +122,10 @@ public class FTBUltiminePlayerData {
 		}
 
 		if (sendUpdate) {
-			new SendShapePacket(shape, cachedBlocks).sendTo(player);
+			new SendShapePacket(getCurrentShapeIndex(), cachedBlocks).sendTo(player);
 		}
 
 		return context;
 	}
+
 }

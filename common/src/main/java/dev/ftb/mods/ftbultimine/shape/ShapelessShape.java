@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * @author LatvianModder
  */
-public class ShapelessShape extends Shape {
+public class ShapelessShape implements Shape {
 	private static final List<BlockPos> NEIGHBOR_POSITIONS = new ArrayList<>(26);
 	private static final List<BlockPos> NEIGHBOR_POSITIONS_PLANT = new ArrayList<>(24);
 
@@ -30,11 +30,6 @@ public class ShapelessShape extends Shape {
 	@Override
 	public String getName() {
 		return "shapeless";
-	}
-
-	@Override
-	public boolean isDefault() {
-		return true;
 	}
 
 	@Override

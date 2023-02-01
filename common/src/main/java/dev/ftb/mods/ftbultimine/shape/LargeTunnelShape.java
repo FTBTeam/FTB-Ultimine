@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LargeTunnelShape extends Shape {
+public class LargeTunnelShape implements Shape {
     @Override
     public String getName() {
         return "large_tunnel";
