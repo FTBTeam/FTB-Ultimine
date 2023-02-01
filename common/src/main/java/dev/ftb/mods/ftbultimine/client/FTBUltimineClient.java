@@ -20,7 +20,6 @@ import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
-import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
 import net.minecraft.ChatFormatting;
@@ -169,6 +168,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	private boolean sneak() {
+		if (!FTBUltimineClientConfig.requireSneakForMenu.get()) return true;
+
 		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
@@ -208,7 +209,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		if (sneak()) {
 			for (int i = 1; i <= context; i++) {
 				String prefix = i == context ? "v " : " | ";
-				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY).append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
+				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
+						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
 			}
 		}
 	}
