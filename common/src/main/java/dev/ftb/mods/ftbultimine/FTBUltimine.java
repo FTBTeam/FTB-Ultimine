@@ -225,10 +225,7 @@ public class FTBUltimine {
 
 			if (!player.isCreative()) {
 				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
-
-				FoodData foodData = player.getFoodData();
-				if (foodData.getExhaustionLevel() / 4f > foodData.getSaturationLevel() + foodData.getFoodLevel()) {
-					// stop if the exhaustion level is high enough that it would fully deplete the player's food
+				if (isTooExhausted(player)) {
 					break;
 				}
 			}
@@ -332,5 +329,10 @@ public class FTBUltimine {
 
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);
+	}
+
+	public static boolean isTooExhausted(ServerPlayer player) {
+		FoodData data = player.getFoodData();
+		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
 	}
 }
