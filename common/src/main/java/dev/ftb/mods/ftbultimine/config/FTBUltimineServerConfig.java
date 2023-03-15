@@ -1,6 +1,6 @@
 package dev.ftb.mods.ftbultimine.config;
 
-import dev.ftb.mods.ftblibrary.config.*;
+import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
@@ -64,6 +64,15 @@ public interface FTBUltimineServerConfig {
 
 	BooleanValue REQUIRE_TOOL = CONFIG.getBoolean("require_tool", false)
 			.comment("Require a damageable tool, or an item in the ftbultimine:tools tag, to ultimine.");
+
+	BooleanValue RIGHT_CLICK_AXE = CONFIG.getBoolean("right_click_axe", true)
+			.comment("Right-click with an axe with the Ultimine key held to strip multiple logs and scrape/unwax copper blocks");
+	BooleanValue RIGHT_CLICK_SHOVEL = CONFIG.getBoolean("right_click_shovel", true)
+			.comment("Right-click with a shovel with the Ultimine key held to flatten multiple grass/dirt blocks into dirt paths");
+	BooleanValue RIGHT_CLICK_HOE = CONFIG.getBoolean("right_click_hoe", true)
+			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
+	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.getBoolean("right_click_harvesting", true)
+			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
 
 //	BooleanValue USE_TRINKET = CONFIG.getBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",

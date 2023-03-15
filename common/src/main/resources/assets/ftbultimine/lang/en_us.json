@@ -35,5 +35,9 @@
 	"ftbultimine.server_settings.cancel_on_block_break_fail": "Cancel on Block Break Failure",
 	"ftbultimine.server_settings.cancel_on_block_break_fail.tooltip": "Advanced setting: stop digging if unbreakable blocks are encountered instead of skipping over those blocks",
 	"ftbultimine.server_settings.require_tool": "Require Tool to Ultimine",
-	"ftbultimine.server_settings.require_tool.tooltip": "Players must have a damageable tool equipped, or an item in the 'ftbultimine:tools' item tag"
+	"ftbultimine.server_settings.require_tool.tooltip": "Players must have a damageable tool equipped, or an item in the 'ftbultimine:tools' item tag",
+	"ftbultimine.server_settings.right_click_axe": "Axe: Right-Click multiple blocks",
+	"ftbultimine.server_settings.right_click_hoe": "Hoe: Right-Click multiple blocks",
+	"ftbultimine.server_settings.right_click_shovel": "Shovel: Right-Click multiple blocks",
+	"ftbultimine.server_settings.right_click_harvesting": "Allow Ultimine harvesting of crops"
 }

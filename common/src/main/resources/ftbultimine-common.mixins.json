@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "dev.ftb.mods.ftbultimine.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "AxeItemAccess",
+    "ShovelItemAccess"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

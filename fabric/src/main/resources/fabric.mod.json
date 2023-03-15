@@ -19,6 +19,9 @@
 			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineFabric"
 		]
 	},
+	"mixins": [
+		"ftbultimine-common.mixins.json"
+	],
 	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.12.12",

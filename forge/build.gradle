@@ -19,6 +19,14 @@ configurations {
 	dev
 }
 
+loom {
+	forge {
+		mixinConfigs = [
+				"ftbultimine-common.mixins.json"
+		]
+	}
+}
+
 artifacts {
 	dev(jar)
 }
