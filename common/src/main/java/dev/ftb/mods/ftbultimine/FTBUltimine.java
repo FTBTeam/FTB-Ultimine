@@ -29,6 +29,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -224,7 +225,9 @@ public class FTBUltimine {
 			if (!player.isCreative()) {
 				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
 
-				if (player.getFoodData().getFoodLevel() <= 0) {
+				FoodData foodData = player.getFoodData();
+				if (foodData.getExhaustionLevel() / 4f > foodData.getSaturationLevel() + foodData.getFoodLevel()) {
+					// stop if the exhaustion level is high enough that it would fully deplete the player's food
 					break;
 				}
 			}
