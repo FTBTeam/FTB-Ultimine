@@ -29,13 +29,14 @@ side = "BOTH"
 [[dependencies.ftbultimine]]
 modId = "architectury"
 mandatory = true
-versionRange = "[3.2.52,)"
+versionRange = "[6.2.46,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
 modId = "ftblibrary"
 mandatory = true
-versionRange = "[1801.3.5-build.99,)"
+versionRange = "[1902.3.14-build.184,)"
 ordering = "NONE"
 side = "BOTH"
+

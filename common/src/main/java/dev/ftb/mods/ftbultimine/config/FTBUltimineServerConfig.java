@@ -4,10 +4,12 @@ import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -22,8 +24,7 @@ import java.util.regex.Pattern;
 
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
 /**
  * @author LatvianModder
@@ -126,6 +127,10 @@ public interface FTBUltimineServerConfig {
 	static void clearTagCache() {
 		MERGE_TAGS_SHAPELESS.tags = null;
 		MERGE_TAGS_SHAPED.tags = null;
+	}
+
+	static int getMaxBlocks(ServerPlayer player) {
+		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
 	}
 
 	class BlockTagsConfig {

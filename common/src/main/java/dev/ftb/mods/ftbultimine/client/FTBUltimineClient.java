@@ -175,8 +175,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	private void addPressedInfo(List<MutableComponent> list) {
 		list.add(Component.translatable("ftbultimine.info.base",
-				canUltimine ? Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
-						: Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
+				canUltimine && actualBlocks > 0 ?
+						Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C))) :
+						Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
 		));
 
 		if (!hasScrolled) {

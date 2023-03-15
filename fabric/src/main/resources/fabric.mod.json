@@ -26,7 +26,7 @@
 	"depends": {
 		"fabricloader": ">=0.12.12",
 		"minecraft": ">=1.19.2",
-		"architectury": ">=3.2.52",
-		"ftblibrary": ">=1801.3.5-build.99"
+		"architectury": ">=6.2.46",
+		"ftblibrary": ">=1902.3.14-build.184"
 	}
 }

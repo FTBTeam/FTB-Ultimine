@@ -3,6 +3,7 @@ package dev.ftb.mods.ftbultimine;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
+import dev.architectury.platform.Platform;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
@@ -54,6 +55,8 @@ public class FTBUltimine {
 
 	public final FTBUltimineCommon proxy;
 
+	public static boolean ranksMod = false;
+
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
 	private int tempBlockDroppedXp;
@@ -76,6 +79,10 @@ public class FTBUltimine {
 	public FTBUltimine() {
 		instance = this;
 		FTBUltimineNet.init();
+
+		if (Platform.isModLoaded("ftbranks")) {
+			ranksMod = true;
+		}
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
@@ -129,10 +136,6 @@ public class FTBUltimine {
 		data.cycleShape(next);
 		data.clearCache();
 		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
-	}
-
-	private int getMaxBlocks(Player player) {
-		return FTBUltimineServerConfig.MAX_BLOCKS.get();
 	}
 
 	/**
@@ -199,7 +202,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
+		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
 
 		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
 			return EventResult.pass();
@@ -276,7 +279,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, blockHitResult.getDirection(), false, getMaxBlocks(player));
+		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, blockHitResult.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 
 		if (shapeContext == null || !data.isPressed() || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
 			return EventResult.pass();
@@ -302,9 +305,8 @@ public class FTBUltimine {
 	}
 
 	public void playerTick(Player player) {
-		if (!player.level.isClientSide()) {
-			FTBUltiminePlayerData data = get(player);
-			data.checkBlocks((ServerPlayer) player, true, getMaxBlocks(player));
+		if (player instanceof ServerPlayer serverPlayer) {
+			get(player).checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 		}
 	}
 
