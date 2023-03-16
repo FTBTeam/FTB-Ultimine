@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added a new `merge_tags_shaped` config setting, which is used when ultimining shaped areas
   * This is distinct from the existing `merge_tags` setting, which is now only used for shapeless mining
   * See https://github.com/FTBTeam/FTB-Mods-Issues/issues/444 for more discussion on why this was done
+* Added FTB Ranks integration to allow max ultiminable blocks to by set by player's rank
+  * The FTB Ranks permission node to use is `ftbultimine.max_blocks`
+  * if a rank doesn't have this node, then the default max (from config) is used
+* Ultimining is now supported for right-click functionality of axes and shovels
+  * Axes can be used to strip multiple logs or scrape multiple copper blocks
+  * Shovels can be used to flatten multiple dirt/grass blocks into paths
+  * Can be disabled via server config, if desired (along with crop harvesting and farmland tilling)
 
 ### Fixed
 * Fixed player reach distance being 0.5 blocks too short
