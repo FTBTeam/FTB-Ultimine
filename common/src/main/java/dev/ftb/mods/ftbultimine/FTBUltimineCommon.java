@@ -8,6 +8,9 @@ import java.util.List;
  * @author LatvianModder
  */
 public class FTBUltimineCommon {
-	public void setShape(List<BlockPos> blocks) {
+	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 	}
+
+    public void editConfig(boolean isClientConfig) {
+    }
 }

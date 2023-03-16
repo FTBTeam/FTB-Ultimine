@@ -4,7 +4,9 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.networking.simple.BaseS2CMessage;
 import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.shape.Shape;
+import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -15,18 +17,19 @@ import java.util.List;
  * @author LatvianModder
  */
 public class SendShapePacket extends BaseS2CMessage {
-	public static Shape current = null;
+//	public static Shape current = null;
 
-	private final Shape shape;
+	private final int shapeIdx;
 	private final List<BlockPos> blocks;
 
-	public SendShapePacket(Shape s, List<BlockPos> b) {
-		shape = s;
+	public SendShapePacket(int idx, List<BlockPos> b) {
+		shapeIdx = idx;
 		blocks = b;
 	}
 
 	public SendShapePacket(FriendlyByteBuf buf) {
-		shape = Shape.get(buf.readUtf(Short.MAX_VALUE));
+		shapeIdx = buf.readVarInt();
+//		shape = ShapeRegistry.getShape(buf.readUtf(Short.MAX_VALUE));
 		int s = buf.readVarInt();
 		blocks = new ArrayList<>(s);
 
@@ -36,7 +39,8 @@ public class SendShapePacket extends BaseS2CMessage {
 	}
 
 	public void write(FriendlyByteBuf buf) {
-		buf.writeUtf(shape.getName(), Short.MAX_VALUE);
+		buf.writeVarInt(shapeIdx);
+//		buf.writeUtf(shape.getName(), Short.MAX_VALUE);
 		buf.writeVarInt(blocks.size());
 
 		for (BlockPos pos : blocks) {
@@ -52,8 +56,8 @@ public class SendShapePacket extends BaseS2CMessage {
 	@Override
 	public void handle(NetworkManager.PacketContext context) {
 		context.queue(() -> {
-			current = shape;
-			FTBUltimine.instance.proxy.setShape(blocks);
+//			current = shape;
+			FTBUltimine.instance.proxy.setShape(shapeIdx, blocks);
 		});
 	}
 }

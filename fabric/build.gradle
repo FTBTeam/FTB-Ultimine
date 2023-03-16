@@ -34,6 +34,7 @@ dependencies {
 	modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
 	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
+	modApi("dev.ftb.mods:ftb-ranks-fabric:${rootProject.ftb_ranks_version}") { transitive = false }
 
 	common(project(path: ":common", configuration: "dev")) { transitive false }
 	shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
