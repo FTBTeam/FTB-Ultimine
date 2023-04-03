@@ -9,8 +9,10 @@ import java.util.*;
  * @author LatvianModder
  */
 public class ShapelessShape implements Shape {
+	// all blocks in 3x3x3 cube around the block
 	private static final List<BlockPos> NEIGHBOR_POSITIONS = new ArrayList<>(26);
-	private static final List<BlockPos> NEIGHBOR_POSITIONS_PLANT = new ArrayList<>(24);
+	// all blocks in 5x5 square around block's Y-level, plus blocks directly above & below
+	private static final List<BlockPos> NEIGHBOR_POSITIONS_PLANT = new ArrayList<>(26);
 
 	static {
 		for (int x = -1; x <= 1; x++) {
@@ -25,6 +27,8 @@ public class ShapelessShape implements Shape {
 					if (x != 0 || z != 0) NEIGHBOR_POSITIONS_PLANT.add(new BlockPos(x, 0, z));
 				}
 		}
+		NEIGHBOR_POSITIONS_PLANT.add(new BlockPos(0, 1, 0));
+		NEIGHBOR_POSITIONS_PLANT.add(new BlockPos(0, -1, 0));
 	}
 
 	@Override
@@ -40,7 +44,7 @@ public class ShapelessShape implements Shape {
 	@Override
 	public List<BlockPos> getBlocks(ShapeContext context) {
 		HashSet<BlockPos> known = new HashSet<>();
-		walk(context, known, context.matcher() == BlockMatcher.BUSH);
+		walk(context, known, context.matcher() == BlockMatcher.CROP_LIKE);
 
 		List<BlockPos> list = new ArrayList<>(known);
 		list.sort(new EntityDistanceComparator(context.pos()));
@@ -52,7 +56,7 @@ public class ShapelessShape implements Shape {
 		return list;
 	}
 
-	private void walk(ShapeContext context, HashSet<BlockPos> known, boolean plant) {
+	private void walk(ShapeContext context, HashSet<BlockPos> known, boolean cropLike) {
 		Set<BlockPos> traversed = new HashSet<>();
 		Deque<BlockPos> openSet = new ArrayDeque<>();
 		openSet.add(context.pos());
@@ -66,7 +70,7 @@ public class ShapelessShape implements Shape {
 					return;
 				}
 
-				for (BlockPos side : plant ? NEIGHBOR_POSITIONS_PLANT : NEIGHBOR_POSITIONS) {
+				for (BlockPos side : cropLike ? NEIGHBOR_POSITIONS_PLANT : NEIGHBOR_POSITIONS) {
 					BlockPos offset = ptr.offset(side);
 
 					if (traversed.add(offset)) {
