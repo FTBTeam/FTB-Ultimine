@@ -1,9 +1,9 @@
 package dev.ftb.mods.ftbultimine.fabric;
 
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
-import me.shedaniel.architectury.utils.Env;
-import me.shedaniel.architectury.utils.EnvExecutor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 

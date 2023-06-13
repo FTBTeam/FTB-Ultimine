@@ -3,19 +3,13 @@ package dev.ftb.mods.ftbultimine.shape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * @author LatvianModder
  */
-public class ShapeContext {
-	public ServerPlayer player;
-	public BlockPos pos;
-	public Direction face;
-	public BlockState original;
-	public BlockMatcher matcher;
-	public int maxBlocks;
-
+public record ShapeContext(ServerPlayer player, BlockPos pos, Direction face, BlockState original, BlockMatcher matcher, int maxBlocks) {
 	public boolean check(BlockState state) {
 		return matcher.actualCheck(original, state);
 	}

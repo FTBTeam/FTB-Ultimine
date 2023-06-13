@@ -6,20 +6,22 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.client.ClientGuiEvent;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
+import dev.architectury.event.events.client.ClientRawInputEvent;
+import dev.architectury.event.events.client.ClientTickEvent;
+import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
+import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
-import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
-import dev.ftb.mods.ftbultimine.net.SendShapePacket;
+import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
-import me.shedaniel.architectury.event.events.GuiEvent;
-import me.shedaniel.architectury.event.events.client.ClientLifecycleEvent;
-import me.shedaniel.architectury.event.events.client.ClientRawInputEvent;
-import me.shedaniel.architectury.event.events.client.ClientTickEvent;
-import me.shedaniel.architectury.registry.KeyBindings;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.KeyMapping;
@@ -27,12 +29,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -40,17 +40,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author LatvianModder
  */
 public class FTBUltimineClient extends FTBUltimineCommon {
-	private final KeyMapping keyBinding;
+	public static KeyMapping keyBinding;
 	private boolean pressed;
 	private boolean canUltimine;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
@@ -59,17 +55,17 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private BlockPos cachedPos = null;
 	public boolean hasScrolled = false;
 	private long lastToggle = 0;
-	private final int INPUT_DELAY = 125;
+	public final int INPUT_DELAY = 125;
+	private int shapeIdx = 0;  // shape index of client player's current shape
 
 	public FTBUltimineClient() {
-		keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, 96, "key.categories.ftbultimine");
+		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
 
-		KeyBindings.registerKeyBinding(keyBinding);
-
-		ClientLifecycleEvent.CLIENT_WORLD_LOAD.register(__ -> FTBUltimineClientConfig.load());
+		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
+		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
-		GuiEvent.RENDER_HUD.register(this::renderGameOverlay);
+		ClientGuiEvent.RENDER_HUD.register(this::renderGameOverlay);
 
 		// TODO: remove once #6 gets fixed
 		LevelRenderLastEvent.EVENT.register(this::renderInGame);
@@ -78,13 +74,27 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
 	}
 
+	private void onClientSetup(Minecraft minecraft) {
+		ShapeRegistry.freeze();
+	}
+
 	@Override
-	public void setShape(List<BlockPos> blocks) {
+	public void setShape(int shapeIdx, List<BlockPos> blocks) {
+		this.shapeIdx = shapeIdx;
 		actualBlocks = blocks.size();
 		int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.renderOutline.get());
 		shapeBlocks = blocks.subList(0, maxRendered);
 		cachedEdges = null;
 		updateEdges();
+	}
+
+	@Override
+	public void editConfig(boolean isClientConfig) {
+		if (isClientConfig) {
+			new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup()).openGui();
+		} else {
+			new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup()).openGui();
+		}
 	}
 
 	public void renderInGame(PoseStack stack) {
@@ -97,6 +107,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		if (!canUltimine) {
 			return;
 		}
+
+		// Rewrite this to use shader that does outline instead
 
 		Camera activeRenderInfo = mc.getEntityRenderDispatcher().camera;
 		Vec3 projectedView = activeRenderInfo.getPosition();
@@ -126,72 +138,80 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		stack.popPose();
 	}
 
-	public InteractionResult mouseEvent(Minecraft client, double amount) {
+	public EventResult mouseEvent(Minecraft client, double amount) {
 		if (pressed && amount != 0 && sneak()) {
 			hasScrolled = true;
 			new ModeChangedPacket(amount < 0D).sendToServer();
-			return InteractionResult.FAIL;
+			return EventResult.interruptFalse();
 		}
 
-		return InteractionResult.PASS;
+		return EventResult.pass();
 	}
 
-	public InteractionResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
-		{
-			if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
-				return InteractionResult.PASS;
-			}
-
-			if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
-				return InteractionResult.PASS;
-			}
-
-			if (!pressed || !sneak()) {
-				return InteractionResult.PASS;
-			}
-
-			hasScrolled = true;
-			new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
-			lastToggle = System.currentTimeMillis();
+	public EventResult onKeyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
+		if ((System.currentTimeMillis() - lastToggle) < INPUT_DELAY) {
+			return EventResult.pass();
 		}
-		return InteractionResult.PASS;
+
+		if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
+			return EventResult.pass();
+		}
+
+		if (!pressed || !sneak()) {
+			return EventResult.pass();
+		}
+
+		hasScrolled = true;
+		new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
+		lastToggle = System.currentTimeMillis();
+		return EventResult.pass();
 	}
 
 	private boolean sneak() {
+		if (!FTBUltimineClientConfig.requireSneakForMenu.get()) return true;
+
 		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
 	}
 
 	private void addPressedInfo(List<MutableComponent> list) {
-		list.add(new TranslatableComponent("ftbultimine.info.base",
-				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
-						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
+		list.add(Component.translatable("ftbultimine.info.base",
+				canUltimine && actualBlocks > 0 ?
+						Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C))) :
+						Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
 		));
 
 		if (!hasScrolled) {
-			list.add(new TranslatableComponent("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
+			list.add(Component.translatable("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
 		}
 
-		if (SendShapePacket.current != null) {
-			if (sneak()) {
-				list.add(new TextComponent(""));
-				list.add(new TextComponent("^ ").withStyle(ChatFormatting.GRAY)
-						.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.prev.getName())));
+		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.shapeMenuContextLines.get());
+
+		if (sneak()) {
+			list.add(Component.literal(""));
+			for (int i = -context; i < 0; i++) {
+				String prefix = i == -context ? "^ " : " | ";
+				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
+						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
 			}
+		}
 
-			MutableComponent mining = new TextComponent("- ")
-					.append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.getName()));
+		MutableComponent mining = Component.literal("- ")
+				.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx).getName()));
 
-			if (canUltimine && actualBlocks != 0) {
-				mining.append(" (").append(new TranslatableComponent("ftbultimine.info.blocks", actualBlocks));
-				if (actualBlocks > shapeBlocks.size()) {
-					mining.append(", ").append(new TranslatableComponent("ftbultimine.info.partial_render", shapeBlocks.size()));
-				}
-				mining.append(")");
+		if (canUltimine && actualBlocks != 0) {
+			mining.append(" (").append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
+			if (actualBlocks > shapeBlocks.size()) {
+				mining.append(", ").append(Component.translatable("ftbultimine.info.partial_render", shapeBlocks.size()));
 			}
-			list.add(mining);
+			mining.append(")");
+		}
+		list.add(mining);
 
-			if (sneak()) {
-				list.add(new TextComponent("v ").withStyle(ChatFormatting.GRAY).append(new TranslatableComponent("ftbultimine.shape." + SendShapePacket.current.next.getName())));
+		if (sneak()) {
+			for (int i = 1; i <= context; i++) {
+				String prefix = i == context ? "v " : " | ";
+				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
+						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
 			}
 		}
 	}

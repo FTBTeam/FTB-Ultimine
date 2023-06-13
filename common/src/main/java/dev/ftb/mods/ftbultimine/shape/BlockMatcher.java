@@ -15,15 +15,12 @@ public interface BlockMatcher {
 	boolean check(BlockState original, BlockState state);
 
 	default boolean actualCheck(BlockState original, BlockState state) {
-		if (FTBUltimine.EXCLUDED_BLOCKS.contains(state.getBlock())) {
-			return false;
-		}
-
-		return check(original, state);
+		return !state.is(FTBUltimine.EXCLUDED_BLOCKS) && check(original, state);
 	}
 
 	BlockMatcher MATCH = (original, state) -> original.getBlock() == state.getBlock();
-	BlockMatcher TAGS_MATCH = (original, state) -> FTBUltimineServerConfig.MERGE_TAGS.getTags().stream().filter(original::is).anyMatch(state::is);
+	BlockMatcher TAGS_MATCH_SHAPELESS = FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS::match;
+	BlockMatcher TAGS_MATCH_SHAPED = FTBUltimineServerConfig.MERGE_TAGS_SHAPED::match;
 	BlockMatcher BUSH = (original, state) -> state.getBlock() instanceof BushBlock && getBushType(state.getBlock()) == getBushType(original.getBlock());
 
 	static int getBushType(Block block) {
