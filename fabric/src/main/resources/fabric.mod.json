@@ -6,11 +6,11 @@
 	"name": "FTB Ultimine",
 	"description": "Allows you to break multiple blocks at once.",
 	"authors": [
-		"LatvianModder"
+		"FTB Team"
 	],
 	"contact": {
 		"sources": "https://github.com/FTBTeam/FTB-Ultimine",
-		"issues": "https://github.com/FTBTeam/FTB-Ultimine/issues"
+		"issues": "https://go.ftb.team/support-mod-issues"
 	},
 	"license": "All Rights Reserved",
 	"environment": "*",
@@ -24,9 +24,8 @@
 	],
 	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.12.12",
-		"minecraft": ">=1.19.2",
-		"architectury": ">=6.2.46",
-		"ftblibrary": ">=1902.3.14-build.184"
+		"minecraft": "~${mcversion}",
+		"architectury": ">=${archversion}",
+		"ftblibrary": ">=${ftblibraryversion}"
 	}
 }

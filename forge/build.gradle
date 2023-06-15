@@ -50,7 +50,12 @@ processResources {
 	inputs.property "version", project.version
 
 	filesMatching("META-INF/mods.toml") {
-		expand "version": project.version
+		expand "version": project.version,
+				"archversion": project.architectury_version,
+				"forgeversion": project.forge_version,
+				"forgeshortversion": project.forge_version.split("\\.")[0],
+				"mcversion": project.minecraft_version,
+				"ftblibraryversion": project.ftb_library_version.replaceAll("-SNAPSHOT", "")
 	}
 }
 
@@ -58,7 +63,7 @@ shadowJar {
 	exclude "fabric.mod.json"
 
 	configurations = [project.configurations.shadowCommon]
-	classifier "dev-shadow"
+	setArchiveClassifier("dev-shadow")
 }
 
 remapJar {
@@ -69,8 +74,7 @@ remapJar {
 }
 
 jar {
-	classifier "dev"
-}
+	setArchiveClassifier("dev") }
 
 components.java {
 	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {

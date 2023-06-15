@@ -3,14 +3,18 @@ package dev.ftb.mods.ftbultimine.utils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
  * This class is based on Chisels and Bits' AABBCompressor, the original source for which can be found here:
@@ -22,6 +26,15 @@ import java.util.Optional;
  * Explicit permission was given to FTB by the original author of AABBCompressor to include this file in this project.
  */
 public final class ShapeMerger {
+	private static final Long2ObjectMap<Direction> BY_NORMAL = Arrays.stream(Direction.values())
+			.collect(Collectors.toMap(
+					dir -> new BlockPos(dir.getNormal()).asLong(),
+					dir -> dir,
+					(dir, dir2) -> {
+						throw new IllegalArgumentException("Duplicate keys");
+					}, Long2ObjectOpenHashMap::new)
+			);
+
 	private double regionBuildingAxis = Double.NEGATIVE_INFINITY;
 	private double faceBuildingAxis = Double.NEGATIVE_INFINITY;
 
@@ -173,8 +186,8 @@ public final class ShapeMerger {
 					Optional<Direction> moveNext = previousCenterPoint.map(
 							v -> {
 								Vec3 w = centerPoint.subtract(v);
-								BlockPos onPos = new BlockPos(w);
-								return Direction.fromNormal(onPos.getX(), onPos.getY(), onPos.getZ());
+								BlockPos onPos = BlockPos.containing(w);
+								return dirFromNormal(onPos.getX(), onPos.getY(), onPos.getZ());
 							}
 					);
 
@@ -198,5 +211,9 @@ public final class ShapeMerger {
 
 				});
 		return merger.getBoxes();
+	}
+
+	private static Direction dirFromNormal(int pX, int pY, int pZ) {
+		return BY_NORMAL.get(BlockPos.asLong(pX, pY, pZ));
 	}
 }
