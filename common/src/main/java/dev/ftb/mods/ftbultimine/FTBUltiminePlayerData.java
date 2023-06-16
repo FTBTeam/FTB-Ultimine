@@ -14,6 +14,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -26,9 +27,9 @@ public class FTBUltiminePlayerData {
 	private boolean pressed = false;
 	private int shapeIndex = 0;
 
-	public BlockPos cachedPos;
-	public Direction cachedDirection;
-	public List<BlockPos> cachedBlocks;
+	private BlockPos cachedPos;
+	private Direction cachedDirection;
+	private List<BlockPos> cachedBlocks;
 
 	public FTBUltiminePlayerData(UUID i) {
 		id = i;
@@ -46,6 +47,14 @@ public class FTBUltiminePlayerData {
 
 	public void setPressed(boolean pressed) {
 		this.pressed = pressed;
+	}
+
+	public boolean hasCachedPositions() {
+		return cachedBlocks != null && !cachedBlocks.isEmpty();
+	}
+
+	public Collection<BlockPos> cachedPositions() {
+		return cachedBlocks;
 	}
 
 	public static HitResult rayTrace(ServerPlayer player) {
@@ -108,16 +117,16 @@ public class FTBUltiminePlayerData {
 		if (maxBlocks <= 0) {
 			cachedBlocks = Collections.emptyList();
 		} else {
-			BlockState origState = player.level.getBlockState(cachedPos);
+			BlockState origState = player.level().getBlockState(cachedPos);
 			BlockMatcher matcher;
 			if (shape.getTagMatcher().actualCheck(origState, origState)) {
 				matcher = shape.getTagMatcher();
-			} else if (BlockMatcher.BUSH.actualCheck(origState, origState)) {
-				matcher = BlockMatcher.BUSH;
+			} else if (BlockMatcher.CROP_LIKE.actualCheck(origState, origState)) {
+				matcher = BlockMatcher.CROP_LIKE;
 			} else {
 				matcher = BlockMatcher.MATCH;
 			}
-			context = new ShapeContext(player, cachedPos, cachedDirection, player.level.getBlockState(cachedPos), matcher, maxBlocks);
+			context = new ShapeContext(player, cachedPos, cachedDirection, player.level().getBlockState(cachedPos), matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
 		}
 

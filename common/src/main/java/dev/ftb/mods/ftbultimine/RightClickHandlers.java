@@ -16,10 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -33,13 +30,13 @@ public class RightClickHandlers {
     static boolean axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         Set<SoundEvent> sounds = new HashSet<>();
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
-        Level level = player.getLevel();
+        Level level = player.level();
 
         ItemStack itemStack = player.getItemInHand(hand);
         AxeItemAccess axeItemAccess = (AxeItemAccess) itemStack.getItem();
 
-        for (BlockPos pos : data.cachedBlocks) {
-            BlockState state = player.level.getBlockState(pos);
+        for (BlockPos pos : data.cachedPositions()) {
+            BlockState state = player.level().getBlockState(pos);
 
             Optional<BlockState> stripping = axeItemAccess.invokeGetStripped(state);
             Optional<BlockState> scraping = WeatheringCopper.getPrevious(state);
@@ -77,22 +74,22 @@ public class RightClickHandlers {
         boolean didWork = false;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-        for (BlockPos pos : data.cachedBlocks) {
-            if (!player.level.getBlockState(pos.above()).isAir()) {
+        for (BlockPos pos : data.cachedPositions()) {
+            if (!player.level().getBlockState(pos.above()).isAir()) {
                 continue;
             }
-            BlockState state = player.level.getBlockState(pos);
+            BlockState state = player.level().getBlockState(pos);
 
             BlockState newState = ShovelItemAccess.getFlattenables().get(state.getBlock());
             if (newState == null && state.is(FTBUltimine.FLATTENABLE_TAG)) {
                 newState = Blocks.DIRT_PATH.defaultBlockState();
             }
             if (newState != null) {
-                player.level.setBlock(pos, newState, Block.UPDATE_ALL_IMMEDIATE);
+                player.level().setBlock(pos, newState, Block.UPDATE_ALL_IMMEDIATE);
                 didWork = true;
 
                 player.getMainHandItem().hurtAndBreak(1, player, brokenItemHandler);
-                player.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
+                player.level().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
                 if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0) {
                     break;
                 }
@@ -102,7 +99,7 @@ public class RightClickHandlers {
         //noinspection ConstantConditions
         if (didWork) {
             // suppress warning: didWork only looks false due to mixin
-            player.level.playSound(player, clickPos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1F, 1F);
+            player.level().playSound(player, clickPos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1F, 1F);
             return true;
         }
 
@@ -113,14 +110,14 @@ public class RightClickHandlers {
         boolean didWork = false;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
-        for (BlockPos pos : data.cachedBlocks) {
-            if (!player.level.getBlockState(pos.above()).isAir()) {
+        for (BlockPos pos : data.cachedPositions()) {
+            if (!player.level().getBlockState(pos.above()).isAir()) {
                 continue;
             }
-            BlockState state = player.level.getBlockState(pos);
+            BlockState state = player.level().getBlockState(pos);
             if (state.is(FTBUltimine.TILLABLE_TAG)) {
-                player.level.setBlock(pos, Blocks.FARMLAND.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
-                player.getLevel().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, Blocks.FARMLAND.defaultBlockState()));
+                player.level().setBlock(pos, Blocks.FARMLAND.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
+                player.level().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, Blocks.FARMLAND.defaultBlockState()));
                 didWork = true;
 
                 if (!player.isCreative()) {
@@ -134,7 +131,7 @@ public class RightClickHandlers {
         }
 
         if (didWork) {
-            player.level.playSound(player, clickPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
+            player.level().playSound(player, clickPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
             return true;
         }
 
@@ -146,29 +143,48 @@ public class RightClickHandlers {
 
         ItemCollection itemCollection = new ItemCollection();
 
-        for (BlockPos pos : data.cachedBlocks) {
-            BlockState state = player.level.getBlockState(pos);
+        for (BlockPos pos : data.cachedPositions()) {
+            BlockState state = player.level().getBlockState(pos);
 
-            if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)) {
-                BlockEntity blockEntity = state.hasBlockEntity() ? player.level.getBlockEntity(pos) : null;
-                List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, blockEntity, player, ItemStack.EMPTY);
+            if (isHarvestable(state)) {
+                BlockEntity blockEntity = state.hasBlockEntity() ? player.level().getBlockEntity(pos) : null;
+                List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level(), pos, blockEntity, player, ItemStack.EMPTY);
 
                 for (ItemStack stack : drops) {
                     // should work for most if not all modded crop blocks, hopefully
-                    if (Block.byItem(stack.getItem()) == cropBlock) {
+                    if (Block.byItem(stack.getItem()) == state.getBlock() && consumesItemToReplant(state)) {
                         stack.shrink(1);
                     }
-
                     itemCollection.add(stack);
                 }
 
-                player.level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
+                resetAge(player.level(), pos, state);
                 didWork = true;
             }
         }
 
-        itemCollection.drop(player.level, face == null ? clickPos : clickPos.relative(face));
+        itemCollection.drop(player.level(), face == null ? clickPos : clickPos.relative(face));
 
         return didWork;
+    }
+
+    private static boolean consumesItemToReplant(BlockState state) {
+        return state.getBlock() != Blocks.SWEET_BERRY_BUSH;
+    }
+
+    private static boolean isHarvestable(BlockState state) {
+        return state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)
+                || state.getBlock() instanceof SweetBerryBushBlock && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE
+                || state.getBlock() instanceof CocoaBlock && state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
+    }
+
+    private static void resetAge(Level level, BlockPos pos, BlockState currentState) {
+        if (currentState.getBlock() instanceof CropBlock cropBlock) {
+            level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
+        } else if (currentState.getBlock() instanceof SweetBerryBushBlock) {
+            level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, 1), Block.UPDATE_ALL);
+        } else if (currentState.getBlock() instanceof CocoaBlock) {
+            level.setBlock(pos, currentState.setValue(CocoaBlock.AGE, 0), Block.UPDATE_ALL);
+        }
     }
 }

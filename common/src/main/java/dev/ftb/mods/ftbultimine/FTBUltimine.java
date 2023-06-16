@@ -17,7 +17,7 @@ import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -62,13 +62,13 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
-	public static final TagKey<Item> DENY_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "excluded_tools"));
-	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(MOD_ID, "included_tools"));
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(MOD_ID, "excluded_blocks"));
+	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools"));
+	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
+	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "included_tools"));
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
 
-	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(MOD_ID, "farmland_tillable"));
-	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(MOD_ID, "shovel_flattenable"));
+	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "farmland_tillable"));
+	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "shovel_flattenable"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -204,7 +204,7 @@ public class FTBUltimine {
 		data.clearCache();
 		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
 
-		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
+		if (!data.hasCachedPositions()) {
 			return EventResult.pass();
 		}
 
@@ -214,7 +214,7 @@ public class FTBUltimine {
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
 		float baseSpeed = state.getDestroySpeed(world, pos);
-		for (BlockPos p : data.cachedBlocks) {
+		for (BlockPos p : data.cachedPositions()) {
 			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
 				continue;
@@ -243,10 +243,10 @@ public class FTBUltimine {
 
 		isBreakingBlock = false;
 
-		tempBlockDropsList.drop(player.level, pos);
+		tempBlockDropsList.drop(player.level(), pos);
 
 		if (tempBlockDroppedXp > 0) {
-			player.level.addFreshEntity(new ExperienceOrb(player.level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, tempBlockDroppedXp));
+			player.level().addFreshEntity(new ExperienceOrb(player.level(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, tempBlockDroppedXp));
 		}
 
 		data.clearCache();
@@ -278,12 +278,12 @@ public class FTBUltimine {
 		data.clearCache();
 		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, blockHitResult.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 
-		if (shapeContext == null || !data.isPressed() || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
+		if (shapeContext == null || !data.isPressed() || !data.hasCachedPositions()) {
 			return EventResult.pass();
 		}
 
 		boolean didWork = false;
-		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.BUSH) {
+		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
 			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
 		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
 			didWork = RightClickHandlers.farmlandConversion(serverPlayer, hand, clickPos, data);

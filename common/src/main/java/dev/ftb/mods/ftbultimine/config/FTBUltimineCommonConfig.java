@@ -22,18 +22,18 @@ public interface FTBUltimineCommonConfig {
 					"This file is used to control instance (e.g. modpack) specific things like mod integrations.",
 					"Changes to this file require you to restart the game!");
 
-	IntValue PREVENT_TOOL_BREAK = CONFIG.getInt("prevent_tool_break", 0, 0, 100)
+	IntValue PREVENT_TOOL_BREAK = CONFIG.addInt("prevent_tool_break", 0, 0, 100)
 			.comment("This will stop mining if tool reaches X durability. It's possible it won't work with special tool types.");
 
-//	BooleanValue USE_TRINKET = CONFIG.getBoolean("use_trinket", false)
+//	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
 //					"Adds a custom 'Ultiminer' trinket players will need to activate to be able to use Ultimine.",
 //					"Make sure you disable the 'Octopick' trinket if this is enabled!");
 
-	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.getBoolean("cancel_on_block_break_fail", false)
+	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.addBoolean("cancel_on_block_break_fail", false)
 			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
-	BooleanValue REQUIRE_TOOL = CONFIG.getBoolean("require_tool", false)
+	BooleanValue REQUIRE_TOOL = CONFIG.addBoolean("require_tool", false)
 			.comment("Require damageable tools or items added to ftbultimine:tools tag to ultimine.");
 
 	static void load() {

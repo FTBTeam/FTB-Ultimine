@@ -15,7 +15,7 @@ public record ShapeContext(ServerPlayer player, BlockPos pos, Direction face, Bl
 	}
 
 	public BlockState block(BlockPos pos) {
-		return player.level.getBlockState(pos);
+		return player.level().getBlockState(pos);
 	}
 
 	public boolean check(BlockPos pos) {

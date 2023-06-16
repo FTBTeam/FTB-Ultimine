@@ -7,6 +7,8 @@ import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,11 +38,11 @@ public interface FTBUltimineServerConfig {
 					"This file is meant for server administrators to control user behaviour.",
 					"Changes in this file currently require a server restart to take effect");
 
-	IntValue MAX_BLOCKS = CONFIG.getInt("max_blocks", 64)
+	IntValue MAX_BLOCKS = CONFIG.addInt("max_blocks", 64)
 			.range(32768)
 			.comment("Max amount of blocks that can be ultimined at once");
 
-	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.getDouble("exhaustion_per_block", 20)
+	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.addDouble("exhaustion_per_block", 20)
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
 
@@ -57,25 +59,25 @@ public interface FTBUltimineServerConfig {
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shaped mining modes");
 
-	IntValue PREVENT_TOOL_BREAK = CONFIG.getInt("prevent_tool_break", 0, 0, 100)
+	IntValue PREVENT_TOOL_BREAK = CONFIG.addInt("prevent_tool_break", 0, 0, 100)
 			.comment("This will stop mining if tool reaches X durability. It's possible it won't work with special tool types.");
 
-	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.getBoolean("cancel_on_block_break_fail", false)
+	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = CONFIG.addBoolean("cancel_on_block_break_fail", false)
 			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
 
-	BooleanValue REQUIRE_TOOL = CONFIG.getBoolean("require_tool", false)
+	BooleanValue REQUIRE_TOOL = CONFIG.addBoolean("require_tool", false)
 			.comment("Require a damageable tool, or an item in the ftbultimine:tools tag, to ultimine.");
 
-	BooleanValue RIGHT_CLICK_AXE = CONFIG.getBoolean("right_click_axe", true)
+	BooleanValue RIGHT_CLICK_AXE = CONFIG.addBoolean("right_click_axe", true)
 			.comment("Right-click with an axe with the Ultimine key held to strip multiple logs and scrape/unwax copper blocks");
-	BooleanValue RIGHT_CLICK_SHOVEL = CONFIG.getBoolean("right_click_shovel", true)
+	BooleanValue RIGHT_CLICK_SHOVEL = CONFIG.addBoolean("right_click_shovel", true)
 			.comment("Right-click with a shovel with the Ultimine key held to flatten multiple grass/dirt blocks into dirt paths");
-	BooleanValue RIGHT_CLICK_HOE = CONFIG.getBoolean("right_click_hoe", true)
+	BooleanValue RIGHT_CLICK_HOE = CONFIG.addBoolean("right_click_hoe", true)
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
-	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.getBoolean("right_click_harvesting", true)
+	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
 
-//	BooleanValue USE_TRINKET = CONFIG.getBoolean("use_trinket", false)
+//	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
 //					"Adds a custom 'Ultiminer' trinket players will need to activate to be able to use Ultimine.",
 //					"Make sure you disable the 'Octopick' trinket if this is enabled!");
@@ -109,18 +111,15 @@ public interface FTBUltimineServerConfig {
 	}
 
 	static ConfigGroup getConfigGroup() {
-		ConfigGroup group = new ConfigGroup(MOD_ID + ".server_settings");
-
-		CONFIG.createClientConfig(group);
-		group.savedCallback = accepted -> {
+		ConfigGroup group = new ConfigGroup(MOD_ID + ".server_settings", accepted -> {
 			if (accepted) {
 				clearTagCache();
 				SNBTCompoundTag config = new SNBTCompoundTag();
 				FTBUltimineServerConfig.CONFIG.write(config);
 				new SyncConfigToServerPacket(config).sendToServer();
 			}
-		};
-
+		});
+		CONFIG.createClientConfig(group);
 		return group;
 	}
 
@@ -140,7 +139,7 @@ public interface FTBUltimineServerConfig {
 		private boolean matchAny = false;
 
 		public BlockTagsConfig(SNBTConfig parent, String name, List<String> defaults, String... comment) {
-			this.value = parent.getStringList(name, defaults).comment(comment);
+			this.value = parent.addStringList(name, defaults).comment(comment);
 		}
 
 		public boolean match(BlockState original, BlockState toTest) {
@@ -160,10 +159,10 @@ public interface FTBUltimineServerConfig {
 					value.get().forEach(s -> {
 						ResourceLocation rl = ResourceLocation.tryParse(s);
 						if (rl != null) {
-							tags.add(TagKey.create(Registry.BLOCK_REGISTRY, rl));
+							tags.add(TagKey.create(Registries.BLOCK, rl));
 						} else {
 							Pattern pattern = regexFromGlobString(s);
-							Registry.BLOCK.getTags().forEach((tag) -> {
+							BuiltInRegistries.BLOCK.getTags().forEach((tag) -> {
 								if (pattern.asPredicate().test(tag.getFirst().location().toString())) {
 									tags.add(tag.getFirst());
 								}
