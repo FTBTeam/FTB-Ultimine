@@ -120,7 +120,7 @@ if (ENV.CURSEFORGE_KEY) {
 			addGameVersion rootProject.minecraft_version
 			mainArtifact(remapJar.archiveFile)
 			relations {
-				requiredDependency 'architectury-fabric'
+				requiredDependency 'architectury-api'
 				requiredDependency 'ftb-library-fabric'
 			}
 			changelog = ENV.CHANGELOG  // expected to exist if ENV.CURSEFORGE_KEY does
