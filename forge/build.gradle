@@ -43,8 +43,9 @@ dependencies {
 
 	common(project(path: ":common", configuration: "dev")) { transitive false }
 	shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
-
 }
+
+apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/extra-local-mods.gradle"
 
 processResources {
 	inputs.property "version", project.version
@@ -55,7 +56,7 @@ processResources {
 				"forgeversion": project.forge_version,
 				"forgeshortversion": project.forge_version.split("\\.")[0],
 				"mcversion": project.minecraft_version,
-				"ftblibraryversion": project.ftb_library_version.replaceAll("-SNAPSHOT", "")
+				"ftblibraryversion": project.ftb_library_version
 	}
 }
 
@@ -79,25 +80,6 @@ jar {
 components.java {
 	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
 		skip()
-	}
-}
-
-if (ENV.CURSEFORGE_KEY) {
-	curseforge {
-		apiKey = ENV.CURSEFORGE_KEY
-		project {
-			id = project.curseforge_id_forge
-			releaseType = project.curseforge_type
-			addGameVersion "Forge"
-			addGameVersion "1.19.2"
-			mainArtifact(remapJar.archivePath)
-			relations {
-				requiredDependency 'architectury-api'
-				requiredDependency 'ftb-library-forge'
-			}
-			changelog = getGitChangelog
-			changelogType = 'markdown'
-		}
 	}
 }
 
@@ -133,10 +115,23 @@ publishing {
 	}
 }
 
-rootProject.tasks.getByName("curseforgePublish").dependsOn tasks.getByName("curseforge")
-
-// Used to temporarily add mods to the workspace for debugging
-def customGradle = project.file('custom.gradle')
-if (customGradle.exists()) {
-	apply from: customGradle
+if (ENV.CURSEFORGE_KEY) {
+	curseforge {
+		apiKey = ENV.CURSEFORGE_KEY
+		project {
+			id = project.curseforge_id_forge
+			releaseType = ftbPublishing.relType
+			addGameVersion "Forge"
+			addGameVersion rootProject.minecraft_version
+			mainArtifact(remapJar.archiveFile)
+			relations {
+				requiredDependency 'architectury-forge'
+				requiredDependency 'ftb-library-forge'
+			}
+			changelog = ENV.CHANGELOG  // expected to exist if ENV.CURSEFORGE_KEY does
+			changelogType = 'markdown'
+		}
+	}
 }
+
+rootProject.tasks.getByName("curseforgePublish").dependsOn tasks.getByName("curseforge")
