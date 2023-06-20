@@ -112,8 +112,8 @@ public class FTBUltiminePlayerData {
 			BlockMatcher matcher;
 			if (shape.getTagMatcher().actualCheck(origState, origState)) {
 				matcher = shape.getTagMatcher();
-			} else if (BlockMatcher.BUSH.actualCheck(origState, origState)) {
-				matcher = BlockMatcher.BUSH;
+			} else if (BlockMatcher.CROP_LIKE.actualCheck(origState, origState)) {
+				matcher = BlockMatcher.CROP_LIKE;
 			} else {
 				matcher = BlockMatcher.MATCH;
 			}

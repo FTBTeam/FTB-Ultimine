@@ -283,7 +283,7 @@ public class FTBUltimine {
 		}
 
 		boolean didWork = false;
-		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.BUSH) {
+		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
 			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
 		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
 			didWork = RightClickHandlers.farmlandConversion(serverPlayer, hand, clickPos, data);

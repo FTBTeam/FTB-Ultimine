@@ -16,10 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CropBlock;
-import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -149,20 +146,19 @@ public class RightClickHandlers {
         for (BlockPos pos : data.cachedBlocks) {
             BlockState state = player.level.getBlockState(pos);
 
-            if (state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)) {
+            if (isHarvestable(state)) {
                 BlockEntity blockEntity = state.hasBlockEntity() ? player.level.getBlockEntity(pos) : null;
                 List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level, pos, blockEntity, player, ItemStack.EMPTY);
 
                 for (ItemStack stack : drops) {
                     // should work for most if not all modded crop blocks, hopefully
-                    if (Block.byItem(stack.getItem()) == cropBlock) {
+                    if (Block.byItem(stack.getItem()) == state.getBlock() && consumesItemToReplant(state)) {
                         stack.shrink(1);
                     }
-
                     itemCollection.add(stack);
                 }
 
-                player.level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
+                resetAge(player.level, pos, state);
                 didWork = true;
             }
         }
@@ -170,5 +166,25 @@ public class RightClickHandlers {
         itemCollection.drop(player.level, face == null ? clickPos : clickPos.relative(face));
 
         return didWork;
+    }
+
+    private static boolean consumesItemToReplant(BlockState state) {
+        return state.getBlock() != Blocks.SWEET_BERRY_BUSH;
+    }
+
+    private static boolean isHarvestable(BlockState state) {
+        return state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)
+                || state.getBlock() instanceof SweetBerryBushBlock && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE
+                || state.getBlock() instanceof CocoaBlock && state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
+    }
+
+    private static void resetAge(Level level, BlockPos pos, BlockState currentState) {
+        if (currentState.getBlock() instanceof CropBlock cropBlock) {
+            level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
+        } else if (currentState.getBlock() instanceof SweetBerryBushBlock) {
+            level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, 1), Block.UPDATE_ALL);
+        } else if (currentState.getBlock() instanceof CocoaBlock) {
+            level.setBlock(pos, currentState.setValue(CocoaBlock.AGE, 0), Block.UPDATE_ALL);
+        }
     }
 }
