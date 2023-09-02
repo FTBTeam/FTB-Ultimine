@@ -15,7 +15,7 @@
 	"ftbultimine.shape.escape_tunnel": "逃生通道",
 	"ftbultimine.config": "FTB 连锁破坏 配置",
 	"item.ftbultimine.ultiminer": "连锁矿工",
-	"item.ftbultimine.ultiminer.tooltip": "激活时启用 %s",
+	"item.ftbultimine.ultiminer.tooltip": "允许在激活时使用 %s",
 	"ftbultimine.client_settings": "客户端设置",
 	"ftbultimine.client_settings.render_outline": "最大方块渲染轮廓",
 	"ftbultimine.client_settings.require_sneak_for_menu": "形状菜单需要潜行",
