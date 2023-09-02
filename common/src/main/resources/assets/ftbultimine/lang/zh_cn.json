@@ -29,7 +29,7 @@
 	"ftbultimine.server_settings.merge_tags": "合并标签 (无形状)",
 	"ftbultimine.server_settings.merge_tags.tooltip": "在无形状挖掘模式下，这些标签中任何一个与原始挖掘方块相匹配的方块，都是连锁破坏的有效候选方块。",
 	"ftbultimine.server_settings.merge_tags_shaped": "合并标签 (形状)",
-	"ftbultimine.server_settings.merge_tags_shaped.tooltip": "在形状挖掘模式下，这些标签中任何一个与原始挖掘方块相匹配的方块都是连锁破坏的有效候选方块。\n默认值 '*' 表示任何方块都是有效的候选方块。",
+	"ftbultimine.server_settings.merge_tags_shaped.tooltip": "在形状挖掘模式下，这些标签中任何一个与原始挖掘方块相匹配的方块，都是连锁破坏的有效候选方块。\n默认值 '*' 表示任何方块都是有效的候选方块。",
 	"ftbultimine.server_settings.prevent_tool_break": "工具损耗限制",
 	"ftbultimine.server_settings.prevent_tool_break.tooltip": "如果装备的工具剩余的损耗达到或低于此值，连锁破坏就会停止。将其设置为 0 时，工具就会损坏。",
 	"ftbultimine.server_settings.cancel_on_block_break_fail": "方块破坏失败时取消",
