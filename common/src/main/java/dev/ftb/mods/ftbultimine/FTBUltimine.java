@@ -4,6 +4,7 @@ import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.platform.Platform;
+import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
@@ -21,6 +22,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -65,8 +69,9 @@ public class FTBUltimine {
 	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools"));
 	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
 	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "included_tools"));
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
 
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
+	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "block_whitelist"));
 	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "farmland_tillable"));
 	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "shovel_flattenable"));
 
@@ -88,6 +93,8 @@ public class FTBUltimine {
 
 		FTBUltimineCommonConfig.load();
 		FTBUltiminePlugins.init();
+
+		ReloadListenerRegistry.register(PackType.SERVER_DATA, new DataReloadListener());
 
 		ShapeRegistry.register(new ShapelessShape(), true);
 		ShapeRegistry.register(new SmallTunnelShape());
@@ -334,5 +341,12 @@ public class FTBUltimine {
 	public static boolean isTooExhausted(ServerPlayer player) {
 		FoodData data = player.getFoodData();
 		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
+	}
+
+	private static class DataReloadListener implements ResourceManagerReloadListener {
+		@Override
+		public void onResourceManagerReload(ResourceManager resourceManager) {
+			BlockMatcher.TagCache.onReload();
+		}
 	}
 }
