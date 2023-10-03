@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author LatvianModder
+ * Server-side player data
  */
 public class FTBUltiminePlayerData {
-	private final UUID id;
+	private final UUID playerId;
 	private boolean pressed = false;
 	private int shapeIndex = 0;
 
@@ -31,14 +31,18 @@ public class FTBUltiminePlayerData {
 	private Direction cachedDirection;
 	private List<BlockPos> cachedBlocks;
 
-	public FTBUltiminePlayerData(UUID i) {
-		id = i;
+	public FTBUltiminePlayerData(UUID playerId) {
+		this.playerId = playerId;
 	}
 
 	public void clearCache() {
 		cachedPos = null;
 		cachedDirection = null;
 		cachedBlocks = null;
+	}
+
+	public UUID getPlayerId() {
+		return playerId;
 	}
 
 	public boolean isPressed() {

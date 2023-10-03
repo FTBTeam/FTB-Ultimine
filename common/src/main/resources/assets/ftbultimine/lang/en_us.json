@@ -4,6 +4,7 @@
 	"ftbultimine.info.base": "FTB Ultimine is %s",
 	"ftbultimine.info.active": "active",
 	"ftbultimine.info.not_active": "not active",
+	"ftbultimine.info.cooldown": "on cooldown",
 	"ftbultimine.info.blocks": "Mining %d blocks",
 	"ftbultimine.info.partial_render": "%d rendered",
 	"ftbultimine.change_shape": "Hold Shift + (Scroll Mouse or Arrow up/down) to change shape",
@@ -39,5 +40,7 @@
 	"ftbultimine.server_settings.right_click_axe": "Axe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.right_click_hoe": "Hoe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.right_click_shovel": "Shovel: Right-Click multiple blocks",
-	"ftbultimine.server_settings.right_click_harvesting": "Allow Ultimine harvesting of crops"
+	"ftbultimine.server_settings.right_click_harvesting": "Allow Ultimine harvesting of crops",
+	"ftbultimine.server_settings.ultimine_cooldown": "Ultimine cooldown (ticks)",
+	"ftbultimine.server_settings.ultimine_cooldown.tooltip": "Time in ticks required between successive uses of the Ultimine function"
 }

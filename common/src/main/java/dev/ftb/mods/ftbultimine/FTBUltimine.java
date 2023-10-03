@@ -11,10 +11,13 @@ import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,6 +43,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -48,9 +52,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-/**
- * @author LatvianModder
- */
 public class FTBUltimine {
 	public static FTBUltimine instance;
 
@@ -87,6 +88,7 @@ public class FTBUltimine {
 
 		if (Platform.isModLoaded("ftbranks")) {
 			ranksMod = true;
+			FTBRanksIntegration.init();
 		}
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
@@ -112,7 +114,8 @@ public class FTBUltimine {
 		CommandRegistrationEvent.EVENT.register(FTBUltimineCommands::registerCommands);
 	}
 
-	public FTBUltiminePlayerData get(Player player) {
+	@NotNull
+	public FTBUltiminePlayerData getOrCreatePlayerData(Player player) {
 		return cachedDataMap.computeIfAbsent(player.getUUID(), FTBUltiminePlayerData::new);
 	}
 
@@ -120,6 +123,7 @@ public class FTBUltimine {
 		SNBTCompoundTag config = new SNBTCompoundTag();
 		FTBUltimineServerConfig.CONFIG.write(config);
 		new SyncConfigFromServerPacket(config).sendTo(serverPlayer);
+		new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), TimeType.COOLDOWN).sendTo(serverPlayer);
 	}
 
 	private void serverStarting(MinecraftServer server) {
@@ -129,7 +133,7 @@ public class FTBUltimine {
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.setPressed(pressed);
 		data.clearCache();
 
@@ -139,7 +143,7 @@ public class FTBUltimine {
 	}
 
 	public void modeChanged(ServerPlayer player, boolean next) {
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.cycleShape(next);
 		data.clearCache();
 		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
@@ -174,7 +178,7 @@ public class FTBUltimine {
 	}
 
 	public boolean canUltimine(Player player) {
-		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
+		if (PlayerHooks.isFake(player) || player.getUUID() == null || CooldownTracker.isOnCooldown(player)) {
 			return false;
 		}
 
@@ -196,7 +200,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 
 		if (!data.isPressed()) {
 			return EventResult.pass();
@@ -248,6 +252,10 @@ public class FTBUltimine {
 			}
 		}
 
+		if (!player.isCreative()) {
+			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+		}
+
 		isBreakingBlock = false;
 
 		tempBlockDropsList.drop(player.level(), pos);
@@ -267,7 +275,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		if (!data.isPressed()) {
 			return EventResult.pass();
 		}
@@ -302,6 +310,9 @@ public class FTBUltimine {
 
 		if (didWork) {
 			player.swing(hand);
+			if (!player.isCreative()) {
+				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+			}
 			return EventResult.interruptFalse();
 		} else {
 			return EventResult.pass();
@@ -310,7 +321,7 @@ public class FTBUltimine {
 
 	public void playerTick(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
-			get(player).checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			getOrCreatePlayerData(player).checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 		}
 	}
 
