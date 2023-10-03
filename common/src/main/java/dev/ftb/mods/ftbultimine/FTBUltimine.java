@@ -27,6 +27,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -201,15 +202,19 @@ public class FTBUltimine {
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
+		float baseSpeed = state.getDestroySpeed(world, pos);
 		for (BlockPos p : data.cachedBlocks) {
+			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
+			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
+				continue;
+			}
 			if (!player.gameMode.destroyBlock(p) && FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
 			if (!player.isCreative()) {
 				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
-
-				if (player.getFoodData().getFoodLevel() <= 0) {
+				if (isTooExhausted(player)) {
 					break;
 				}
 			}
@@ -364,5 +369,10 @@ public class FTBUltimine {
 
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);
+	}
+
+	public static boolean isTooExhausted(ServerPlayer player) {
+		FoodData data = player.getFoodData();
+		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
 	}
 }
