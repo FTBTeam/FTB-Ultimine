@@ -27,9 +27,6 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
-/**
- * @author LatvianModder
- */
 public interface FTBUltimineServerConfig {
 
 	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
@@ -44,6 +41,9 @@ public interface FTBUltimineServerConfig {
 	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.addDouble("exhaustion_per_block", 20)
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
+	DoubleValue EXPERIENCE_PER_BLOCK = CONFIG.addDouble("experience_per_block", 0.0)
+			.range(20000)
+			.comment("Amount of experience taken per block mined (fractional values allowed)");
 
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(CONFIG, "merge_tags",
 			new ArrayList<>(List.of(

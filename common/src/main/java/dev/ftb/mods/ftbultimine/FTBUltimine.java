@@ -219,12 +219,17 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
+		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get()) {
+			return EventResult.pass();
+		}
+
 		isBreakingBlock = true;
 		tempBlockDropsList = new ItemCollection();
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
 		float baseSpeed = state.getDestroySpeed(world, pos);
+		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
 			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
@@ -242,7 +247,6 @@ public class FTBUltimine {
 			}
 
 			ItemStack stack = player.getMainHandItem();
-
 			if (hadItem && stack.isEmpty()) {
 				break;
 			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
@@ -250,10 +254,13 @@ public class FTBUltimine {
 			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
+
+			blocksMined++;
 		}
 
 		if (!player.isCreative()) {
 			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+			data.addPendingXPCost(Math.max(0, blocksMined - 1));
 		}
 
 		isBreakingBlock = false;
@@ -297,7 +304,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		boolean didWork = false;
+		int didWork = 0;
 		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
 			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
 		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
@@ -308,10 +315,11 @@ public class FTBUltimine {
 			didWork = RightClickHandlers.shovelFlattening(serverPlayer, hand, clickPos, data);
 		}
 
-		if (didWork) {
+		if (didWork > 0) {
 			player.swing(hand);
 			if (!player.isCreative()) {
 				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+				data.addPendingXPCost(Math.max(0, didWork - 1));
 			}
 			return EventResult.interruptFalse();
 		} else {
@@ -321,7 +329,9 @@ public class FTBUltimine {
 
 	public void playerTick(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
-			getOrCreatePlayerData(player).checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			FTBUltiminePlayerData data = getOrCreatePlayerData(player);
+			data.checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			data.takePendingXP(serverPlayer);
 		}
 	}
 

@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class RightClickHandlers {
-    static boolean axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+    static int axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         Set<SoundEvent> sounds = new HashSet<>();
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
         Level level = player.level();
@@ -67,11 +67,11 @@ public class RightClickHandlers {
             }
         }
         sounds.forEach(sound -> level.playSound(null, clickPos, sound, SoundSource.BLOCKS, 1f, 1f));
-        return !sounds.isEmpty();
+        return sounds.size();
     }
 
-    static boolean shovelFlattening(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
-        boolean didWork = false;
+    static int shovelFlattening(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+        int didWork = 0;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
         for (BlockPos pos : data.cachedPositions()) {
@@ -86,7 +86,7 @@ public class RightClickHandlers {
             }
             if (newState != null) {
                 player.level().setBlock(pos, newState, Block.UPDATE_ALL_IMMEDIATE);
-                didWork = true;
+                didWork++;
 
                 player.getMainHandItem().hurtAndBreak(1, player, brokenItemHandler);
                 player.level().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
@@ -97,17 +97,16 @@ public class RightClickHandlers {
         }
 
         //noinspection ConstantConditions
-        if (didWork) {
+        if (didWork > 0) {
             // suppress warning: didWork only looks false due to mixin
             player.level().playSound(player, clickPos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1F, 1F);
-            return true;
         }
 
-        return false;
+        return didWork;
     }
 
-    static boolean farmlandConversion(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
-        boolean didWork = false;
+    static int farmlandConversion(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+        int clicked = 0;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
         for (BlockPos pos : data.cachedPositions()) {
@@ -118,7 +117,7 @@ public class RightClickHandlers {
             if (state.is(FTBUltimine.TILLABLE_TAG)) {
                 player.level().setBlock(pos, Blocks.FARMLAND.defaultBlockState(), Block.UPDATE_ALL_IMMEDIATE);
                 player.level().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, Blocks.FARMLAND.defaultBlockState()));
-                didWork = true;
+                clicked++;
 
                 if (!player.isCreative()) {
                     player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
@@ -130,16 +129,15 @@ public class RightClickHandlers {
             }
         }
 
-        if (didWork) {
+        if (clicked > 0) {
             player.level().playSound(player, clickPos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
-            return true;
         }
 
-        return false;
+        return clicked;
     }
 
-    static boolean cropHarvesting(ServerPlayer player, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
-        boolean didWork = false;
+    static int cropHarvesting(ServerPlayer player, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
+        int clicked = 0;
 
         ItemCollection itemCollection = new ItemCollection();
 
@@ -159,13 +157,13 @@ public class RightClickHandlers {
                 }
 
                 resetAge(player.level(), pos, state);
-                didWork = true;
+                clicked++;
             }
         }
 
         itemCollection.drop(player.level(), face == null ? clickPos : clickPos.relative(face));
 
-        return didWork;
+        return clicked;
     }
 
     private static boolean consumesItemToReplant(BlockState state) {
