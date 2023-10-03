@@ -32,6 +32,7 @@ dependencies {
 
 	modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 	modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+	modApi "dev.ftb.mods:ftb-ranks-fabric:${rootProject.ftb_ranks_version}"
 
 	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
 

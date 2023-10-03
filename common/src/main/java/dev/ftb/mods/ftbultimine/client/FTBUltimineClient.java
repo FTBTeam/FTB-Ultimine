@@ -164,7 +164,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	private void addPressedInfo(List<MutableComponent> list) {
 		list.add(new TranslatableComponent("ftbultimine.info.base",
-				canUltimine ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
+				canUltimine && actualBlocks > 0 ? new TranslatableComponent("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)))
 						: new TranslatableComponent("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))
 		));
 

@@ -28,6 +28,7 @@ dependencies {
 
 	modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 	modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive = false }
+	modApi "dev.ftb.mods:ftb-ranks-forge:${rootProject.ftb_ranks_version}"
 
 //	modCompileOnly("curse.maven:lollipop-347954:3232534")
 //	modCompileOnly("curse.maven:lost-trinkets-404038:3242497")
