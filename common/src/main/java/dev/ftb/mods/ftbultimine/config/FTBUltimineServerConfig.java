@@ -5,9 +5,11 @@ import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.snbt.config.StringListValue;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.tags.TagKey;
@@ -21,8 +23,7 @@ import java.util.regex.Pattern;
 
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
 /**
  * @author LatvianModder
@@ -58,6 +59,10 @@ public interface FTBUltimineServerConfig {
 			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
 			LOGGER.warn("This may cause a lot of tick and FPS lag!");
 		}
+	}
+
+	static int getMaxBlocks(ServerPlayer player) {
+		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
 	}
 
 	class BlockTagsConfig {

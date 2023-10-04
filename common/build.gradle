@@ -2,6 +2,7 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 	modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 	modApi "dev.ftb.mods:ftb-library:${rootProject.ftb_library_version}"
+	modApi "dev.ftb.mods:ftb-ranks:${rootProject.ftb_ranks_version}"
 }
 
 def ENV = System.getenv()
@@ -31,22 +32,22 @@ publishing {
 	}
 
 	repositories {
-		if (ENV.FTB_MAVEN_TOKEN) {
+		if (ftbPublishing.ftbToken) {
 			maven {
-				url "https://maven.ftb.dev/release"
+				url ftbPublishing.ftbURL
 				credentials {
-					username = "ftb"
-					password = "${ENV.FTB_MAVEN_TOKEN}"
+					username = ftbPublishing.ftbUser
+					password = ftbPublishing.ftbToken
 				}
 			}
 		}
 
-		if (ENV.SAPS_TOKEN) {
+		if (ftbPublishing.sapsToken) {
 			maven {
-				url "https://maven.saps.dev/minecraft"
+				url ftbPublishing.sapsURL
 				credentials {
-					username = "ftb"
-					password = "${ENV.SAPS_TOKEN}"
+					username = ftbPublishing.sapsUser
+					password = ftbPublishing.sapsToken
 				}
 			}
 		}

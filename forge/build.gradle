@@ -28,6 +28,7 @@ dependencies {
 
 	modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
 	modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive = false }
+	modApi "dev.ftb.mods:ftb-ranks-forge:${rootProject.ftb_ranks_version}"
 
 //	modCompileOnly("curse.maven:lollipop-347954:3232534")
 //	modCompileOnly("curse.maven:lost-trinkets-404038:3242497")
@@ -98,22 +99,22 @@ publishing {
 	}
 
 	repositories {
-		if (ENV.FTB_MAVEN_TOKEN) {
+		if (ftbPublishing.ftbToken) {
 			maven {
-				url "https://maven.ftb.dev/release"
+				url ftbPublishing.ftbURL
 				credentials {
-					username = "ftb"
-					password = "${ENV.FTB_MAVEN_TOKEN}"
+					username = ftbPublishing.ftbUser
+					password = ftbPublishing.ftbToken
 				}
 			}
 		}
 
-		if (ENV.SAPS_TOKEN) {
+		if (ftbPublishing.sapsToken) {
 			maven {
-				url "https://maven.saps.dev/minecraft"
+				url ftbPublishing.sapsURL
 				credentials {
-					username = "ftb"
-					password = "${ENV.SAPS_TOKEN}"
+					username = ftbPublishing.sapsUser
+					password = ftbPublishing.sapsToken
 				}
 			}
 		}

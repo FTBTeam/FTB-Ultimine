@@ -3,6 +3,7 @@ package dev.ftb.mods.ftbultimine;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
+import dev.architectury.platform.Platform;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -56,6 +58,8 @@ public class FTBUltimine {
 
 	public final FTBUltimineCommon proxy;
 
+	public static boolean ranksMod = false;
+
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
 	private int tempBlockDroppedXp;
@@ -75,6 +79,10 @@ public class FTBUltimine {
 	public FTBUltimine() {
 		instance = this;
 		FTBUltimineNet.init();
+
+		if (Platform.isModLoaded("ftbranks")) {
+			ranksMod = true;
+		}
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
@@ -120,10 +128,6 @@ public class FTBUltimine {
 		data.shape = next ? data.shape.next : data.shape.prev;
 		data.clearCache();
 		new SendShapePacket(data.shape, Collections.emptyList()).sendTo(player);
-	}
-
-	private int getMaxBlocks(Player player) {
-		return FTBUltimineServerConfig.MAX_BLOCKS.get();
 	}
 
 	/**
@@ -190,7 +194,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
+		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
 
 		if (data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
 			return EventResult.pass();
@@ -201,15 +205,19 @@ public class FTBUltimine {
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
+		float baseSpeed = state.getDestroySpeed(world, pos);
 		for (BlockPos p : data.cachedBlocks) {
+			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
+			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
+				continue;
+			}
 			if (!player.gameMode.destroyBlock(p) && FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
 			if (!player.isCreative()) {
 				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
-
-				if (player.getFoodData().getFoodLevel() <= 0) {
+				if (isTooExhausted(player)) {
 					break;
 				}
 			}
@@ -240,11 +248,9 @@ public class FTBUltimine {
 	}
 
 	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
-		if (!(player instanceof ServerPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
+		if (!(player instanceof ServerPlayer serverPlayer) || PlayerHooks.isFake(player) || player.getUUID() == null) {
 			return EventResult.pass();
 		}
-
-		ServerPlayer serverPlayer = (ServerPlayer) player;
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
 			return EventResult.pass();
@@ -258,7 +264,7 @@ public class FTBUltimine {
 
 		FTBUltiminePlayerData data = get(player);
 		data.clearCache();
-		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, getMaxBlocks(player));
+		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, ((BlockHitResult) result).getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 
 		if (shapeContext == null || !data.pressed || data.cachedBlocks == null || data.cachedBlocks.isEmpty()) {
 			return EventResult.pass();
@@ -346,7 +352,9 @@ public class FTBUltimine {
 	public void playerTick(Player player) {
 		if (!player.level.isClientSide()) {
 			FTBUltiminePlayerData data = get(player);
-			data.checkBlocks((ServerPlayer) player, true, getMaxBlocks(player));
+			if (player instanceof ServerPlayer serverPlayer) {
+				data.checkBlocks((ServerPlayer) player, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			}
 		}
 	}
 
@@ -364,5 +372,10 @@ public class FTBUltimine {
 
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MOD_ID, path);
+	}
+
+	public static boolean isTooExhausted(ServerPlayer player) {
+		FoodData data = player.getFoodData();
+		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
 	}
 }
