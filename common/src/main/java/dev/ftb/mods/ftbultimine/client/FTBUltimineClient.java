@@ -144,10 +144,10 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		stack.popPose();
 	}
 
-	public EventResult mouseEvent(Minecraft client, double amount) {
-		if (pressed && amount != 0 && sneak()) {
+	public EventResult mouseEvent(Minecraft client, double amountX, double amountY) {
+		if (pressed && amountX != 0 && sneak()) {
 			hasScrolled = true;
-			new ModeChangedPacket(amount < 0D).sendToServer();
+			new ModeChangedPacket(amountX < 0D).sendToServer();
 			return EventResult.interruptFalse();
 		}
 
