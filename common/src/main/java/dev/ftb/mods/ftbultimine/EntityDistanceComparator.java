@@ -4,9 +4,6 @@ import net.minecraft.core.BlockPos;
 
 import java.util.Comparator;
 
-/**
- * @author LatvianModder
- */
 public class EntityDistanceComparator implements Comparator<BlockPos> {
 	private final int x, y, z;
 

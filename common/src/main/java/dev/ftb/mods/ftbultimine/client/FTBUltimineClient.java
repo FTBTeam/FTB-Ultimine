@@ -40,13 +40,9 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
-/**
- * @author LatvianModder
- */
 public class FTBUltimineClient extends FTBUltimineCommon {
 	public static KeyMapping keyBinding;
 	private boolean pressed;
@@ -61,7 +57,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private int shapeIdx = 0;  // shape index of client player's current shape
 
 	public FTBUltimineClient() {
-		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.ftbultimine"));
+		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, "key.categories.ftbultimine"));
 
 		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
 		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
@@ -72,7 +68,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		// TODO: remove once #6 gets fixed
 		LevelRenderLastEvent.EVENT.register(this::renderInGame);
 
-		ClientRawInputEvent.MOUSE_SCROLLED.register(this::mouseEvent);
+		ClientRawInputEvent.MOUSE_SCROLLED.register(this::onMouseScrolled);
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
 	}
 
@@ -144,8 +140,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		stack.popPose();
 	}
 
-	public EventResult mouseEvent(Minecraft client, double amountX, double amountY) {
-		if (pressed && amountX != 0 && sneak()) {
+	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
+		if (pressed && amountY != 0 && sneak()) {
 			hasScrolled = true;
 			new ModeChangedPacket(amountX < 0D).sendToServer();
 			return EventResult.interruptFalse();
@@ -159,7 +155,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return EventResult.pass();
 		}
 
-		if (keyCode != GLFW.GLFW_KEY_UP && keyCode != GLFW.GLFW_KEY_DOWN) {
+		if (keyCode != InputConstants.KEY_UP && keyCode != InputConstants.KEY_DOWN) {
 			return EventResult.pass();
 		}
 
@@ -168,7 +164,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 
 		hasScrolled = true;
-		new ModeChangedPacket(keyCode == GLFW.GLFW_KEY_DOWN).sendToServer();
+		new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN).sendToServer();
 		lastToggle = System.currentTimeMillis();
 		return EventResult.pass();
 	}
@@ -176,7 +172,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private boolean sneak() {
 		if (!FTBUltimineClientConfig.requireSneakForMenu.get()) return true;
 
-		return keyBinding.key.getValue() == GLFW.GLFW_KEY_LEFT_SHIFT || keyBinding.key.getValue() == GLFW.GLFW_KEY_RIGHT_SHIFT ? Screen.hasControlDown() : Screen.hasShiftDown();
+		return keyBinding.matches(InputConstants.KEY_LSHIFT, 0) || keyBinding.matches(InputConstants.KEY_RSHIFT, 0) ?
+				Screen.hasControlDown() :
+				Screen.hasShiftDown();
 	}
 
 	private void addPressedInfo(List<MutableComponent> list) {
@@ -191,7 +189,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		list.add(Component.translatable("ftbultimine.info.base", msg));
 
 		if (!hasScrolled) {
-			list.add(Component.translatable("ftbultimine.change_shape").withStyle(ChatFormatting.GRAY));
+			MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.requireSneakForMenu.get() ?
+					"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift").withStyle(ChatFormatting.GRAY);
+			list.add(msg1);
 		}
 
 		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.shapeMenuContextLines.get());

@@ -4,9 +4,6 @@ import dev.architectury.networking.simple.MessageType;
 import dev.architectury.networking.simple.SimpleNetworkManager;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 
-/**
- * @author LatvianModder
- */
 public interface FTBUltimineNet {
 	SimpleNetworkManager NET = SimpleNetworkManager.create(FTBUltimine.MOD_ID);
 

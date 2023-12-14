@@ -9,7 +9,6 @@ import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
@@ -93,7 +92,6 @@ public class FTBUltimine {
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
-		FTBUltimineCommonConfig.load();
 		FTBUltiminePlugins.init();
 
 		ReloadListenerRegistry.register(PackType.SERVER_DATA, new DataReloadListener());

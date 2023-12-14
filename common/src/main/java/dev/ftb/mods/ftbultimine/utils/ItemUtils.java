@@ -10,11 +10,6 @@ public class ItemUtils {
 	}
 
 	@ExpectPlatform
-	public static ItemStack copyStackWithSize(ItemStack itemStack, int size) {
-		throw new AssertionError();
-	}
-
-	@ExpectPlatform
 	public static boolean areCompatible(ItemStack a, ItemStack b) {
 		throw new AssertionError();
 	}

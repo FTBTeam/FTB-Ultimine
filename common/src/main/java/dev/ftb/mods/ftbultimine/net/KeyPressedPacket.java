@@ -7,9 +7,6 @@ import dev.ftb.mods.ftbultimine.FTBUltimine;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 
-/**
- * @author LatvianModder
- */
 public class KeyPressedPacket extends BaseC2SMessage {
 	private final boolean pressed;
 

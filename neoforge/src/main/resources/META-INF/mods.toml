@@ -1,0 +1,45 @@
+modLoader = "javafml"
+loaderVersion = "[${neoforgeloaderversion},)"
+issueTrackerURL = "https://go.ftb.team/support-mod-issues"
+license = "All Rights Reserved"
+
+[[mixins]]
+config = "ftbultimine-common.mixins.json"
+
+[[mods]]
+modId = "ftbultimine"
+version = "${version}"
+displayName = "FTB Ultimine"
+authors = "FTB Team"
+description = '''
+Allows you to break multiple blocks at once
+'''
+
+[[dependencies.ftbultimine]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[${neoforgeversion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${mcversion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "architectury"
+mandatory = true
+versionRange = "[${archversion},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.ftbultimine]]
+modId = "ftblibrary"
+mandatory = true
+versionRange = "[${ftblibraryversion},)"
+ordering = "NONE"
+side = "BOTH"
+

@@ -5,9 +5,6 @@ import net.minecraft.core.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author LatvianModder
- */
 public class SmallTunnelShape implements Shape {
 	@Override
 	public String getName() {

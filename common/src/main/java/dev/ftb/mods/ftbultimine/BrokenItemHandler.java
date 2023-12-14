@@ -5,9 +5,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 
 import java.util.function.Consumer;
 
-/**
- * @author LatvianModder
- */
 public class BrokenItemHandler implements Consumer<ServerPlayer> {
 	public boolean isBroken = false;
 

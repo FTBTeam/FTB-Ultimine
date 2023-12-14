@@ -5,9 +5,6 @@ import net.minecraft.core.BlockPos;
 
 import java.util.*;
 
-/**
- * @author LatvianModder
- */
 public class ShapelessShape implements Shape {
 	// all blocks in 3x3x3 cube around the block
 	private static final List<BlockPos> NEIGHBOR_POSITIONS = new ArrayList<>(26);

@@ -10,9 +10,6 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.LOCAL_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
 
-/**
- * @author LatvianModder
- */
 public interface FTBUltimineClientConfig {
 	SNBTConfig CONFIG = SNBTConfig.create(MOD_ID + "-client")
 			.comment("Client-specific configuration for FTB Ultimine",

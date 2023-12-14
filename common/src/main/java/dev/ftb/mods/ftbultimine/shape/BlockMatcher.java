@@ -6,9 +6,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 
-/**
- * @author LatvianModder
- */
 @FunctionalInterface
 public interface BlockMatcher {
 	boolean check(BlockState original, BlockState state);

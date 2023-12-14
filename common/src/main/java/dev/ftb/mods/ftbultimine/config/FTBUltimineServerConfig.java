@@ -17,9 +17,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -28,7 +25,6 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
 public interface FTBUltimineServerConfig {
-
 	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
 			.comment("Server-specific configuration for FTB Ultimine",
 					"This file is meant for server administrators to control user behaviour.",
@@ -89,22 +85,6 @@ public interface FTBUltimineServerConfig {
 	static void load(MinecraftServer server) {
 		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR), MOD_ID);
 		clearTagCache();
-
-		// TODO legacy compat - remove in 1.19.3+
-		Path commonPath = ConfigUtil.CONFIG_DIR.resolve(MOD_ID + ".snbt").toAbsolutePath();
-		if (Files.exists(commonPath)) {
-			// merge in and remove the old common config; this is now part of the server config
-			PREVENT_TOOL_BREAK.set(FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get());
-			CANCEL_ON_BLOCK_BREAK_FAIL.set(FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get());
-			REQUIRE_TOOL.set(FTBUltimineCommonConfig.REQUIRE_TOOL.get());
-			LOGGER.info("Merged setting from old common config file {} into server config", commonPath);
-			try {
-				Files.delete(commonPath);
-				LOGGER.info("Deleted old common config file {}", commonPath);
-			} catch (IOException e) {
-				LOGGER.warn("can't delete {}: {}", commonPath, e.getMessage());
-			}
-		}
 
 		if (MAX_BLOCKS.get() > 8192) {
 			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");

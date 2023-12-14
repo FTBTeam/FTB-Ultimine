@@ -5,9 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.joml.Matrix4f;
 
-/**
- * @author LatvianModder
- */
 public class EdgeCallback implements Shapes.DoubleLineConsumer {
 	private final BufferBuilder buffer;
 	private final Matrix4f matrix;
