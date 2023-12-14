@@ -231,8 +231,9 @@ public class FTBUltimine {
 		float baseSpeed = state.getDestroySpeed(world, pos);
 		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
-			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
-			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
+			BlockState state1 = world.getBlockState(p);
+			float destroySpeed = state1.getDestroySpeed(world, p);
+			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
 			}
 			if (!player.gameMode.destroyBlock(p) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
