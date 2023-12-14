@@ -131,8 +131,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
 
 		for (CachedEdge edge : cachedEdges) {
-			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 10).endVertex();
-			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 10).endVertex();
+			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 30).endVertex();
+			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 30).endVertex();
 		}
 
 		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
