@@ -17,28 +17,28 @@ Allows you to break multiple blocks at once
 
 [[dependencies.ftbultimine]]
 modId = "neoforge"
-mandatory = true
+type = "required"
 versionRange = "[${neoforgeversion},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
 modId = "minecraft"
-mandatory = true
+type = "required"
 versionRange = "[${mcversion},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
 modId = "architectury"
-mandatory = true
+type = "required"
 versionRange = "[${archversion},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.ftbultimine]]
 modId = "ftblibrary"
-mandatory = true
+type = "required"
 versionRange = "[${ftblibraryversion},)"
 ordering = "NONE"
 side = "BOTH"
