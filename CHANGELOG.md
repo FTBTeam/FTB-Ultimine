@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2001.1.4]
 
+### Added
+* Added configurable XP cost for ultimining (default remains free)
+  * See `experience_per_block` in server config
+* Added configurable cooldown between ultimining operations (default remains 0 - no cooldown)
+  * See `ultimine_cooldown` in server config
+  * Overrideable in FTB Ranks with the `ftbultimine.ultimine_cooldown` permission node
+
 ### Fixed
 * "Inner" ultimining preview block outlines are now rendered again
+* Fixed checking of player's equipped tool
 
 ## [2001.1.3]
 
