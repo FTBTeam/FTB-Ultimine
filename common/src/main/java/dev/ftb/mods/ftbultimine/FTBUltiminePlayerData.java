@@ -1,11 +1,13 @@
 package dev.ftb.mods.ftbultimine;
 
+import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import dev.ftb.mods.ftbultimine.shape.ShapeContext;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,25 +22,30 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author LatvianModder
+ * Server-side player data
  */
 public class FTBUltiminePlayerData {
-	private final UUID id;
+	private final UUID playerId;
 	private boolean pressed = false;
 	private int shapeIndex = 0;
+	private double pendingXPCost;
 
 	private BlockPos cachedPos;
 	private Direction cachedDirection;
 	private List<BlockPos> cachedBlocks;
 
-	public FTBUltiminePlayerData(UUID i) {
-		id = i;
+	public FTBUltiminePlayerData(UUID playerId) {
+		this.playerId = playerId;
 	}
 
 	public void clearCache() {
 		cachedPos = null;
 		cachedDirection = null;
 		cachedBlocks = null;
+	}
+
+	public UUID getPlayerId() {
+		return playerId;
 	}
 
 	public boolean isPressed() {
@@ -79,6 +86,21 @@ public class FTBUltiminePlayerData {
 			if (--shapeIndex < 0) {
 				shapeIndex = ShapeRegistry.shapeCount() - 1;
 			}
+		}
+	}
+
+	public void addPendingXPCost(int blockCount) {
+		pendingXPCost += blockCount * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get();
+	}
+
+	public void takePendingXP(ServerPlayer player) {
+		if (pendingXPCost > 1.0) {
+			int toTake = (int) pendingXPCost;
+
+			String cmd = String.format("experience add @s -%d points", toTake);
+			CommandSourceStack source = player.createCommandSourceStack().withSuppressedOutput();
+			player.getServer().getCommands().performPrefixedCommand(source, cmd);
+			pendingXPCost -= toTake;
 		}
 	}
 
@@ -128,6 +150,12 @@ public class FTBUltiminePlayerData {
 			}
 			context = new ShapeContext(player, cachedPos, cachedDirection, player.level().getBlockState(cachedPos), matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
+			if (FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get() > 0d) {
+				int max = (int) (player.totalExperience / FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get());
+				if (max < cachedBlocks.size()) {
+					cachedBlocks = cachedBlocks.subList(0, max);
+				}
+			}
 		}
 
 		if (sendUpdate) {

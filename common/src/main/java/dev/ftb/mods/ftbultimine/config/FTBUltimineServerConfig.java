@@ -6,7 +6,6 @@ import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -28,9 +27,6 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
-/**
- * @author LatvianModder
- */
 public interface FTBUltimineServerConfig {
 
 	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
@@ -45,6 +41,9 @@ public interface FTBUltimineServerConfig {
 	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.addDouble("exhaustion_per_block", 20)
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
+	DoubleValue EXPERIENCE_PER_BLOCK = CONFIG.addDouble("experience_per_block", 0.0)
+			.range(20000)
+			.comment("Amount of experience taken per block mined (fractional values allowed)");
 
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(CONFIG, "merge_tags",
 			new ArrayList<>(List.of(
@@ -76,6 +75,9 @@ public interface FTBUltimineServerConfig {
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
 	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
+
+	LongValue ULTIMINE_COOLDOWN = CONFIG.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
+			.comment("Cooldown in ticks between successive uses of the ultimine feature");
 
 //	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
@@ -130,6 +132,10 @@ public interface FTBUltimineServerConfig {
 
 	static int getMaxBlocks(ServerPlayer player) {
 		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
+	}
+
+	static long getUltimineCooldown(ServerPlayer player) {
+		return ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
 	}
 
 	class BlockTagsConfig {

@@ -4,6 +4,7 @@
 	"ftbultimine.info.base": "FTB Ultimine is %s",
 	"ftbultimine.info.active": "active",
 	"ftbultimine.info.not_active": "not active",
+	"ftbultimine.info.cooldown": "on cooldown",
 	"ftbultimine.info.blocks": "Mining %d blocks",
 	"ftbultimine.info.partial_render": "%d rendered",
 	"ftbultimine.change_shape": "Hold Shift + (Scroll Mouse or Arrow up/down) to change shape",
@@ -27,9 +28,9 @@
 	"ftbultimine.server_settings.max_blocks": "Max Blocks per Operation",
 	"ftbultimine.server_settings.exhaustion_per_block": "Hunger Multiplier per Block Mined",
 	"ftbultimine.server_settings.merge_tags": "Merge Tags (Shapeless)",
-	"ftbultimine.server_settings.merge_tags.tooltip": "For shapeless digging mode, blocks in any of these tags which match the original dug block are valid candidates for Ultimining.",
+	"ftbultimine.server_settings.merge_tags.tooltip": "For shapeless digging mode, any blocks in these tags which match the original dug block are valid candidates for Ultimining.",
 	"ftbultimine.server_settings.merge_tags_shaped": "Merge Tags (Shaped)",
-	"ftbultimine.server_settings.merge_tags_shaped.tooltip": "For shaped digging modes, blocks in any of these tags which match the original dug block are valid candidates for Ultimining.\nDefault of '*' means any block is a valid candidate.",
+	"ftbultimine.server_settings.merge_tags_shaped.tooltip": "For shaped digging modes, any blocks in these tags which match the original dug block are valid candidates for Ultimining.\nDefault of '*' means any block is a valid candidate.",
 	"ftbultimine.server_settings.prevent_tool_break": "Tool Damage Limit",
 	"ftbultimine.server_settings.prevent_tool_break.tooltip": "Ultimining will stop if the equipped tool has this much damage or less remaining. Setting this to 0 allows tools to break.",
 	"ftbultimine.server_settings.cancel_on_block_break_fail": "Cancel on Block Break Failure",
@@ -39,5 +40,9 @@
 	"ftbultimine.server_settings.right_click_axe": "Axe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.right_click_hoe": "Hoe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.right_click_shovel": "Shovel: Right-Click multiple blocks",
-	"ftbultimine.server_settings.right_click_harvesting": "Allow Ultimine harvesting of crops"
+	"ftbultimine.server_settings.right_click_harvesting": "Allow Ultimine harvesting of crops",
+	"ftbultimine.server_settings.experience_per_block": "XP Cost per Block Mined",
+	"ftbultimine.server_settings.experience_per_block.tooltip": "This can be a fractional amount",
+	"ftbultimine.server_settings.ultimine_cooldown": "Ultimine cooldown (ticks)",
+	"ftbultimine.server_settings.ultimine_cooldown.tooltip": "Time in ticks required between successive uses of the Ultimine function"
 }

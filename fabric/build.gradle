@@ -52,7 +52,7 @@ processResources {
 				"forgeversion": project.forge_version,
 				"forgeshortversion": project.forge_version.split("\\.")[0],
 				"mcversion": project.minecraft_version,
-				"ftblibraryversion": project.ftb_library_version.replaceAll("-SNAPSHOT", "")
+				"ftblibraryversion": project.ftb_library_version
 	}
 }
 
@@ -75,26 +75,6 @@ jar {
 components.java {
 	withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
 		skip()
-	}
-}
-
-if (ENV.CURSEFORGE_KEY) {
-	curseforge {
-		apiKey = ENV.CURSEFORGE_KEY
-		project {
-			id = project.curseforge_id_fabric
-			releaseType = project.curseforge_type
-			addGameVersion "Fabric"
-			addGameVersion "1.19.2"
-			mainArtifact(remapJar.archivePath)
-			relations {
-				requiredDependency 'architectury-api'
-				requiredDependency 'fabric-api'
-				requiredDependency 'ftb-library-fabric'
-			}
-			changelog = getGitChangelog
-			changelogType = 'markdown'
-		}
 	}
 }
 
@@ -126,6 +106,25 @@ publishing {
 					password = ftbPublishing.sapsToken
 				}
 			}
+		}
+	}
+}
+
+if (ENV.CURSEFORGE_KEY) {
+	curseforge {
+		apiKey = ENV.CURSEFORGE_KEY
+		project {
+			id = project.curseforge_id_fabric
+			releaseType = ftbPublishing.relType
+			addGameVersion "Fabric"
+			addGameVersion rootProject.minecraft_version
+			mainArtifact(remapJar.archiveFile)
+			relations {
+				requiredDependency 'architectury-api'
+				requiredDependency 'ftb-library-fabric'
+			}
+			changelog = ENV.CHANGELOG  // expected to exist if ENV.CURSEFORGE_KEY does
+			changelogType = 'markdown'
 		}
 	}
 }

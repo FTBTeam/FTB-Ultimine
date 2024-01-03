@@ -8,6 +8,7 @@ import dev.ftb.mods.ftblibrary.snbt.SNBTNet;
 import dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,6 +52,7 @@ public class SyncConfigToServerPacket extends BaseC2SMessage {
                 if (!sp.getUUID().equals(player.getUUID())) {
                     new SyncConfigFromServerPacket(config).sendTo(player);
                 }
+                new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(player), TimeType.COOLDOWN).sendTo(player);
             }
         }
     }
