@@ -93,9 +93,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	@Override
 	public void editConfig(boolean isClientConfig) {
 		if (isClientConfig) {
-			new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup()).openGui();
+			new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup()).setAutoclose(true).openGui();
 		} else {
-			new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup()).openGui();
+			new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup()).setAutoclose(true).openGui();
 		}
 	}
 
@@ -141,9 +141,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
-		if (pressed && amountX != 0 && sneak()) {
+		if (pressed && (amountY != 0 || amountX != 0) && sneak()) {
 			hasScrolled = true;
-			new ModeChangedPacket(amountX < 0D).sendToServer();
+			new ModeChangedPacket(amountX < 0D || amountY < 0D).sendToServer();
 			return EventResult.interruptFalse();
 		}
 
