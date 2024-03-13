@@ -143,7 +143,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
 		if (pressed && amountY != 0 && sneak()) {
 			hasScrolled = true;
-			new ModeChangedPacket(amountX < 0D).sendToServer();
+			new ModeChangedPacket(amountY < 0D).sendToServer();
 			return EventResult.interruptFalse();
 		}
 
