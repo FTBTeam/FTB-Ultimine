@@ -106,7 +106,7 @@ publishMods {
 
 	// TODO: Migrate to something else
 	def tag = providers.environmentVariable("TAG").getOrElse("release")
-	type = tag == "release" ? STABLE : (tag == "beta" ? BETA : ALPHA)
+	type = tag == "beta" ? BETA : (tag == "alpha" ? ALPHA : STABLE)
 
 	def createOptions = (String projectName) -> {
 		publishOptions {
