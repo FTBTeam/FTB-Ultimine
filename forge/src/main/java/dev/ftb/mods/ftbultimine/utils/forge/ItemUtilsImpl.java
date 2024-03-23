@@ -8,10 +8,6 @@ public class ItemUtilsImpl {
 		return ItemHandlerHelper.canItemStacksStack(a, b);
 	}
 
-	public static ItemStack copyStackWithSize(ItemStack itemStack, int size) {
-		return ItemHandlerHelper.copyStackWithSize(itemStack, size);
-	}
-
 	public static boolean areCompatible(ItemStack a, ItemStack b) {
 		return a.areCapsCompatible(b);
 	}

@@ -7,9 +7,6 @@ import net.minecraft.client.renderer.RenderType;
 
 import java.util.OptionalDouble;
 
-/**
- * @author LatvianModder
- */
 public class UltimineRenderTypes extends RenderType {
 	public static final RenderType LINES_NORMAL = RenderType.create("ultimine_lines_normal", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES, 256, false, false, RenderType.CompositeState.builder()
 			.setShaderState(new ShaderStateShard(GameRenderer::getPositionColorShader))

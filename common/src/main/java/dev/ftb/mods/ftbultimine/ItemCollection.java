@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * @author LatvianModder
- */
 public class ItemCollection {
 	private final List<ItemStack> items = new ArrayList<>();
 
@@ -88,11 +85,11 @@ public class ItemCollection {
 		boolean reachedLimit = stack.getCount() > limit;
 
 		if (existing.isEmpty()) {
-			stacks.set(slot, reachedLimit ? ItemUtils.copyStackWithSize(stack, limit) : stack);
+			stacks.set(slot, reachedLimit ? stack.copyWithCount(limit) : stack);
 		} else {
 			existing.grow(reachedLimit ? limit : stack.getCount());
 		}
 
-		return reachedLimit ? ItemUtils.copyStackWithSize(stack, stack.getCount() - limit) : ItemStack.EMPTY;
+		return reachedLimit ? stack.copyWithCount(stack.getCount() - limit) : ItemStack.EMPTY;
 	}
 }

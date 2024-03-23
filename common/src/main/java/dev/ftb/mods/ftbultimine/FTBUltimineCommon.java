@@ -4,9 +4,6 @@ import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
-/**
- * @author LatvianModder
- */
 public class FTBUltimineCommon {
 	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 	}

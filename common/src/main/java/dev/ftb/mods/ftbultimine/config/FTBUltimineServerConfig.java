@@ -6,7 +6,6 @@ import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -18,9 +17,6 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -28,11 +24,7 @@ import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
 
-/**
- * @author LatvianModder
- */
 public interface FTBUltimineServerConfig {
-
 	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
 			.comment("Server-specific configuration for FTB Ultimine",
 					"This file is meant for server administrators to control user behaviour.",
@@ -45,6 +37,9 @@ public interface FTBUltimineServerConfig {
 	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.addDouble("exhaustion_per_block", 20)
 			.range(10000)
 			.comment("Hunger multiplied for each block mined with ultimine");
+	DoubleValue EXPERIENCE_PER_BLOCK = CONFIG.addDouble("experience_per_block", 0.0)
+			.range(20000)
+			.comment("Amount of experience taken per block mined (fractional values allowed)");
 
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(CONFIG, "merge_tags",
 			new ArrayList<>(List.of(
@@ -77,6 +72,9 @@ public interface FTBUltimineServerConfig {
 	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
 
+	LongValue ULTIMINE_COOLDOWN = CONFIG.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
+			.comment("Cooldown in ticks between successive uses of the ultimine feature");
+
 //	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
 //					"Adds a custom 'Ultiminer' trinket players will need to activate to be able to use Ultimine.",
@@ -87,22 +85,6 @@ public interface FTBUltimineServerConfig {
 	static void load(MinecraftServer server) {
 		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR), MOD_ID);
 		clearTagCache();
-
-		// TODO legacy compat - remove in 1.19.3+
-		Path commonPath = ConfigUtil.CONFIG_DIR.resolve(MOD_ID + ".snbt").toAbsolutePath();
-		if (Files.exists(commonPath)) {
-			// merge in and remove the old common config; this is now part of the server config
-			PREVENT_TOOL_BREAK.set(FTBUltimineCommonConfig.PREVENT_TOOL_BREAK.get());
-			CANCEL_ON_BLOCK_BREAK_FAIL.set(FTBUltimineCommonConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get());
-			REQUIRE_TOOL.set(FTBUltimineCommonConfig.REQUIRE_TOOL.get());
-			LOGGER.info("Merged setting from old common config file {} into server config", commonPath);
-			try {
-				Files.delete(commonPath);
-				LOGGER.info("Deleted old common config file {}", commonPath);
-			} catch (IOException e) {
-				LOGGER.warn("can't delete {}: {}", commonPath, e.getMessage());
-			}
-		}
 
 		if (MAX_BLOCKS.get() > 8192) {
 			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
@@ -130,6 +112,10 @@ public interface FTBUltimineServerConfig {
 
 	static int getMaxBlocks(ServerPlayer player) {
 		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
+	}
+
+	static long getUltimineCooldown(ServerPlayer player) {
+		return ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
 	}
 
 	class BlockTagsConfig {

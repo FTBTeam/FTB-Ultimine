@@ -17,16 +17,6 @@ public class ItemUtilsImpl {
 		}
 	}
 
-	public static ItemStack copyStackWithSize(ItemStack itemStack, int size) {
-		if (size == 0) {
-			return ItemStack.EMPTY;
-		} else {
-			ItemStack copy = itemStack.copy();
-			copy.setCount(size);
-			return copy;
-		}
-	}
-
 	public static boolean areCompatible(ItemStack a, ItemStack b) {
 		return true;
 	}

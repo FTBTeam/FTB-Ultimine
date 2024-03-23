@@ -1,8 +1,5 @@
 package dev.ftb.mods.ftbultimine.shape;
 
-/**
- * @author LatvianModder
- */
 public class MiningTunnelShape extends DiagonalTunnelShape {
 	@Override
 	public String getName() {

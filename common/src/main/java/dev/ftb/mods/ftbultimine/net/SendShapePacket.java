@@ -13,12 +13,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author LatvianModder
- */
 public class SendShapePacket extends BaseS2CMessage {
-//	public static Shape current = null;
-
 	private final int shapeIdx;
 	private final List<BlockPos> blocks;
 
@@ -29,7 +24,6 @@ public class SendShapePacket extends BaseS2CMessage {
 
 	public SendShapePacket(FriendlyByteBuf buf) {
 		shapeIdx = buf.readVarInt();
-//		shape = ShapeRegistry.getShape(buf.readUtf(Short.MAX_VALUE));
 		int s = buf.readVarInt();
 		blocks = new ArrayList<>(s);
 
@@ -40,7 +34,6 @@ public class SendShapePacket extends BaseS2CMessage {
 
 	public void write(FriendlyByteBuf buf) {
 		buf.writeVarInt(shapeIdx);
-//		buf.writeUtf(shape.getName(), Short.MAX_VALUE);
 		buf.writeVarInt(blocks.size());
 
 		for (BlockPos pos : blocks) {
@@ -56,7 +49,6 @@ public class SendShapePacket extends BaseS2CMessage {
 	@Override
 	public void handle(NetworkManager.PacketContext context) {
 		context.queue(() -> {
-//			current = shape;
 			FTBUltimine.instance.proxy.setShape(shapeIdx, blocks);
 		});
 	}

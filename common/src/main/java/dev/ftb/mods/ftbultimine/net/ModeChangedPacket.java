@@ -7,9 +7,6 @@ import dev.ftb.mods.ftbultimine.FTBUltimine;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 
-/**
- * @author LatvianModder
- */
 public class ModeChangedPacket extends BaseC2SMessage {
 	public final boolean next;
 

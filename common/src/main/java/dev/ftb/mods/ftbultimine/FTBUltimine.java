@@ -4,16 +4,19 @@ import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.platform.Platform;
+import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,6 +24,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -36,6 +42,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -44,9 +51,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-/**
- * @author LatvianModder
- */
 public class FTBUltimine {
 	public static FTBUltimine instance;
 
@@ -65,8 +69,9 @@ public class FTBUltimine {
 	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools"));
 	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
 	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "included_tools"));
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
 
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
+	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "block_whitelist"));
 	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "farmland_tillable"));
 	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "shovel_flattenable"));
 
@@ -82,12 +87,14 @@ public class FTBUltimine {
 
 		if (Platform.isModLoaded("ftbranks")) {
 			ranksMod = true;
+			FTBRanksIntegration.init();
 		}
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
-		FTBUltimineCommonConfig.load();
 		FTBUltiminePlugins.init();
+
+		ReloadListenerRegistry.register(PackType.SERVER_DATA, new DataReloadListener());
 
 		ShapeRegistry.register(new ShapelessShape(), true);
 		ShapeRegistry.register(new SmallTunnelShape());
@@ -105,7 +112,8 @@ public class FTBUltimine {
 		CommandRegistrationEvent.EVENT.register(FTBUltimineCommands::registerCommands);
 	}
 
-	public FTBUltiminePlayerData get(Player player) {
+	@NotNull
+	public FTBUltiminePlayerData getOrCreatePlayerData(Player player) {
 		return cachedDataMap.computeIfAbsent(player.getUUID(), FTBUltiminePlayerData::new);
 	}
 
@@ -113,6 +121,7 @@ public class FTBUltimine {
 		SNBTCompoundTag config = new SNBTCompoundTag();
 		FTBUltimineServerConfig.CONFIG.write(config);
 		new SyncConfigFromServerPacket(config).sendTo(serverPlayer);
+		new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), TimeType.COOLDOWN).sendTo(serverPlayer);
 	}
 
 	private void serverStarting(MinecraftServer server) {
@@ -122,7 +131,7 @@ public class FTBUltimine {
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.setPressed(pressed);
 		data.clearCache();
 
@@ -132,7 +141,7 @@ public class FTBUltimine {
 	}
 
 	public void modeChanged(ServerPlayer player, boolean next) {
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.cycleShape(next);
 		data.clearCache();
 		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
@@ -167,7 +176,7 @@ public class FTBUltimine {
 	}
 
 	public boolean canUltimine(Player player) {
-		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
+		if (PlayerHooks.isFake(player) || player.getUUID() == null || CooldownTracker.isOnCooldown(player)) {
 			return false;
 		}
 
@@ -189,7 +198,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 
 		if (!data.isPressed()) {
 			return EventResult.pass();
@@ -208,15 +217,21 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
+		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get()) {
+			return EventResult.pass();
+		}
+
 		isBreakingBlock = true;
 		tempBlockDropsList = new ItemCollection();
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
 		float baseSpeed = state.getDestroySpeed(world, pos);
+		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
-			float destroySpeed = world.getBlockState(p).getDestroySpeed(world, p);
-			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed)) {
+			BlockState state1 = world.getBlockState(p);
+			float destroySpeed = state1.getDestroySpeed(world, p);
+			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
 			}
 			if (!player.gameMode.destroyBlock(p) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
@@ -231,7 +246,6 @@ public class FTBUltimine {
 			}
 
 			ItemStack stack = player.getMainHandItem();
-
 			if (hadItem && stack.isEmpty()) {
 				break;
 			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
@@ -239,6 +253,13 @@ public class FTBUltimine {
 			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
+
+			blocksMined++;
+		}
+
+		if (!player.isCreative()) {
+			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+			data.addPendingXPCost(Math.max(0, blocksMined - 1));
 		}
 
 		isBreakingBlock = false;
@@ -260,7 +281,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		FTBUltiminePlayerData data = get(player);
+		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		if (!data.isPressed()) {
 			return EventResult.pass();
 		}
@@ -282,7 +303,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		boolean didWork = false;
+		int didWork = 0;
 		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
 			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
 		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
@@ -293,8 +314,12 @@ public class FTBUltimine {
 			didWork = RightClickHandlers.shovelFlattening(serverPlayer, hand, clickPos, data);
 		}
 
-		if (didWork) {
+		if (didWork > 0) {
 			player.swing(hand);
+			if (!player.isCreative()) {
+				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+				data.addPendingXPCost(Math.max(0, didWork - 1));
+			}
 			return EventResult.interruptFalse();
 		} else {
 			return EventResult.pass();
@@ -303,7 +328,9 @@ public class FTBUltimine {
 
 	public void playerTick(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
-			get(player).checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			FTBUltiminePlayerData data = getOrCreatePlayerData(player);
+			data.checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			data.takePendingXP(serverPlayer);
 		}
 	}
 
@@ -334,5 +361,12 @@ public class FTBUltimine {
 	public static boolean isTooExhausted(ServerPlayer player) {
 		FoodData data = player.getFoodData();
 		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
+	}
+
+	private static class DataReloadListener implements ResourceManagerReloadListener {
+		@Override
+		public void onResourceManagerReload(ResourceManager resourceManager) {
+			BlockMatcher.TagCache.onReload();
+		}
 	}
 }

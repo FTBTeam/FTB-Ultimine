@@ -23,3 +23,6 @@ eclipse
 run
 .vscode
 custom.gradle
+
+.DS_Store
+.architectury-transformer
