@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2004.1.0]
 
+### Added
+* `zh_cn` localization thanks to [@dust-shadows](https://github.com/dust-shadows) [#138](https://github.com/FTBTeam/FTB-Ultimine/pull/138)
+* `ko_kr` localization thanks to [@smoong951](https://github.com/smoong951) [#133](https://github.com/FTBTeam/FTB-Ultimine/pull/133)
+
 ### Changed
 * Ported to Minecraft 1.20.4. Supported on Forge, NeoForge and Fabric.
 
