@@ -1,11 +1,19 @@
 {
 	"key.ftbultimine": "FTB Ultimine",
 	"key.categories.ftbultimine": "FTB Ultimine",
-	"ftbultimine.active": "FTB Ultimine이 활성화됨",
-	"ftbultimine.change_shape": "Shift키를 누르고 마우스 스크롤을 돌려 채굴 형태를 변경하십시오",
+	"ftbultimine.info.base": "FTB Ultimine이 %s",
+	"ftbultimine.info.active": "활성화됨",
+	"ftbultimine.info.not_active": "비활성화됨",
+	"ftbultimine.info.blocks": "%d 블록 채굴",
+	"ftbultimine.info.partial_render": "%d 렌더링됨",
+	"ftbultimine.change_shape": "Shift 키를 누르고 마우스 스크롤을 위/아래로 돌려 채굴 모양을 변경하세요.",
 	"ftbultimine.shape.shapeless": "모양 없음",
 	"ftbultimine.shape.small_tunnel": "작은 굴",
-	"ftbultimine.shape.small_square": "작은 정사각형",
+	"ftbultimine.shape.large_tunnel": "큰 굴 (3x3)",
+	"ftbultimine.shape.small_square": "작은 사각형 (3x3)",
 	"ftbultimine.shape.mining_tunnel": "채광 굴",
-	"ftbultimine.shape.escape_tunnel": "탈출 굴"
+	"ftbultimine.shape.escape_tunnel": "탈출 굴",
+	"ftbultimine.config": "FTB Ultimine 설정",
+	"item.ftbultimine.ultiminer": "Ultiminer",
+	"item.ftbultimine.ultiminer.tooltip": "활성화 시 %s을(를) 사용할 수 있습니다."
 }
