@@ -1,9 +1,6 @@
 plugins {
 	id "com.github.johnrengelman.shadow" version "7.1.0"
-	id "com.matthewprenger.cursegradle" version "1.4.0"
 }
-
-def ENV = System.getenv()
 
 architectury {
 	platformSetupLoomIde()
@@ -91,47 +88,4 @@ publishing {
 			from components.java
 		}
 	}
-
-	repositories {
-		if (ftbPublishing.ftbToken) {
-			maven {
-				url ftbPublishing.ftbURL
-				credentials {
-					username = ftbPublishing.ftbUser
-					password = ftbPublishing.ftbToken
-				}
-			}
-		}
-
-		if (ftbPublishing.sapsToken) {
-			maven {
-				url ftbPublishing.sapsURL
-				credentials {
-					username = ftbPublishing.sapsUser
-					password = ftbPublishing.sapsToken
-				}
-			}
-		}
-	}
 }
-
-if (ENV.CURSEFORGE_KEY) {
-	curseforge {
-		apiKey = ENV.CURSEFORGE_KEY
-		project {
-			id = project.curseforge_id_forge
-			releaseType = ftbPublishing.relType
-			addGameVersion "Forge"
-			addGameVersion rootProject.minecraft_version
-			mainArtifact(remapJar.archiveFile)
-			relations {
-				requiredDependency 'architectury-api'
-				requiredDependency 'ftb-library-forge'
-			}
-			changelog = ENV.CHANGELOG  // expected to exist if ENV.CURSEFORGE_KEY does
-			changelogType = 'markdown'
-		}
-	}
-}
-
-rootProject.tasks.getByName("curseforgePublish").dependsOn tasks.getByName("curseforge")
