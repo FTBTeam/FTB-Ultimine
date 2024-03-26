@@ -1,14 +1,5 @@
 # FTB Ultimine
 
-public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools"));
-public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "included_tools"));
-
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
-	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "block_whitelist"));
-	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "farmland_tillable"));
-	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "shovel_flattenable"));
-
 ## Tags
 
 ### Item Tags
