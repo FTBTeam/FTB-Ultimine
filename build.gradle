@@ -40,6 +40,7 @@ allprojects {
 	}
 
 	repositories {
+		mavenLocal()
 		maven {
 			url "https://maven.architectury.dev/"
 		}
