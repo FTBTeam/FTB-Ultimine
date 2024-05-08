@@ -130,7 +130,7 @@ publishMods {
 		projectId = curseforge_id_fabric
 		requires {slug = "fabric-api" }
 		requires {slug = "architectury-api" }
-		requires {slug = 'ftb-library-forge' }
+		requires {slug = 'ftb-library-fabric' }
 		optional {slug = 'ftb-ranks-fabric' }
 	}
 
