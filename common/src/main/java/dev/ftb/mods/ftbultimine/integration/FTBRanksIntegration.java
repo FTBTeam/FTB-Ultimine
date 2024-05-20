@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.integration;
 
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbranks.api.FTBRanksAPI;
 import dev.ftb.mods.ftbranks.api.event.RankEvent;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
@@ -25,13 +26,13 @@ public class FTBRanksIntegration {
     private static void updatePlayer(RankEvent.Player event) {
         ServerPlayer sp = event.getManager().getServer().getPlayerList().getPlayer(event.getPlayer().getId());
         if (sp != null) {
-            new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(sp), TimeType.COOLDOWN).sendTo(sp);
+            NetworkManager.sendToPlayer(sp, new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(sp), TimeType.COOLDOWN));
         }
     }
 
     private static void updateAllPlayers(RankEvent event) {
         event.getManager().getServer().getPlayerList().getPlayers().forEach(sp -> {
-            new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(sp), TimeType.COOLDOWN).sendTo(sp);
+            NetworkManager.sendToPlayer(sp, new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(sp), TimeType.COOLDOWN));
         });
     }
 

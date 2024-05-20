@@ -1,55 +1,32 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.networking.simple.BaseS2CMessage;
-import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
-import dev.ftb.mods.ftbultimine.shape.Shape;
-import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SendShapePacket extends BaseS2CMessage {
-	private final int shapeIdx;
-	private final List<BlockPos> blocks;
+public record SendShapePacket(int shapeIdx, List<BlockPos> blocks) implements CustomPacketPayload {
+	public static final Type<SendShapePacket> TYPE = new Type<>(FTBUltimine.rl("send_shape_packet"));
 
-	public SendShapePacket(int idx, List<BlockPos> b) {
-		shapeIdx = idx;
-		blocks = b;
-	}
-
-	public SendShapePacket(FriendlyByteBuf buf) {
-		shapeIdx = buf.readVarInt();
-		int s = buf.readVarInt();
-		blocks = new ArrayList<>(s);
-
-		for (int i = 0; i < s; i++) {
-			blocks.add(buf.readBlockPos());
-		}
-	}
-
-	public void write(FriendlyByteBuf buf) {
-		buf.writeVarInt(shapeIdx);
-		buf.writeVarInt(blocks.size());
-
-		for (BlockPos pos : blocks) {
-			buf.writeBlockPos(pos);
-		}
-	}
+	public static final StreamCodec<FriendlyByteBuf, SendShapePacket> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.VAR_INT, SendShapePacket::shapeIdx,
+			BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()), SendShapePacket::blocks,
+			SendShapePacket::new
+	);
 
 	@Override
-	public MessageType getType() {
-		return FTBUltimineNet.SEND_SHAPE;
+	public Type<SendShapePacket> type() {
+		return TYPE;
 	}
 
-	@Override
-	public void handle(NetworkManager.PacketContext context) {
+	public static void handle(SendShapePacket message, NetworkManager.PacketContext context) {
 		context.queue(() -> {
-			FTBUltimine.instance.proxy.setShape(shapeIdx, blocks);
+			FTBUltimine.instance.proxy.setShape(message.shapeIdx, message.blocks);
 		});
 	}
 }

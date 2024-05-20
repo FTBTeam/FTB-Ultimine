@@ -29,7 +29,7 @@ import java.util.Set;
 public class RightClickHandlers {
     static int axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         Set<SoundEvent> sounds = new HashSet<>();
-        BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
+        BrokenItemHandler brokenItemHandler = new BrokenItemHandler(player);
         Level level = player.level();
 
         ItemStack itemStack = player.getItemInHand(hand);
@@ -59,7 +59,7 @@ public class RightClickHandlers {
                 CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, pos, itemStack);
                 level.setBlock(pos, actual.get(), Block.UPDATE_ALL_IMMEDIATE);
                 level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, actual.get()));
-                itemStack.hurtAndBreak(1, player, brokenItemHandler);
+                itemStack.hurtAndBreak(1, level.random, player, brokenItemHandler);
 
                 if (brokenItemHandler.isBroken) {
                     break;
@@ -72,7 +72,7 @@ public class RightClickHandlers {
 
     static int shovelFlattening(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         int didWork = 0;
-        BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
+        BrokenItemHandler brokenItemHandler = new BrokenItemHandler(player);
 
         for (BlockPos pos : data.cachedPositions()) {
             if (!player.level().getBlockState(pos.above()).isAir()) {
@@ -88,7 +88,7 @@ public class RightClickHandlers {
                 player.level().setBlock(pos, newState, Block.UPDATE_ALL_IMMEDIATE);
                 didWork++;
 
-                player.getMainHandItem().hurtAndBreak(1, player, brokenItemHandler);
+                player.getMainHandItem().hurtAndBreak(1, player.getRandom(), player, brokenItemHandler);
                 player.level().gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
                 if (brokenItemHandler.isBroken || player.getFoodData().getFoodLevel() <= 0) {
                     break;
@@ -107,7 +107,7 @@ public class RightClickHandlers {
 
     static int farmlandConversion(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         int clicked = 0;
-        BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
+        BrokenItemHandler brokenItemHandler = new BrokenItemHandler(player);
 
         for (BlockPos pos : data.cachedPositions()) {
             if (!player.level().getBlockState(pos.above()).isAir()) {
@@ -121,7 +121,7 @@ public class RightClickHandlers {
 
                 if (!player.isCreative()) {
                     player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
-                    player.getMainHandItem().hurtAndBreak(1, player, brokenItemHandler);
+                    player.getMainHandItem().hurtAndBreak(1, player.getRandom(), player, brokenItemHandler);
                     if (brokenItemHandler.isBroken || FTBUltimine.isTooExhausted(player)) {
                         break;
                     }

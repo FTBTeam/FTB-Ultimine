@@ -1,34 +1,27 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.networking.simple.BaseC2SMessage;
-import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 
-public class ModeChangedPacket extends BaseC2SMessage {
-	public final boolean next;
+public record ModeChangedPacket(boolean next) implements CustomPacketPayload {
+    public static final Type<ModeChangedPacket> TYPE = new Type<>(FTBUltimine.rl("mode_changed_packet"));
 
-	public ModeChangedPacket(boolean n) {
-		next = n;
-	}
-
-	public ModeChangedPacket(FriendlyByteBuf buf) {
-		next = buf.readBoolean();
-	}
-
-	public void write(FriendlyByteBuf buf) {
-		buf.writeBoolean(next);
-	}
+    public static final StreamCodec<FriendlyByteBuf, ModeChangedPacket> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.BOOL, ModeChangedPacket::next,
+	    ModeChangedPacket::new
+    );
 
 	@Override
-	public MessageType getType() {
-		return FTBUltimineNet.MODE_CHANGED;
+    public Type<ModeChangedPacket> type() {
+        return TYPE;
 	}
 
-	@Override
-	public void handle(NetworkManager.PacketContext context) {
-		context.queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.getPlayer(), next));
+    public static void handle(ModeChangedPacket message, NetworkManager.PacketContext context) {
+		context.queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.getPlayer(), message.next));
 	}
 }

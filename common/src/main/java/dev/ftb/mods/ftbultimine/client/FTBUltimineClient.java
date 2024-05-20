@@ -10,6 +10,7 @@ import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
+import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
@@ -143,7 +144,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
 		if (pressed && (amountY != 0 || amountX != 0) && sneak()) {
 			hasScrolled = true;
-			new ModeChangedPacket(amountX < 0D || amountY < 0D).sendToServer();
+			NetworkManager.sendToServer(new ModeChangedPacket(amountX < 0D || amountY < 0D));
 			return EventResult.interruptFalse();
 		}
 
@@ -164,7 +165,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 
 		hasScrolled = true;
-		new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN).sendToServer();
+		NetworkManager.sendToServer(new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN));
 		lastToggle = System.currentTimeMillis();
 		return EventResult.pass();
 	}
@@ -280,7 +281,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		boolean p = pressed;
 
 		if ((pressed = keyBinding.isDown()) != p) {
-			new KeyPressedPacket(pressed).sendToServer();
+			NetworkManager.sendToServer(new KeyPressedPacket(pressed));
 		}
 
 		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);

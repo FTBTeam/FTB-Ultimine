@@ -1,20 +1,16 @@
 package dev.ftb.mods.ftbultimine.net;
 
-import dev.architectury.networking.simple.MessageType;
-import dev.architectury.networking.simple.SimpleNetworkManager;
-import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 
-public interface FTBUltimineNet {
-	SimpleNetworkManager NET = SimpleNetworkManager.create(FTBUltimine.MOD_ID);
+public class FTBUltimineNet {
+	public static void init() {
+		NetworkHelper.registerS2C(SendShapePacket.TYPE, SendShapePacket.STREAM_CODEC, SendShapePacket::handle);
+		NetworkHelper.registerS2C(SyncConfigFromServerPacket.TYPE, SyncConfigFromServerPacket.STREAM_CODEC, SyncConfigFromServerPacket::handle);
+		NetworkHelper.registerS2C(EditConfigPacket.TYPE, EditConfigPacket.STREAM_CODEC, EditConfigPacket::handle);
+		NetworkHelper.registerS2C(SyncUltimineTimePacket.TYPE, SyncUltimineTimePacket.STREAM_CODEC, SyncUltimineTimePacket::handle);
 
-	MessageType SEND_SHAPE = NET.registerS2C("send_shape", SendShapePacket::new);
-	MessageType KEY_PRESSED = NET.registerC2S("key_pressed", KeyPressedPacket::new);
-	MessageType MODE_CHANGED = NET.registerC2S("mode_changed", ModeChangedPacket::new);
-	MessageType SYNC_CONFIG_FROM_SERVER = NET.registerS2C("sync_config_from_server", SyncConfigFromServerPacket::new);
-	MessageType SYNC_CONFIG_TO_SERVER = NET.registerC2S("sync_config_to_server", SyncConfigToServerPacket::new);
-	MessageType EDIT_CONFIG = NET.registerS2C("edit_config", EditConfigPacket::new);
-	MessageType SYNC_ULTIMINE_TIME = NET.registerS2C("sync_ultimine_time", SyncUltimineTimePacket::new);
-
-	static void init() {
+		NetworkHelper.registerC2S(KeyPressedPacket.TYPE, KeyPressedPacket.STREAM_CODEC, KeyPressedPacket::handle);
+		NetworkHelper.registerC2S(ModeChangedPacket.TYPE, ModeChangedPacket.STREAM_CODEC, ModeChangedPacket::handle);
+		NetworkHelper.registerC2S(SyncConfigToServerPacket.TYPE, SyncConfigToServerPacket.STREAM_CODEC, SyncConfigToServerPacket::handle);
 	}
 }

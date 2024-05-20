@@ -3,6 +3,7 @@ package dev.ftb.mods.ftbultimine;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
+import dev.architectury.networking.NetworkManager;
 import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
@@ -83,6 +84,7 @@ public class FTBUltimine {
 
 	public FTBUltimine() {
 		instance = this;
+
 		FTBUltimineNet.init();
 
 		if (Platform.isModLoaded("ftbranks")) {
@@ -120,8 +122,8 @@ public class FTBUltimine {
 	private void playerJoined(ServerPlayer serverPlayer) {
 		SNBTCompoundTag config = new SNBTCompoundTag();
 		FTBUltimineServerConfig.CONFIG.write(config);
-		new SyncConfigFromServerPacket(config).sendTo(serverPlayer);
-		new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), TimeType.COOLDOWN).sendTo(serverPlayer);
+		NetworkManager.sendToPlayer(serverPlayer, new SyncConfigFromServerPacket(config));
+		NetworkManager.sendToPlayer(serverPlayer, new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), TimeType.COOLDOWN));
 	}
 
 	private void serverStarting(MinecraftServer server) {
@@ -136,7 +138,7 @@ public class FTBUltimine {
 		data.clearCache();
 
 		if (!data.isPressed()) {
-			new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
+			NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
 		}
 	}
 
@@ -144,7 +146,7 @@ public class FTBUltimine {
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.cycleShape(next);
 		data.clearCache();
-		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
+		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
 	}
 
 	/**
@@ -248,8 +250,9 @@ public class FTBUltimine {
 			ItemStack stack = player.getMainHandItem();
 			if (hadItem && stack.isEmpty()) {
 				break;
-			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
-				break;
+				// TODO update this if & when Tinkers updates to 1.20.6+
+//			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
+//				break;
 			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
 				break;
 			}
@@ -271,7 +274,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
+		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
 
 		return EventResult.interruptFalse();
 	}
@@ -354,7 +357,7 @@ public class FTBUltimine {
 		return EventResult.pass();
 	}
 
-	public static ResourceLocation id(String path) {
+	public static ResourceLocation rl(String path) {
 		return new ResourceLocation(MOD_ID, path);
 	}
 

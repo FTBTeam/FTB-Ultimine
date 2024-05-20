@@ -1,16 +1,17 @@
 package dev.ftb.mods.ftbultimine;
 
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
 import dev.ftb.mods.ftbultimine.shape.Shape;
 import dev.ftb.mods.ftbultimine.shape.ShapeContext;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
-import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -65,7 +66,7 @@ public class FTBUltiminePlayerData {
 	}
 
 	public static HitResult rayTrace(ServerPlayer player) {
-		double distance = PlatformMethods.reach(player);
+		double distance = player.getAttributeValue(Attributes.BLOCK_INTERACTION_RANGE);
 		return player.pick(player.isCreative() ? distance + 0.5D : distance, 1F, false);
 	}
 
@@ -116,7 +117,7 @@ public class FTBUltiminePlayerData {
 				clearCache();
 
 				if (sendUpdate) {
-					new SendShapePacket(getCurrentShapeIndex(), Collections.emptyList()).sendTo(player);
+					NetworkManager.sendToPlayer(player, new SendShapePacket(getCurrentShapeIndex(), Collections.emptyList()));
 				}
 			}
 
@@ -159,7 +160,7 @@ public class FTBUltiminePlayerData {
 		}
 
 		if (sendUpdate) {
-			new SendShapePacket(getCurrentShapeIndex(), cachedBlocks).sendTo(player);
+			NetworkManager.sendToPlayer(player, new SendShapePacket(getCurrentShapeIndex(), cachedBlocks));
 		}
 
 		return context;
