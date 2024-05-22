@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2001.1.5]
 
 ### Changed
-* Minor background change for compatibility with future FTB Library release
-  * No player-visible change, but will avoid problems with uncloseable config screens with next FTB Library
+* Updated for FTB Library 2001.2.x
+  * No player-visible change, but avoids problems with uncloseable config screens
 
 ## [2001.1.4]
 
@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1902.4.1]
 
 ### Added
-* Right-click ultimine harvesting now also works for Cocoa Beans and Sweet Berries
+* Right-click ultimine harvesting now algradso works for Cocoa Beans and Sweet Berries
 
 ## [1902.4.0]
 
