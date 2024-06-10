@@ -146,7 +146,7 @@ publishMods {
 		from(curseForgeOptions, neoForgeOptions)
 		projectId = curseforge_id_forge
 		requires {slug = "architectury-api" }
-		requires {slug = 'ftb-library-neoforge' }
-		optional {slug = 'ftb-ranks-neoforge' }
+		requires {slug = 'ftb-library-forge' }
+		optional {slug = 'ftb-ranks-forge' }
 	}
 }
