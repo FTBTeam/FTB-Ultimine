@@ -117,7 +117,7 @@ publishMods {
 	}
 
 	def fabricOptions = createOptions("fabric")
-	def forgeOptions = createOptions("forge")
+//	def forgeOptions = createOptions("forge")
 	def neoForgeOptions = createOptions("neoforge")
 
 	def curseForgeOptions = curseforgeOptions {
@@ -134,19 +134,19 @@ publishMods {
 		optional {slug = 'ftb-ranks-fabric' }
 	}
 
-	curseforge("curseforgeForge") {
-		from(curseForgeOptions, forgeOptions)
-		projectId = curseforge_id_forge
-		requires {slug = "architectury-api" }
-		requires {slug = 'ftb-library-forge' }
-		optional {slug = 'ftb-ranks-forge' }
-	}
+//	curseforge("curseforgeForge") {
+//		from(curseForgeOptions, forgeOptions)
+//		projectId = curseforge_id_forge
+//		requires {slug = "architectury-api" }
+//		requires {slug = 'ftb-library-forge' }
+//		optional {slug = 'ftb-ranks-forge' }
+//	}
 
 	curseforge("curseforgeNeoForge") {
 		from(curseForgeOptions, neoForgeOptions)
 		projectId = curseforge_id_forge
 		requires {slug = "architectury-api" }
-		requires {slug = 'ftb-library-forge' }
-		optional {slug = 'ftb-ranks-forge' }
+		requires {slug = 'ftb-library-neoforge' }
+		optional {slug = 'ftb-ranks-neoforge' }
 	}
 }
