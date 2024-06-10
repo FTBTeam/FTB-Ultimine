@@ -1,6 +1,7 @@
 package dev.ftb.mods.ftbultimine;
 
 import com.mojang.brigadier.CommandDispatcher;
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.net.EditConfigPacket;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -14,14 +15,14 @@ public class FTBUltimineCommands {
                 .then(Commands.literal("serverconfig")
                         .requires(sourceStack -> sourceStack.isPlayer() && sourceStack.hasPermission(2))
                         .executes(context -> {
-                            new EditConfigPacket(false).sendTo(Objects.requireNonNull(context.getSource().getPlayer()));
+                            NetworkManager.sendToPlayer(context.getSource().getPlayerOrException(), new EditConfigPacket(false));
                             return 1;
                         })
                 )
                 .then(Commands.literal("clientconfig")
                         .requires(CommandSourceStack::isPlayer)
                         .executes(context -> {
-                            new EditConfigPacket(true).sendTo(Objects.requireNonNull(context.getSource().getPlayer()));
+                            NetworkManager.sendToPlayer(context.getSource().getPlayerOrException(), new EditConfigPacket(true));
                             return 1;
                         })
                 )

@@ -1,43 +1,36 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.networking.simple.BaseS2CMessage;
-import dev.architectury.networking.simple.MessageType;
+import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
+import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public class SyncUltimineTimePacket extends BaseS2CMessage {
-    private final long when;
-    private final TimeType timetype;
+public record SyncUltimineTimePacket(long when, TimeType timetype) implements CustomPacketPayload {
+    public static final Type<SyncUltimineTimePacket> TYPE = new Type<>(FTBUltimine.rl("sync_ultimine_time_packet"));
 
-    public SyncUltimineTimePacket(FriendlyByteBuf buf) {
-        this.when = buf.readLong();
-        this.timetype = buf.readEnum(TimeType.class);
-    }
-
-    public SyncUltimineTimePacket(long when, TimeType timetype) {
-        this.when = when;
-        this.timetype = timetype;
-    }
+    public static final StreamCodec<FriendlyByteBuf, SyncUltimineTimePacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG, SyncUltimineTimePacket::when,
+            NetworkHelper.enumStreamCodec(TimeType.class), SyncUltimineTimePacket::timetype,
+            SyncUltimineTimePacket::new
+    );
 
     @Override
-    public MessageType getType() {
-        return FTBUltimineNet.SYNC_ULTIMINE_TIME;
+    public Type<SyncUltimineTimePacket> type() {
+        return TYPE;
     }
 
-    @Override
-    public void write(FriendlyByteBuf buf) {
-        buf.writeLong(when);
-        buf.writeEnum(timetype);
-    }
-
-    @Override
-    public void handle(NetworkManager.PacketContext context) {
-        switch (timetype) {
-            case LAST_USED -> CooldownTracker.setLastUltimineTime(FTBUltimineClient.getClientPlayer(), when);
-            case COOLDOWN -> CooldownTracker.setClientCooldownTime(when);
-        }
+    public static void handle(SyncUltimineTimePacket message, NetworkManager.PacketContext context) {
+        context.queue(() -> {
+            switch (message.timetype) {
+                case LAST_USED -> CooldownTracker.setLastUltimineTime(FTBUltimineClient.getClientPlayer(), message.when);
+                case COOLDOWN -> CooldownTracker.setClientCooldownTime(message.when);
+            }
+        });
     }
 
     public enum TimeType {

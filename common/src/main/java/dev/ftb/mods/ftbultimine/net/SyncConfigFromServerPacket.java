@@ -1,38 +1,30 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.networking.simple.BaseS2CMessage;
-import dev.architectury.networking.simple.MessageType;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
-import dev.ftb.mods.ftblibrary.snbt.SNBTNet;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public class SyncConfigFromServerPacket extends BaseS2CMessage {
-    private final SNBTCompoundTag config;
+public record SyncConfigFromServerPacket(SNBTCompoundTag config) implements CustomPacketPayload {
+    public static final Type<SyncConfigFromServerPacket> TYPE = new Type<>(FTBUltimine.rl("sync_config_from_server_packet"));
 
-    public SyncConfigFromServerPacket(SNBTCompoundTag config) {
-        this.config = config;
-    }
-
-    public SyncConfigFromServerPacket(FriendlyByteBuf buf) {
-        config = SNBTNet.readCompound(buf);
-    }
-
-    @Override
-    public MessageType getType() {
-        return FTBUltimineNet.SYNC_CONFIG_FROM_SERVER;
-    }
+    public static final StreamCodec<FriendlyByteBuf, SyncConfigFromServerPacket> STREAM_CODEC = StreamCodec.composite(
+            SNBTCompoundTag.STREAM_CODEC, SyncConfigFromServerPacket::config,
+            SyncConfigFromServerPacket::new
+    );
 
     @Override
-    public void write(FriendlyByteBuf buf) {
-        SNBTNet.writeCompound(buf, config);
+    public Type<SyncConfigFromServerPacket> type() {
+        return TYPE;
     }
 
-    @Override
-    public void handle(NetworkManager.PacketContext context) {
-        FTBUltimineServerConfig.CONFIG.read(config);
-        FTBUltimine.LOGGER.info("received server config settings");
+    public static void handle(SyncConfigFromServerPacket message, NetworkManager.PacketContext context) {
+        context.queue(() -> {
+            FTBUltimineServerConfig.CONFIG.read(message.config);
+            FTBUltimine.LOGGER.info("received server config settings");
+        });
     }
 }

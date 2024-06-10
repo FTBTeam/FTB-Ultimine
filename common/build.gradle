@@ -8,7 +8,7 @@ dependencies {
 def ENV = System.getenv()
 
 architectury {
-	common("forge", "fabric", "neoforge")
+	common(/* "forge", */ "fabric", "neoforge")
 }
 
 configurations {
@@ -29,28 +29,6 @@ publishing {
 			artifactId = rootProject.archivesBaseName
 			version ftbPublishing.mavenVersion
 			from components.java
-		}
-	}
-
-	repositories {
-		if (ftbPublishing.ftbToken) {
-			maven {
-				url ftbPublishing.ftbURL
-				credentials {
-					username = ftbPublishing.ftbUser
-					password = ftbPublishing.ftbToken
-				}
-			}
-		}
-
-		if (ftbPublishing.sapsToken) {
-			maven {
-				url ftbPublishing.sapsURL
-				credentials {
-					username = ftbPublishing.sapsUser
-					password = ftbPublishing.sapsToken
-				}
-			}
 		}
 	}
 }

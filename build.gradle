@@ -1,6 +1,6 @@
 plugins {
 	id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "1.5-SNAPSHOT" apply false
+	id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
 	id "me.modmuss50.mod-publish-plugin" version "0.4.5"
 }
 
@@ -34,7 +34,7 @@ allprojects {
 	// needs to be done AFTER version is set
 	apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
 
-	sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = 17
+	sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = 21
 
 	compileJava {
 		options.encoding = "UTF-8"
@@ -106,7 +106,7 @@ publishMods {
 
 	// TODO: Migrate to something else
 	def tag = providers.environmentVariable("TAG").getOrElse("release")
-	type = tag == "release" ? STABLE : (tag == "beta" ? BETA : ALPHA)
+	type = tag == "beta" ? BETA : (tag == "alpha" ? ALPHA : STABLE)
 
 	def createOptions = (String projectName) -> {
 		publishOptions {

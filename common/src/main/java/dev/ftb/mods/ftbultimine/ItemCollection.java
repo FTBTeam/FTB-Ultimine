@@ -1,6 +1,5 @@
 package dev.ftb.mods.ftbultimine;
 
-import dev.ftb.mods.ftbultimine.utils.ItemUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -8,7 +7,6 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ItemCollection {
 	private final List<ItemStack> items = new ArrayList<>();
@@ -56,40 +54,51 @@ public class ItemCollection {
 	}
 
 	private ItemStack insert(List<ItemStack> stacks, ItemStack stack, int slot) {
+		if (stack.isEmpty()) {
+			return ItemStack.EMPTY;  // degenerate case
+		}
+
 		ItemStack existing = stacks.get(slot);
 
-		if (stack.isEmpty() || existing.isEmpty() || stack.getItem() != existing.getItem()) {
-			return stack;
-		}
-
-		// intellij doesn't like that we throw something here
-		//noinspection ConstantConditions
-		if (!stack.isStackable() || !Objects.equals(stack.getTag(), existing.getTag()) || !ItemUtils.areCompatible(stack, existing)) {
-			return stack;
-		}
-
-		int limit = stack.getMaxStackSize();
-
-		if (!existing.isEmpty()) {
-			if (!ItemUtils.canItemStacksStack(stack, existing)) {
-				return stack;
-			}
-
-			limit -= existing.getCount();
-		}
-
-		if (limit <= 0) {
-			return stack;
-		}
-
-		boolean reachedLimit = stack.getCount() > limit;
-
 		if (existing.isEmpty()) {
-			stacks.set(slot, reachedLimit ? stack.copyWithCount(limit) : stack);
-		} else {
-			existing.grow(reachedLimit ? limit : stack.getCount());
+			// trivial case, just put the stack in the slot
+			stacks.set(slot, stack.copy());
+			return ItemStack.EMPTY;
 		}
 
-		return reachedLimit ? stack.copyWithCount(stack.getCount() - limit) : ItemStack.EMPTY;
+		if (!stack.isStackable() || !ItemStack.isSameItemSameComponents(stack, existing)) {
+			// stack doesn't fit here
+			return stack;
+		}
+
+		// the slot is not empty, and is compatible with the stack to be inserted
+		// - so at least some of it can be inserted
+		int available = stack.getMaxStackSize() - existing.getCount();
+		int toAdd = Math.min(available, stack.getCount());
+		existing.grow(toAdd);
+
+		return toAdd == stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - toAdd);
+
+//		if (!existing.isEmpty()) {
+//			if (!ItemUtils.canItemStacksStack(stack, existing)) {
+//				return stack;
+//			}
+//
+//			limit -= existing.getCount();
+//		}
+//
+//		if (limit <= 0) {
+//			return stack;
+//		}
+//
+//		boolean reachedLimit = stack.getCount() > limit;
+//
+//		if (existing.isEmpty()) {
+//			stacks.set(slot, reachedLimit ? stack.copyWithCount(limit) : stack);
+//		} else {
+//			existing.grow(reachedLimit ? limit : stack.getCount());
+//		}
+//
+//		return reachedLimit ? stack.copyWithCount(stack.getCount() - limit) : ItemStack.EMPTY;
 	}
 }

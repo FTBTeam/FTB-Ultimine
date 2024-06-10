@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine;
 
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
@@ -30,7 +31,7 @@ public class CooldownTracker {
         CooldownTracker instance = player.level().isClientSide ? clientInstance : serverInstance;
         instance.lastUltimineTime.put(player.getUUID(), when);
         if (player instanceof ServerPlayer sp) {
-            new SyncUltimineTimePacket(when, TimeType.LAST_USED).sendTo(sp);
+            NetworkManager.sendToPlayer(sp, new SyncUltimineTimePacket(when, TimeType.LAST_USED));
         }
     }
 

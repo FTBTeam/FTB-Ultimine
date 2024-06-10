@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.config;
 
+import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
@@ -98,7 +99,7 @@ public interface FTBUltimineServerConfig {
 				clearTagCache();
 				SNBTCompoundTag config = new SNBTCompoundTag();
 				FTBUltimineServerConfig.CONFIG.write(config);
-				new SyncConfigToServerPacket(config).sendToServer();
+				NetworkManager.sendToServer(new SyncConfigToServerPacket(config));
 			}
 		});
 		CONFIG.createClientConfig(group);

@@ -42,7 +42,7 @@ apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/ext
 processResources {
 	inputs.property "version", project.version
 
-	filesMatching("META-INF/mods.toml") {
+	filesMatching("META-INF/neoforge.mods.toml") {
 		expand "version": project.version,
 				"archversion": project.architectury_version,
 				"neoforgeversion": project.neoforge_version,
@@ -78,7 +78,7 @@ components.java {
 
 publishing {
 	publications {
-		mavenForge(MavenPublication) {
+		mavenNeoforge(MavenPublication) {
 			artifactId = "${rootProject.archives_base_name}-${project.name}"
 			version ftbPublishing.mavenVersion
 			from components.java
