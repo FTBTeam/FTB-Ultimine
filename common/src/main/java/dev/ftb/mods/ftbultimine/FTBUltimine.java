@@ -67,14 +67,14 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollection tempBlockDropsList;
 
-	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools"));
-	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "excluded_tools/strict"));
-	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, new ResourceLocation(MOD_ID, "included_tools"));
+	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("excluded_tools"));
+	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("excluded_tools/strict"));
+	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("included_tools"));
 
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "excluded_blocks"));
-	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "block_whitelist"));
-	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "farmland_tillable"));
-	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation(MOD_ID, "shovel_flattenable"));
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, FTBUltimine.rl("excluded_blocks"));
+	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, FTBUltimine.rl("block_whitelist"));
+	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.rl("farmland_tillable"));
+	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.rl("shovel_flattenable"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -358,7 +358,7 @@ public class FTBUltimine {
 	}
 
 	public static ResourceLocation rl(String path) {
-		return new ResourceLocation(MOD_ID, path);
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 
 	public static boolean isTooExhausted(ServerPlayer player) {

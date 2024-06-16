@@ -25,6 +25,7 @@ import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import dev.ftb.mods.ftbultimine.utils.ShapeMerger;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -123,8 +124,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NORMAL);
 
 		for (CachedEdge edge : cachedEdges) {
-			buffer.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 255).endVertex();
-			buffer.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 255).endVertex();
+			buffer.addVertex(matrix, edge.x1, edge.y1, edge.z1).setColor(255, 255, 255, 255);
+			buffer.addVertex(matrix, edge.x2, edge.y2, edge.z2).setColor(255, 255, 255, 255);
 		}
 
 		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_NORMAL);
@@ -132,8 +133,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
 
 		for (CachedEdge edge : cachedEdges) {
-			buffer2.vertex(matrix, edge.x1, edge.y1, edge.z1).color(255, 255, 255, 30).endVertex();
-			buffer2.vertex(matrix, edge.x2, edge.y2, edge.z2).color(255, 255, 255, 30).endVertex();
+			buffer2.addVertex(matrix, edge.x1, edge.y1, edge.z1).setColor(255, 255, 255, 30);
+			buffer2.addVertex(matrix, edge.x2, edge.y2, edge.z2).setColor(255, 255, 255, 30);
 		}
 
 		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
@@ -243,7 +244,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 	}*/
 
-	public void renderGameOverlay(GuiGraphics graphics, float tickDelta) {
+	public void renderGameOverlay(GuiGraphics graphics, DeltaTracker tickDelta) {
 		if (pressed) {
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);

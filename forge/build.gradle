@@ -31,7 +31,7 @@ artifacts {
 dependencies {
 	forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
 
-	modApi "dev.architectury:architectury-forge:${rootProject.architectury_version}"
+	modApi "dev.architectury:architectury-forge:${rootProject.architectury_api_version}"
 	modApi("dev.ftb.mods:ftb-library-forge:${rootProject.ftb_library_version}") { transitive = false }
 	modApi("dev.ftb.mods:ftb-ranks-forge:${rootProject.ftb_ranks_version}") { transitive = false }
 
@@ -49,7 +49,7 @@ processResources {
 
 	filesMatching("META-INF/mods.toml") {
 		expand "version": project.version,
-				"archversion": project.architectury_version,
+				"archversion": project.architectury_api_version,
 				"forgeversion": project.forge_version,
 				"forgeshortversion": project.forge_version.split("\\.")[0],
 				"mcversion": project.minecraft_version,
