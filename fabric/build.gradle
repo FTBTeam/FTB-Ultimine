@@ -28,7 +28,7 @@ dependencies {
 	modApi "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
 	modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
-	modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+	modApi "dev.architectury:architectury-fabric:${rootProject.architectury_api_version}"
 
 	modApi("dev.ftb.mods:ftb-library-fabric:${rootProject.ftb_library_version}") { transitive = false }
 	modApi("dev.ftb.mods:ftb-ranks-fabric:${rootProject.ftb_ranks_version}") { transitive = false }
@@ -45,9 +45,7 @@ processResources {
 
 	filesMatching("fabric.mod.json") {
 		expand "version": project.version,
-				"archversion": project.architectury_version,
-				"forgeversion": project.forge_version,
-				"forgeshortversion": project.forge_version.split("\\.")[0],
+				"archversion": project.architectury_api_version,
 				"mcversion": project.minecraft_version,
 				"ftblibraryversion": project.ftb_library_version
 	}
