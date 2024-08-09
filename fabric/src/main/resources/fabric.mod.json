@@ -24,6 +24,7 @@
 	],
 	"accessWidener": "ftbultimine.accesswidener",
 	"depends": {
+		"fabric": "${fabricapiversionrange}",
 		"minecraft": "~${mcversion}",
 		"architectury": ">=${archversion}",
 		"ftblibrary": ">=${ftblibraryversion}"
