@@ -1,6 +1,7 @@
 {
 	"key.ftbultimine": "FTB Ultimine",
 	"key.categories.ftbultimine": "FTB Ultimine",
+	"sidebar_button.ftbultimine.config": "FTB Ultimine Configuration",
 	"ftbultimine.info.base": "FTB Ultimine is %s",
 	"ftbultimine.info.active": "active",
 	"ftbultimine.info.not_active": "not active",

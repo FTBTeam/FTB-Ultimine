@@ -6,6 +6,7 @@ import dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -28,7 +29,7 @@ public record SyncConfigToServerPacket(SNBTCompoundTag config) implements Custom
     }
 
     public static void handle(SyncConfigToServerPacket message, NetworkManager.PacketContext context) {
-        if (context.getPlayer() instanceof ServerPlayer sp && sp.hasPermissions(2)) {
+        if (context.getPlayer() instanceof ServerPlayer sp && sp.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
             context.queue(() -> {
                 MinecraftServer server = sp.getServer();
 

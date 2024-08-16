@@ -19,6 +19,7 @@ import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
+import dev.ftb.mods.ftbultimine.net.EditConfigPacket;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
@@ -30,6 +31,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -92,13 +94,34 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		updateEdges();
 	}
 
-	@Override
-	public void editConfig(boolean isClientConfig) {
-		if (isClientConfig) {
-			new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup()).setAutoclose(true).openGui();
-		} else {
-			new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup()).setAutoclose(true).openGui();
+	public static void editConfig(Player player, EditConfigPacket.ConfigType configType) {
+		switch (configType) {
+			case SERVER -> {
+				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
+					editServerConfig();
+				}
+			}
+			case CLIENT -> {
+				editClientConfig();
+			}
+			case CHOOSE -> {
+				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
+					new ChooseConfigScreen().openGui();
+				} else {
+					editClientConfig();
+				}
+			}
 		}
+	}
+
+	public static void editServerConfig() {
+		new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup())
+				.setAutoclose(true).setOpenPrevScreenOnClose(false).openGui();
+	}
+
+	public static void editClientConfig() {
+		new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup())
+				.setAutoclose(true).setOpenPrevScreenOnClose(false).openGui();
 	}
 
 	public void renderInGame(PoseStack stack) {
