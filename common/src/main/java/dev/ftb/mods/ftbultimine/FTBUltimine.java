@@ -10,10 +10,12 @@ import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -82,6 +84,7 @@ public class FTBUltimine {
 
 		if (Platform.isModLoaded("ftbranks")) {
 			ranksMod = true;
+			FTBRanksIntegration.init();
 		}
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
@@ -113,6 +116,7 @@ public class FTBUltimine {
 		SNBTCompoundTag config = new SNBTCompoundTag();
 		FTBUltimineServerConfig.CONFIG.write(config);
 		new SyncConfigFromServerPacket(config).sendTo(serverPlayer);
+		new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), SyncUltimineTimePacket.TimeType.COOLDOWN).sendTo(serverPlayer);
 	}
 
 	private void serverStarting(MinecraftServer server) {
@@ -167,7 +171,7 @@ public class FTBUltimine {
 	}
 
 	public boolean canUltimine(Player player) {
-		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
+		if (PlayerHooks.isFake(player) || player.getUUID() == null || CooldownTracker.isOnCooldown(player)) {
 			return false;
 		}
 
@@ -242,6 +246,10 @@ public class FTBUltimine {
 		}
 
 		isBreakingBlock = false;
+
+		if (!player.isCreative()) {
+			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
+		}
 
 		tempBlockDropsList.drop(player.level, pos);
 

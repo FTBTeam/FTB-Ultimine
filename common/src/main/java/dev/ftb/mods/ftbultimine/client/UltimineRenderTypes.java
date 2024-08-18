@@ -11,7 +11,7 @@ import java.util.OptionalDouble;
  * @author LatvianModder
  */
 public class UltimineRenderTypes extends RenderType {
-	public static final RenderType LINES_NORMAL = RenderType.create("ultimine_lines_normal", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES, 256, false, false, RenderType.CompositeState.builder()
+	public static final RenderType LINES_NORMAL = RenderType.create("ultimine_lines_normal", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES, 256, false, false, CompositeState.builder()
 			.setShaderState(new ShaderStateShard(GameRenderer::getPositionColorShader))
 			.setLineState(new LineStateShard(OptionalDouble.empty()))
 			.setLayeringState(NO_LAYERING)
@@ -20,7 +20,7 @@ public class UltimineRenderTypes extends RenderType {
 			.setCullState(CULL)
 			.createCompositeState(false));
 
-	public static final RenderType LINES_TRANSPARENT = RenderType.create("ultimine_lines_transparent", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES, 256, false, false, RenderType.CompositeState.builder()
+	public static final RenderType LINES_TRANSPARENT = RenderType.create("ultimine_lines_transparent", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.DEBUG_LINES, 256, false, false, CompositeState.builder()
 			.setShaderState(new ShaderStateShard(GameRenderer::getPositionColorShader))
 			.setLineState(new LineStateShard(OptionalDouble.empty()))
 			.setLayeringState(NO_LAYERING)

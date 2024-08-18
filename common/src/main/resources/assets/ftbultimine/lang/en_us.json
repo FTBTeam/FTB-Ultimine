@@ -6,6 +6,7 @@
 	"ftbultimine.info.not_active": "not active",
 	"ftbultimine.info.blocks": "Mining %d blocks",
 	"ftbultimine.info.partial_render": "%d rendered",
+	"ftbultimine.info.cooldown": "on cooldown",
 	"ftbultimine.change_shape": "Hold Shift + (Scroll Mouse or Arrow up/down) to change shape",
 	"ftbultimine.shape.shapeless": "Shapeless",
 	"ftbultimine.shape.small_tunnel": "Small Tunnel",
