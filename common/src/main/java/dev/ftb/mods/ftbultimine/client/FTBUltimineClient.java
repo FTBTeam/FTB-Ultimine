@@ -104,13 +104,11 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	public static void editConfig(Player player, EditConfigPacket.ConfigType configType) {
 		switch (configType) {
+			case CLIENT -> editClientConfig();
 			case SERVER -> {
 				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
 					editServerConfig();
 				}
-			}
-			case CLIENT -> {
-				editClientConfig();
 			}
 			case CHOOSE -> {
 				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
@@ -163,9 +161,10 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_TRANSPARENT);
 
+		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
 		for (CachedEdge edge : cachedEdges) {
-			buffer2.addVertex(matrix, edge.x1, edge.y1, edge.z1).setColor(255, 255, 255, 30);
-			buffer2.addVertex(matrix, edge.x2, edge.y2, edge.z2).setColor(255, 255, 255, 30);
+			buffer2.addVertex(matrix, edge.x1, edge.y1, edge.z1).setColor(255, 255, 255, alpha);
+			buffer2.addVertex(matrix, edge.x2, edge.y2, edge.z2).setColor(255, 255, 255, alpha);
 		}
 
 		mc.renderBuffers().bufferSource().endBatch(UltimineRenderTypes.LINES_TRANSPARENT);
@@ -223,18 +222,23 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.SHAPE_MENU_CONTEXT_LINES.get());
 
-		if (isMenuSneaking()) {
+		boolean showingMenu = isMenuSneaking();
+
+		if (showingMenu) {
 			builder.add(new IndentedLine(0, Component.empty()));
 			for (int i = -context; i < 0; i++) {
-				builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName()).withStyle(ChatFormatting.GRAY)));
+				builder.add(new IndentedLine(16, ShapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
 			}
+		} else {
+			builder.add(new IndentedLine(0, Component.translatable("ftbultimine.change_shape.short").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+			builder.add(new IndentedLine(0, Component.empty()));
 		}
 
-		builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx).getName()).withStyle(ChatFormatting.YELLOW)));
+		builder.add(new IndentedLine(showingMenu ? 16 : 0, ShapeRegistry.getShape(shapeIdx).getDisplayName().withStyle(ChatFormatting.YELLOW)));
 
-		if (isMenuSneaking()) {
+		if (showingMenu) {
 			for (int i = 1; i <= context; i++) {
-				builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName()).withStyle(ChatFormatting.GRAY)));
+				builder.add(new IndentedLine(16, ShapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
 			}
 		}
 
@@ -255,7 +259,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		if (pressed) {
 			Minecraft mc = Minecraft.getInstance();
 
-			if (!shownUsageHint) {
+			if (!shownUsageHint && mc.player != null) {
 				MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get() ?
 						"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift");
 				mc.player.displayClientMessage(msg1, true);
@@ -293,15 +297,17 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 				Color4I.rgba(0xAA40A040).draw(graphics,0, 0, (int) (width * f) + 1, font.lineHeight + 1);
 			}
 
-			// draw the "scrollbar"
-			int barUpper = font.lineHeight * 2;
-			int barHeight = font.lineHeight * (ShapeRegistry.shapeCount() - 1) - 2;
-			Color4I col = Color4I.WHITE.withAlpha(192);
-			col.draw(graphics, 3, barUpper, 2, barHeight);
-			col.draw(graphics, 2, barUpper + 1, 4, 1);
-			col.draw(graphics, 1, barUpper + 2, 6, 1);
-			col.draw(graphics, 2, barUpper + barHeight - 2, 4, 1);
-			col.draw(graphics, 1, barUpper + barHeight - 3, 6, 1);
+			if (isMenuSneaking()) {
+				// draw the "scrollbar"
+				int barUpper = font.lineHeight * 2;
+				int barHeight = font.lineHeight * (ShapeRegistry.shapeCount() - 1) - 2;
+				Color4I col = Color4I.WHITE.withAlpha(192);
+				col.draw(graphics, 3, barUpper, 2, barHeight);
+				col.draw(graphics, 2, barUpper + 1, 4, 1);
+				col.draw(graphics, 1, barUpper + 2, 6, 1);
+				col.draw(graphics, 2, barUpper + barHeight - 2, 4, 1);
+				col.draw(graphics, 1, barUpper + barHeight - 3, 6, 1);
+			}
 
 			// render the text lines
 			int top = 0;
