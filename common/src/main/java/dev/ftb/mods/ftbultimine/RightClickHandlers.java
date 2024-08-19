@@ -125,10 +125,8 @@ public class RightClickHandlers {
                 clicked++;
 
                 if (!player.isCreative()) {
-                    player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
-                    var result = hurtItemAndCheckIfBroken(player, hand);
-
-                    if (result || FTBUltimine.isTooExhausted(player)) {
+                    player.causeFoodExhaustion((float) (FTBUltimineServerConfig.getExhaustionPerBlock(player) * 0.005D));
+                    if (hurtItemAndCheckIfBroken(player, hand) || FTBUltimine.isTooExhausted(player)) {
                         break;
                     }
                 }

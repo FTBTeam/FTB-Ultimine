@@ -90,8 +90,8 @@ public class FTBUltiminePlayerData {
 		}
 	}
 
-	public void addPendingXPCost(int blockCount) {
-		pendingXPCost += blockCount * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get();
+	public void addPendingXPCost(ServerPlayer player, int blockCount) {
+		pendingXPCost += blockCount * FTBUltimineServerConfig.getExperiencePerBlock(player);
 	}
 
 	public void takePendingXP(ServerPlayer player) {
@@ -151,8 +151,8 @@ public class FTBUltiminePlayerData {
 			}
 			context = new ShapeContext(player, cachedPos, cachedDirection, player.level().getBlockState(cachedPos), matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
-			if (FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get() > 0d) {
-				int max = (int) (player.totalExperience / FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get());
+			if (FTBUltimineServerConfig.getExperiencePerBlock(player) > 0d) {
+				int max = (int) (player.totalExperience / FTBUltimineServerConfig.getExperiencePerBlock(player));
 				if (max < cachedBlocks.size()) {
 					cachedBlocks = cachedBlocks.subList(0, max);
 				}
