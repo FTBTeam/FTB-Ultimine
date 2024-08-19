@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.client;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -13,6 +14,8 @@ import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
 import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
+import dev.ftb.mods.ftblibrary.icon.Color4I;
+import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
@@ -29,6 +32,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.Commands;
@@ -55,10 +59,12 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
 	private BlockPos cachedPos = null;
-	public boolean hasScrolled = false;
+	public boolean shownUsageHint = false;
 	private long lastToggle = 0;
 	public final int INPUT_DELAY = 125;
 	private int shapeIdx = 0;  // shape index of client player's current shape
+	private int maxPanelWidth = 100;
+	private List<IndentedLine> infoPanelList = List.of();
 
 	public FTBUltimineClient() {
 		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, "key.categories.ftbultimine"));
@@ -87,11 +93,13 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	@Override
 	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 		this.shapeIdx = shapeIdx;
-		actualBlocks = blocks.size();
-		int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.renderOutline.get());
-		shapeBlocks = blocks.subList(0, maxRendered);
-		cachedEdges = null;
-		updateEdges();
+		if (blocks != null) {
+			actualBlocks = blocks.size();
+			int maxRendered = Math.min(actualBlocks, FTBUltimineClientConfig.RENDER_OUTLINE.get());
+			shapeBlocks = blocks.subList(0, maxRendered);
+			cachedEdges = null;
+			updateEdges();
+		}
 	}
 
 	public static void editConfig(Player player, EditConfigPacket.ConfigType configType) {
@@ -166,8 +174,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	}
 
 	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
-		if (pressed && (amountY != 0 || amountX != 0) && sneak()) {
-			hasScrolled = true;
+		if (pressed && (amountY != 0 || amountX != 0) && isMenuSneaking()) {
 			NetworkManager.sendToServer(new ModeChangedPacket(amountX < 0D || amountY < 0D));
 			return EventResult.interruptFalse();
 		}
@@ -184,25 +191,26 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return EventResult.pass();
 		}
 
-		if (!pressed || !sneak()) {
+		if (!pressed || !isMenuSneaking()) {
 			return EventResult.pass();
 		}
 
-		hasScrolled = true;
 		NetworkManager.sendToServer(new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN));
 		lastToggle = System.currentTimeMillis();
 		return EventResult.pass();
 	}
 
-	private boolean sneak() {
-		if (!FTBUltimineClientConfig.requireSneakForMenu.get()) return true;
+	private boolean isMenuSneaking() {
+		if (!FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get()) return true;
 
 		return keyBinding.matches(InputConstants.KEY_LSHIFT, 0) || keyBinding.matches(InputConstants.KEY_RSHIFT, 0) ?
 				Screen.hasControlDown() :
 				Screen.hasShiftDown();
 	}
 
-	private void addPressedInfo(List<MutableComponent> list) {
+	private List<IndentedLine> addPressedInfo() {
+		ImmutableList.Builder<IndentedLine> builder = ImmutableList.builder();
+
 		Component msg;
 		if (CooldownTracker.isOnCooldown(getClientPlayer())) {
 			msg = Component.translatable("ftbultimine.info.cooldown").withStyle(style -> style.withColor(TextColor.fromRgb(0xBFBF8C)));
@@ -211,89 +219,99 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		} else {
 			msg = Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)));
 		}
-		list.add(Component.translatable("ftbultimine.info.base", msg));
+		builder.add(new IndentedLine(0, Component.translatable("ftbultimine.info.base", msg)));
 
-		if (!hasScrolled) {
-			MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.requireSneakForMenu.get() ?
-					"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift").withStyle(ChatFormatting.GRAY);
-			list.add(msg1);
-		}
+		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.SHAPE_MENU_CONTEXT_LINES.get());
 
-		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.shapeMenuContextLines.get());
-
-		if (sneak()) {
-			list.add(Component.literal(""));
+		if (isMenuSneaking()) {
+			builder.add(new IndentedLine(0, Component.empty()));
 			for (int i = -context; i < 0; i++) {
-				String prefix = i == -context ? "^ " : " | ";
-				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
-						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
+				builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName()).withStyle(ChatFormatting.GRAY)));
 			}
 		}
 
-		MutableComponent mining = Component.literal("- ")
-				.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx).getName()));
+		builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx).getName()).withStyle(ChatFormatting.YELLOW)));
+
+		if (isMenuSneaking()) {
+			for (int i = 1; i <= context; i++) {
+				builder.add(new IndentedLine(16, Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName()).withStyle(ChatFormatting.GRAY)));
+			}
+		}
 
 		if (canUltimine && actualBlocks != 0) {
-			mining.append(" (").append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
+			MutableComponent mining = Component.empty();
+			mining.append(Component.translatable("ftbultimine.info.blocks", actualBlocks));
 			if (actualBlocks > shapeBlocks.size()) {
 				mining.append(", ").append(Component.translatable("ftbultimine.info.partial_render", shapeBlocks.size()));
 			}
-			mining.append(")");
+			builder.add(new IndentedLine(0, Component.empty()));
+			builder.add(new IndentedLine(0, mining.withColor(0xA3BE8C)));
 		}
-		list.add(mining);
 
-		if (sneak()) {
-			for (int i = 1; i <= context; i++) {
-				String prefix = i == context ? "v " : " | ";
-				list.add(Component.literal(prefix).withStyle(ChatFormatting.GRAY)
-						.append(Component.translatable("ftbultimine.shape." + ShapeRegistry.getShape(shapeIdx + i).getName())));
-			}
-		}
+		return builder.build();
 	}
-
-	private final int infoOffset = 0;
-
-	// TODO: reimplement if architectury adds support for getting debug text offset
-	/*@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void info(RenderGameOverlayEvent.Text event)
-	{
-		if (FTBUltimineConfig.get().renderTextManually == -1)
-		{
-			infoOffset = event.getLeft().size();
-		}
-		else
-		{
-			infoOffset = FTBUltimineConfig.get().renderTextManually;
-		}
-	}*/
 
 	public void renderGameOverlay(GuiGraphics graphics, DeltaTracker tickDelta) {
 		if (pressed) {
+			Minecraft mc = Minecraft.getInstance();
+
+			if (!shownUsageHint) {
+				MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get() ?
+						"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift");
+				mc.player.displayClientMessage(msg1, true);
+				shownUsageHint = true;
+			}
+
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-			List<MutableComponent> list = new ArrayList<>();
-			addPressedInfo(list);
-			Minecraft minecraft = Minecraft.getInstance();
+			Font font = mc.font;
+			int width = Math.max(maxPanelWidth, 10 + infoPanelList.stream().map(l -> font.width(l.text)).max(Integer::compareTo).orElse(100));
+			maxPanelWidth = width;
+			int height = font.lineHeight * infoPanelList.size();
+			float scale = 1f;
 
-			int top = 2 + minecraft.font.lineHeight * infoOffset;
-			boolean first = true;
-			for (MutableComponent msg : list) {
-				FormattedCharSequence formatted = msg.getVisualOrderText();
-				if (first) {
-					float f = CooldownTracker.getCooldownRemaining(getClientPlayer());
-					if (f < 1f) {
-						graphics.fill(1, top - 1, 2 + (int)(minecraft.font.width(formatted) * f) + 1, top + minecraft.font.lineHeight - 1, 0xAA_2E3440);
-					} else {
-						graphics.fill(1, top - 1, 2 + minecraft.font.width(formatted) + 1, top + minecraft.font.lineHeight - 1, 0xAA_2E3440);
-					}
-				} else {
-					graphics.fill(1, top - 1, 2 + minecraft.font.width(formatted) + 1, top + minecraft.font.lineHeight - 1, 0xAA_2E3440);
-				}
-				graphics.drawString(minecraft.font, formatted, 2, top, 0xECEFF4, true);
-				top += minecraft.font.lineHeight;
-				first = false;
+			int insetX = FTBUltimineClientConfig.OVERLAY_INSET_X.get();
+			int insetY = FTBUltimineClientConfig.OVERLAY_INSET_Y.get();
+			var pos = FTBUltimineClientConfig.OVERLAY_POS.get().getPanelPos(
+					mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight(),
+					(int) (width * scale), (int) (height * scale),
+					insetX, insetY
+			);
+
+			graphics.pose().pushPose();
+			graphics.pose().translate(pos.x(), pos.y(), 100);
+			graphics.pose().scale(scale, scale, 1F);
+
+			// panel background
+			Color4I.DARK_GRAY.withAlpha(128).draw(graphics, -2, -2, width + 4, height + 4);
+			GuiHelper.drawHollowRect(graphics, -2, -2, width + 4, height + 4, Color4I.GRAY.withAlpha(128), false);
+
+			// draw cooldown progress bar if needed
+			float f = CooldownTracker.getCooldownRemaining(getClientPlayer());
+			if (f < 1f) {
+				Color4I.rgba(0xAA40A040).draw(graphics,0, 0, (int) (width * f) + 1, font.lineHeight + 1);
 			}
+
+			// draw the "scrollbar"
+			int barUpper = font.lineHeight * 2;
+			int barHeight = font.lineHeight * (ShapeRegistry.shapeCount() - 1) - 2;
+			Color4I col = Color4I.WHITE.withAlpha(192);
+			col.draw(graphics, 3, barUpper, 2, barHeight);
+			col.draw(graphics, 2, barUpper + 1, 4, 1);
+			col.draw(graphics, 1, barUpper + 2, 6, 1);
+			col.draw(graphics, 2, barUpper + barHeight - 2, 4, 1);
+			col.draw(graphics, 1, barUpper + barHeight - 3, 6, 1);
+
+			// render the text lines
+			int top = 0;
+			for (IndentedLine line : infoPanelList) {
+				FormattedCharSequence formatted = line.text.getVisualOrderText();
+				graphics.drawString(font, formatted, line.indent, top, 0xECEFF4, true);
+				top += font.lineHeight;
+			}
+
+			graphics.pose().popPose();
 		}
 	}
 
@@ -309,6 +327,10 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 
 		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);
+
+		if (pressed) {
+			infoPanelList = addPressedInfo();
+		}
 	}
 
 	private void updateEdges() {
@@ -320,7 +342,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return;
 		}
 
-		cachedPos = shapeBlocks.get(0);
+		cachedPos = shapeBlocks.getFirst();
 
 		double d = 0.005D;
 
@@ -349,5 +371,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			combinedShape = Shapes.joinUnoptimized(combinedShape, shape, BooleanOp.OR);
 		}
 		return combinedShape;
+	}
+
+	private record IndentedLine(int indent, Component text) {
 	}
 }

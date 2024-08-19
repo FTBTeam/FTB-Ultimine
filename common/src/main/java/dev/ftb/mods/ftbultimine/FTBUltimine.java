@@ -46,8 +46,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -138,7 +138,7 @@ public class FTBUltimine {
 		data.clearCache();
 
 		if (!data.isPressed()) {
-			NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+			NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeOnly(data.getCurrentShapeIndex()));
 		}
 	}
 
@@ -146,7 +146,7 @@ public class FTBUltimine {
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.cycleShape(next);
 		data.clearCache();
-		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeOnly(data.getCurrentShapeIndex()));
 	}
 
 	/**
@@ -274,7 +274,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(data.getCurrentShapeIndex(), List.of()));
 
 		return EventResult.interruptFalse();
 	}

@@ -117,7 +117,7 @@ public class FTBUltiminePlayerData {
 				clearCache();
 
 				if (sendUpdate) {
-					NetworkManager.sendToPlayer(player, new SendShapePacket(getCurrentShapeIndex(), Collections.emptyList()));
+					NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(getCurrentShapeIndex(), Collections.emptyList()));
 				}
 			}
 
@@ -160,7 +160,7 @@ public class FTBUltiminePlayerData {
 		}
 
 		if (sendUpdate) {
-			NetworkManager.sendToPlayer(player, new SendShapePacket(getCurrentShapeIndex(), cachedBlocks));
+			NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(getCurrentShapeIndex(), cachedBlocks));
 		}
 
 		return context;
