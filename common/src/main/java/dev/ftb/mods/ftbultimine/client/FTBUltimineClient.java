@@ -59,7 +59,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
 	private BlockPos cachedPos = null;
-	public boolean shownUsageHint = false;
+	public boolean hasScrolledYet = false;
 	private long lastToggle = 0;
 	public final int INPUT_DELAY = 125;
 	private int shapeIdx = 0;  // shape index of client player's current shape
@@ -175,6 +175,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public EventResult onMouseScrolled(Minecraft client, double amountX, double amountY) {
 		if (pressed && (amountY != 0 || amountX != 0) && isMenuSneaking()) {
 			NetworkManager.sendToServer(new ModeChangedPacket(amountX < 0D || amountY < 0D));
+			hasScrolledYet = true;
 			return EventResult.interruptFalse();
 		}
 
@@ -196,6 +197,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		NetworkManager.sendToServer(new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN));
 		lastToggle = System.currentTimeMillis();
+		hasScrolledYet = true;
 		return EventResult.pass();
 	}
 
@@ -258,13 +260,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	public void renderGameOverlay(GuiGraphics graphics, DeltaTracker tickDelta) {
 		if (pressed) {
 			Minecraft mc = Minecraft.getInstance();
-
-			if (!shownUsageHint && mc.player != null) {
-				MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get() ?
-						"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift");
-				mc.player.displayClientMessage(msg1, true);
-				shownUsageHint = true;
-			}
 
 			RenderSystem.enableBlend();
 			RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -330,6 +325,12 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		if ((pressed = keyBinding.isDown()) != p) {
 			NetworkManager.sendToServer(new KeyPressedPacket(pressed));
+
+			if (pressed && !hasScrolledYet && mc.player != null) {
+				MutableComponent msg1 = Component.translatable(FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get() ?
+						"ftbultimine.change_shape" : "ftbultimine.change_shape.no_shift");
+				mc.player.displayClientMessage(msg1, true);
+			}
 		}
 
 		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);
