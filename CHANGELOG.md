@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2100.1.1]
+
+### Added
+* Added a sidebar button to open the client & server configs for the mod
+  * Admin players get a choice of client/server configs, non-admins can only view/edit the client config
+* Added FTB Ranks support for a couple more server settings
+  * "XP Cost per Block Mined" now has a corresponding ranks node of `ftbultimine.experience_per_block`
+  * "Exhaustion per Block Mined" now has a corresponding ranks node of `ftbultimine.exhaustion_per_block`
+  
+### Changed
+* Revamped the overlay panel a bit for a better visual appearance
+  * Overlay panel can now be moved via client config settings
+* Client and server configs have been reorganised into sections for greater clarity
+  * Note: settings which have been previously altered may be reset to their defaults; check your settings
+
+### Fixed
+* Fixed missing item and block tags in the `ftbultimine` namespace
+
 ## [2100.1.0]
 
 ### Changed
