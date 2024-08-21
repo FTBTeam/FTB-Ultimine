@@ -75,6 +75,9 @@ public interface FTBUltimineServerConfig {
 	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.getBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
 
+	LongValue ULTIMINE_COOLDOWN = CONFIG.getLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
+			.comment("Cooldown in ticks between successive uses of the ultimine feature.");
+
 //	BooleanValue USE_TRINKET = CONFIG.getBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
 //					"Adds a custom 'Ultiminer' trinket players will need to activate to be able to use Ultimine.",
@@ -131,6 +134,10 @@ public interface FTBUltimineServerConfig {
 
 	static int getMaxBlocks(ServerPlayer player) {
 		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
+	}
+
+	static long getUltimineCooldown(ServerPlayer player) {
+		return ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
 	}
 
 	class BlockTagsConfig {
