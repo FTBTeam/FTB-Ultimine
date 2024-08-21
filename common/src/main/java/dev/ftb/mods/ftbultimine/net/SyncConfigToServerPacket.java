@@ -51,7 +51,7 @@ public class SyncConfigToServerPacket extends BaseC2SMessage {
                 if (!sp.getUUID().equals(player.getUUID())) {
                     new SyncConfigFromServerPacket(config).sendTo(player);
                 }
-                new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(player), SyncUltimineTimePacket.TimeType.COOLDOWN.COOLDOWN).sendTo(player);
+                new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(player), SyncUltimineTimePacket.TimeType.COOLDOWN).sendTo(player);
             }
         }
     }
