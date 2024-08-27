@@ -53,7 +53,7 @@ processResources {
 
 shadowJar {
 	configurations = [project.configurations.shadowCommon]
-	classifier "dev-shadow"
+	setArchiveClassifier("dev-shadow")
 }
 
 remapJar {
@@ -64,7 +64,7 @@ remapJar {
 }
 
 jar {
-	classifier "dev"
+	setArchiveClassifier("dev")
 }
 
 components.java {
@@ -97,29 +97,8 @@ publishing {
 	publications {
 		mavenFabric(MavenPublication) {
 			artifactId = "${rootProject.archives_base_name}-${project.name}"
+			version ftbPublishing.mavenVersion
 			from components.java
-		}
-	}
-
-	repositories {
-		if (ENV.FTB_MAVEN_TOKEN) {
-			maven {
-				url "https://maven.ftb.dev/release"
-				credentials {
-					username = "ftb"
-					password = "${ENV.FTB_MAVEN_TOKEN}"
-				}
-			}
-		}
-
-		if (ENV.SAPS_TOKEN) {
-			maven {
-				url "https://maven.saps.dev/minecraft"
-				credentials {
-					username = "ftb"
-					password = "${ENV.SAPS_TOKEN}"
-				}
-			}
 		}
 	}
 }

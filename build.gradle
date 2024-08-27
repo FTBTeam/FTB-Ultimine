@@ -1,6 +1,6 @@
 plugins {
 	id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "0.11.0-SNAPSHOT" apply false
+	id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
 }
 
 architectury {
@@ -31,6 +31,9 @@ allprojects {
 	group = project.maven_group
 	archivesBaseName = project.archives_base_name
 
+	// needs to be done AFTER version is set
+	apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/publishing.gradle"
+
 	sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = 17
 
 	compileJava {
@@ -60,6 +63,30 @@ allprojects {
 
 	java {
 		withSourcesJar()
+	}
+
+	publishing {
+		repositories {
+			if (ftbPublishing.ftbToken) {
+				maven {
+					url ftbPublishing.ftbURL
+					credentials {
+						username = ftbPublishing.ftbUser
+						password = ftbPublishing.ftbToken
+					}
+				}
+			}
+
+			if (ftbPublishing.sapsToken) {
+				maven {
+					url ftbPublishing.sapsURL
+					credentials {
+						username = ftbPublishing.sapsUser
+						password = ftbPublishing.sapsToken
+					}
+				}
+			}
+		}
 	}
 }
 

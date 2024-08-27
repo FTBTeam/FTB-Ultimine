@@ -27,29 +27,8 @@ publishing {
 	publications {
 		mavenCommon(MavenPublication) {
 			artifactId = rootProject.archivesBaseName
+			version ftbPublishing.mavenVersion
 			from components.java
-		}
-	}
-
-	repositories {
-		if (ENV.FTB_MAVEN_TOKEN) {
-			maven {
-				url "https://maven.ftb.dev/release"
-				credentials {
-					username = "ftb"
-					password = "${ENV.FTB_MAVEN_TOKEN}"
-				}
-			}
-		}
-
-		if (ENV.SAPS_TOKEN) {
-			maven {
-				url "https://maven.saps.dev/minecraft"
-				credentials {
-					username = "ftb"
-					password = "${ENV.SAPS_TOKEN}"
-				}
-			}
 		}
 	}
 }
