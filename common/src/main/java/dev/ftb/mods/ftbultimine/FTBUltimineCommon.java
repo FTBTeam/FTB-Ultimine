@@ -7,7 +7,4 @@ import java.util.List;
 public class FTBUltimineCommon {
 	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 	}
-
-    public void editConfig(boolean isClientConfig) {
-    }
 }

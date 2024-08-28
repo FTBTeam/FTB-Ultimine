@@ -1,6 +1,6 @@
 plugins {
 	id "architectury-plugin" version "3.4-SNAPSHOT"
-	id "dev.architectury.loom" version "1.6-SNAPSHOT" apply false
+	id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
 	id "me.modmuss50.mod-publish-plugin" version "0.5.1"
 }
 
@@ -106,7 +106,7 @@ publishMods {
 
 	// TODO: Migrate to something else
 	def tag = providers.environmentVariable("TAG").getOrElse("release")
-	type = tag == "beta" ? BETA : (tag == "alpha" ? ALPHA : STABLE)
+	type = tag.endsWith("-beta") ? BETA : (tag.endsWith("-alpha") ? ALPHA : STABLE)
 
 	def createOptions = (String projectName) -> {
 		publishOptions {

@@ -46,8 +46,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -138,7 +138,7 @@ public class FTBUltimine {
 		data.clearCache();
 
 		if (!data.isPressed()) {
-			NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+			NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeOnly(data.getCurrentShapeIndex()));
 		}
 	}
 
@@ -146,7 +146,7 @@ public class FTBUltimine {
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		data.cycleShape(next);
 		data.clearCache();
-		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeOnly(data.getCurrentShapeIndex()));
 	}
 
 	/**
@@ -219,7 +219,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get()) {
+		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
 			return EventResult.pass();
 		}
 
@@ -241,7 +241,7 @@ public class FTBUltimine {
 			}
 
 			if (!player.isCreative()) {
-				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
+				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.getExhaustionPerBlock(player) * 0.005D));
 				if (isTooExhausted(player)) {
 					break;
 				}
@@ -262,7 +262,7 @@ public class FTBUltimine {
 
 		if (!player.isCreative()) {
 			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
-			data.addPendingXPCost(Math.max(0, blocksMined - 1));
+			data.addPendingXPCost(player, Math.max(0, blocksMined - 1));
 		}
 
 		isBreakingBlock = false;
@@ -274,7 +274,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		NetworkManager.sendToPlayer(player, new SendShapePacket(data.getCurrentShapeIndex(), Collections.emptyList()));
+		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(data.getCurrentShapeIndex(), List.of()));
 
 		return EventResult.interruptFalse();
 	}
@@ -321,7 +321,7 @@ public class FTBUltimine {
 			player.swing(hand);
 			if (!player.isCreative()) {
 				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
-				data.addPendingXPCost(Math.max(0, didWork - 1));
+				data.addPendingXPCost(serverPlayer, Math.max(0, didWork - 1));
 			}
 			return EventResult.interruptFalse();
 		} else {

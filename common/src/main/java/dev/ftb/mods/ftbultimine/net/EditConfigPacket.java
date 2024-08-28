@@ -1,17 +1,18 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
+import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record EditConfigPacket(boolean isClientConfig) implements CustomPacketPayload {
+public record EditConfigPacket(ConfigType configType) implements CustomPacketPayload {
     public static final Type<EditConfigPacket> TYPE = new Type<>(FTBUltimine.rl("edit_config_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, EditConfigPacket> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.BOOL, EditConfigPacket::isClientConfig,
+            NetworkHelper.enumStreamCodec(ConfigType.class), EditConfigPacket::configType,
             EditConfigPacket::new
     );
 
@@ -21,6 +22,12 @@ public record EditConfigPacket(boolean isClientConfig) implements CustomPacketPa
     }
 
     public static void handle(EditConfigPacket message, NetworkManager.PacketContext context) {
-        context.queue(() -> FTBUltimine.instance.proxy.editConfig(message.isClientConfig));
+        FTBUltimineClient.editConfig(context.getPlayer(), message.configType);
+    }
+
+    public enum ConfigType {
+        CLIENT,
+        SERVER,
+        CHOOSE
     }
 }

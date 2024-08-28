@@ -1,0 +1,8 @@
+{
+  "icon": [
+    "ftblibrary:icons/settings; tint=#FFC0C0FF",
+    "item:minecraft:golden_pickaxe"
+  ],
+  "sort_index": 700,
+  "click": ["command:/ftbultimine config"]
+}

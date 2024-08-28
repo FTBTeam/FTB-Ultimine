@@ -12,6 +12,8 @@ import net.minecraft.server.level.ServerPlayer;
 public class FTBRanksIntegration {
     private static final String MAX_BLOCKS_PERM = "ftbultimine.max_blocks";
     private static final String COOLDOWN_PERM = "ftbultimine.ultimine_cooldown";
+    private static final String EXPERIENCE_COST_PERM = "ftbultimine.experience_per_block";
+    private static final String EXHAUSTION_MULTIPLIER_PERM = "ftbultimine.exhaustion_per_block";
 
     public static void init() {
         RankEvent.ADD_PLAYER.register(FTBRanksIntegration::updatePlayer);
@@ -44,5 +46,15 @@ public class FTBRanksIntegration {
     public static long getUltimineCooldown(ServerPlayer player) {
         return FTBRanksAPI.getPermissionValue(player, COOLDOWN_PERM).asLong()
                 .orElse(FTBUltimineServerConfig.ULTIMINE_COOLDOWN.get());
+    }
+
+    public static double getExperiencePerBlock(ServerPlayer player) {
+        return FTBRanksAPI.getPermissionValue(player, EXPERIENCE_COST_PERM).asDouble()
+                .orElse(FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get());
+    }
+
+    public static double getExhaustionPerBlock(ServerPlayer player) {
+        return FTBRanksAPI.getPermissionValue(player, EXHAUSTION_MULTIPLIER_PERM).asDouble()
+                .orElse(FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get());
     }
 }
