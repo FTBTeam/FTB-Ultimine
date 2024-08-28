@@ -107,8 +107,6 @@ publishing {
 	}
 }
 
-rootProject.tasks.getByName("curseforgePublish").dependsOn tasks.getByName("curseforge")
-
 // Used to temporarily add mods to the workspace for debugging
 def customGradle = project.file('custom.gradle')
 if (customGradle.exists()) {
