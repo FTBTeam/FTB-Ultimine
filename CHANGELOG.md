@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added FTB Ranks support for a couple more server settings
   * "XP Cost per Block Mined" now has a corresponding ranks node of `ftbultimine.experience_per_block`
   * "Exhaustion per Block Mined" now has a corresponding ranks node of `ftbultimine.exhaustion_per_block`
+* Added translations: tr_tr (complete) and fr_fr (not fully up to date)
   
 ### Changed
 * Revamped the overlay panel a bit for a better visual appearance
