@@ -48,11 +48,15 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
 public class FTBUltimineClient extends FTBUltimineCommon {
-	public static KeyMapping keyBinding;
+	public static KeyMapping keyBindUltimine;
+	public static KeyMapping keyBindNextMode;
+	public static KeyMapping keyBindPrevMode;
+
 	private boolean pressed;
 	private boolean canUltimine;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
@@ -67,7 +71,9 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private List<IndentedLine> infoPanelList = List.of();
 
 	public FTBUltimineClient() {
-		KeyMappingRegistry.register(keyBinding = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, "key.categories.ftbultimine"));
+		KeyMappingRegistry.register(keyBindUltimine = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, "key.categories.ftbultimine"));
+		KeyMappingRegistry.register(keyBindNextMode = new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, "key.categories.ftbultimine"));
+		KeyMappingRegistry.register(keyBindPrevMode = new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, "key.categories.ftbultimine"));
 
 		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
 		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
@@ -99,6 +105,11 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			shapeBlocks = blocks.subList(0, maxRendered);
 			cachedEdges = null;
 			updateEdges();
+		}
+		if (!pressed) {
+			Minecraft.getInstance().player.displayClientMessage(
+					Component.translatable("key.ftbultimine").append(" : ").append(ShapeRegistry.getShape(shapeIdx).getDisplayName()),
+					true);
 		}
 	}
 
@@ -187,24 +198,27 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			return EventResult.pass();
 		}
 
-		if (keyCode != InputConstants.KEY_UP && keyCode != InputConstants.KEY_DOWN) {
+		boolean nextMode;
+		if (PlatformUtil.doesKeybindMatch(keyBindPrevMode, keyCode, scanCode, modifiers)) {
+			nextMode = false;
+		} else if (PlatformUtil.doesKeybindMatch(keyBindNextMode, keyCode, scanCode, modifiers)) {
+			nextMode = true;
+		} else {
 			return EventResult.pass();
 		}
 
-		if (!pressed || !isMenuSneaking()) {
-			return EventResult.pass();
-		}
-
-		NetworkManager.sendToServer(new ModeChangedPacket(keyCode == InputConstants.KEY_DOWN));
-		lastToggle = System.currentTimeMillis();
-		hasScrolledYet = true;
-		return EventResult.pass();
-	}
+        if ((pressed || !FTBUltimineClientConfig.REQUIRE_ULTIMINE_KEY_FOR_CYCLING.get()) && isMenuSneaking()) {
+            NetworkManager.sendToServer(new ModeChangedPacket(nextMode));
+            lastToggle = System.currentTimeMillis();
+            hasScrolledYet = true;
+        }
+        return EventResult.pass();
+    }
 
 	private boolean isMenuSneaking() {
 		if (!FTBUltimineClientConfig.REQUIRE_SNEAK_FOR_MENU.get()) return true;
 
-		return keyBinding.matches(InputConstants.KEY_LSHIFT, 0) || keyBinding.matches(InputConstants.KEY_RSHIFT, 0) ?
+		return keyBindUltimine.matches(InputConstants.KEY_LSHIFT, 0) || keyBindUltimine.matches(InputConstants.KEY_RSHIFT, 0) ?
 				Screen.hasControlDown() :
 				Screen.hasShiftDown();
 	}
@@ -323,7 +337,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 		boolean p = pressed;
 
-		if ((pressed = keyBinding.isDown()) != p) {
+		if ((pressed = keyBindUltimine.isDown()) != p) {
 			NetworkManager.sendToServer(new KeyPressedPacket(pressed));
 
 			if (pressed && !hasScrolledYet && mc.player != null) {

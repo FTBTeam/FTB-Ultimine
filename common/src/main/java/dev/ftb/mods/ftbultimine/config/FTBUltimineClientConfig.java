@@ -18,6 +18,10 @@ public interface FTBUltimineClientConfig {
 					"This file is meant for users to control Ultimine's clientside behaviour and rendering.",
 					"Changes to this file require you to reload the world");
 
+	SNBTConfig GENERAL = CONFIG.addGroup("general");
+	BooleanValue REQUIRE_ULTIMINE_KEY_FOR_CYCLING = GENERAL.addBoolean("require_ultimine_key_for_cycling", true)
+			.comment("Does the player need to be holding the Ultimine key to cycle through shapes with the keyboard?");
+
 	SNBTConfig RENDERING = CONFIG.addGroup("rendering");
 	IntValue RENDER_OUTLINE = RENDERING.addInt("render_outline", 256)
 			.range(0, Integer.MAX_VALUE)

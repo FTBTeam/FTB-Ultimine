@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine.forge;
+package dev.ftb.mods.ftbultimine.neoforge;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;

@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine.forge.plugin.losttrinkets;
+package dev.ftb.mods.ftbultimine.neoforge.plugin.losttrinkets;
 
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugin;
 
