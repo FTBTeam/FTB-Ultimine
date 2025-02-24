@@ -7,14 +7,14 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
-import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
+import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
+import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
-import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
 import dev.ftb.mods.ftbultimine.shape.*;
@@ -82,6 +82,10 @@ public class FTBUltimine {
 	public FTBUltimine() {
 		instance = this;
 
+		ConfigManager.getInstance().registerClientConfig(FTBUltimineClientConfig.CONFIG, MOD_ID + ".client_settings");
+		ConfigManager.getInstance().registerServerConfig(FTBUltimineServerConfig.CONFIG, MOD_ID + ".server_settings",
+				true, FTBUltimineServerConfig::onConfigChanged);
+
 		FTBUltimineNet.init();
 
 		IntegrationHandler.init();
@@ -114,16 +118,12 @@ public class FTBUltimine {
 	}
 
 	private void playerJoined(ServerPlayer serverPlayer) {
-		SNBTCompoundTag config = new SNBTCompoundTag();
-		FTBUltimineServerConfig.CONFIG.write(config);
-		NetworkManager.sendToPlayer(serverPlayer, new SyncConfigFromServerPacket(config));
 		NetworkManager.sendToPlayer(serverPlayer, new SyncUltimineTimePacket(FTBUltimineServerConfig.getUltimineCooldown(serverPlayer), TimeType.COOLDOWN));
 	}
 
 	private void serverStarting(MinecraftServer server) {
 		ShapeRegistry.freeze();
 		cachedDataMap = new HashMap<>();
-		FTBUltimineServerConfig.load(server);
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {

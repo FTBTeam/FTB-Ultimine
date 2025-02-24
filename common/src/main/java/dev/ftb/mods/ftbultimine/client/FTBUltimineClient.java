@@ -13,7 +13,7 @@ import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
-import dev.ftb.mods.ftblibrary.config.ui.EditConfigScreen;
+import dev.ftb.mods.ftblibrary.config.manager.ConfigManagerClient;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
@@ -48,7 +48,6 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
@@ -75,7 +74,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		KeyMappingRegistry.register(keyBindNextMode = new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, "key.categories.ftbultimine"));
 		KeyMappingRegistry.register(keyBindPrevMode = new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, "key.categories.ftbultimine"));
 
-		ClientLifecycleEvent.CLIENT_LEVEL_LOAD.register(__ -> FTBUltimineClientConfig.load());
 		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
 
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
@@ -131,14 +129,12 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 	}
 
-	public static void editServerConfig() {
-		new EditConfigScreen(FTBUltimineServerConfig.getConfigGroup())
-				.setAutoclose(true).setOpenPrevScreenOnClose(false).openGui();
+	static void editServerConfig() {
+		ConfigManagerClient.editConfig(FTBUltimineServerConfig.KEY);
 	}
 
-	public static void editClientConfig() {
-		new EditConfigScreen(FTBUltimineClientConfig.getConfigGroup())
-				.setAutoclose(true).setOpenPrevScreenOnClose(false).openGui();
+	static void editClientConfig() {
+		ConfigManagerClient.editConfig(FTBUltimineClientConfig.KEY);
 	}
 
 	public void renderInGame(PoseStack stack) {
