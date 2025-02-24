@@ -4,15 +4,14 @@ import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.networking.NetworkManager;
-import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
-import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
+import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
@@ -60,8 +59,6 @@ public class FTBUltimine {
 
 	public final FTBUltimineCommon proxy;
 
-	public static boolean ranksMod = false;
-
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
 	private int tempBlockDroppedXp;
@@ -87,10 +84,7 @@ public class FTBUltimine {
 
 		FTBUltimineNet.init();
 
-		if (Platform.isModLoaded("ftbranks")) {
-			ranksMod = true;
-			FTBRanksIntegration.init();
-		}
+		IntegrationHandler.init();
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
