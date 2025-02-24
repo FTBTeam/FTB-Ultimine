@@ -4,7 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2100.1.1]
+## [2101.1.2]
+
+### Added
+* Shape cycling keys are now configurable keybinds, no longer hardcoded to cursor up/down
+* Added client config "Require Ultimine Key for Shape Cycling", default true
+  * If set to false, Ultimine shapes can be cycled at any time with the defined keybinds
+
+### Changed
+* Now using the new FTB Library 2101.1.10+ config API
+  * **IMPORTANT NOTE FOR PACK MAKERS** any customized FTB Ultimine configuration distributed in `defaultconfigs/ftbultimine/` must now be distributed in `config/` !
+    * `defaultconfigs/ftbultimine/ftbultimine-client.snbt` -> `config/ftbultimine-client.snbt`
+    * `defaultconfigs/ftbultimine/ftbultimine-server.snbt` -> `config/ftbultimine-server.snbt`
+  * Server admins may locally copy `config/ftbultimine-server.snbt` to `world/serverconfig/ftbultimine-server.snbt` if they wish to maintain custom settings which will not be reset by modpack updates
+
+## [2101.1.1]
 
 ### Added
 * Added a sidebar button to open the client & server configs for the mod
