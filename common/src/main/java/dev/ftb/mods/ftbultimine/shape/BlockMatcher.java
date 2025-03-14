@@ -2,10 +2,10 @@ package dev.ftb.mods.ftbultimine.shape;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
-
-import static dev.ftb.mods.ftbultimine.shape.CropLikeTypeMatcher.getCroplikeType;
 
 @FunctionalInterface
 public interface BlockMatcher {
@@ -20,10 +20,7 @@ public interface BlockMatcher {
 	BlockMatcher MATCH = (original, state) -> original.getBlock() == state.getBlock();
 	BlockMatcher TAGS_MATCH_SHAPELESS = FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS::match;
 	BlockMatcher TAGS_MATCH_SHAPED = FTBUltimineServerConfig.MERGE_TAGS_SHAPED::match;
-	BlockMatcher CROP_LIKE = (original, state) -> {
-		CropLikeTypeMatcher.Type type = getCroplikeType(state.getBlock());
-		return type != CropLikeTypeMatcher.Type.NOT_CROPLIKE && getCroplikeType(original.getBlock()) == type;
-    };
+	BlockMatcher CROP_LIKE = (original, state) -> state.getBlock() instanceof BushBlock || CropLikeRegistry.getInstance().areStatesEquivalent(original, state);
 
 	class TagCache {
 		private static Boolean emptyBlockWhitelist = null;  // null = need to recompute

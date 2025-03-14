@@ -2,12 +2,12 @@ package dev.ftb.mods.ftbultimine;
 
 import com.google.common.collect.BiMap;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
 import dev.ftb.mods.ftbultimine.mixin.AxeItemAccess;
 import dev.ftb.mods.ftbultimine.mixin.ShovelItemAccess;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -17,13 +17,14 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -141,52 +142,19 @@ public class RightClickHandlers {
     }
 
     static int cropHarvesting(ServerPlayer player, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
-        int clicked = 0;
-
+        MutableInt clicked = new MutableInt();
         ItemCollection itemCollection = new ItemCollection();
 
         for (BlockPos pos : data.cachedPositions()) {
             BlockState state = player.level().getBlockState(pos);
-
-            if (isHarvestable(state)) {
-                BlockEntity blockEntity = state.hasBlockEntity() ? player.level().getBlockEntity(pos) : null;
-                List<ItemStack> drops = Block.getDrops(state, (ServerLevel) player.level(), pos, blockEntity, player, ItemStack.EMPTY);
-
-                for (ItemStack stack : drops) {
-                    // should work for most if not all modded crop blocks, hopefully
-                    if (Block.byItem(stack.getItem()) == state.getBlock() && consumesItemToReplant(state)) {
-                        stack.shrink(1);
-                    }
-                    itemCollection.add(stack);
-                }
-
-                resetAge(player.level(), pos, state);
-                clicked++;
-            }
+            CropLikeRegistry.INSTANCE.getHandlerFor(player.level(), pos, state).ifPresent(handler -> {
+                handler.doHarvesting(player, pos, state, itemCollection);
+                clicked.increment();
+            });
         }
 
         itemCollection.drop(player.level(), face == null ? clickPos : clickPos.relative(face));
 
-        return clicked;
-    }
-
-    private static boolean consumesItemToReplant(BlockState state) {
-        return state.getBlock() != Blocks.SWEET_BERRY_BUSH;
-    }
-
-    private static boolean isHarvestable(BlockState state) {
-        return state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)
-                || state.getBlock() instanceof SweetBerryBushBlock && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE
-                || state.getBlock() instanceof CocoaBlock && state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
-    }
-
-    private static void resetAge(Level level, BlockPos pos, BlockState currentState) {
-        if (currentState.getBlock() instanceof CropBlock cropBlock) {
-            level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
-        } else if (currentState.getBlock() instanceof SweetBerryBushBlock) {
-            level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, 1), Block.UPDATE_ALL);
-        } else if (currentState.getBlock() instanceof CocoaBlock) {
-            level.setBlock(pos, currentState.setValue(CocoaBlock.AGE, 0), Block.UPDATE_ALL);
-        }
+        return clicked.intValue();
     }
 }

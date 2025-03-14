@@ -2,6 +2,8 @@ package dev.ftb.mods.ftbultimine;
 
 import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
+import dev.ftb.mods.ftbultimine.crops.ICropLikeHandler;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
 import dev.ftb.mods.ftbultimine.shape.Shape;
@@ -144,7 +146,7 @@ public class FTBUltiminePlayerData {
 			BlockMatcher matcher;
 			if (shape.getTagMatcher().actualCheck(origState, origState)) {
 				matcher = shape.getTagMatcher();
-			} else if (BlockMatcher.CROP_LIKE.actualCheck(origState, origState)) {
+			} else if (CropLikeRegistry.getInstance().getHandlerFor(player.level(), cachedPos, origState).isPresent()) {
 				matcher = BlockMatcher.CROP_LIKE;
 			} else {
 				matcher = BlockMatcher.MATCH;

@@ -11,6 +11,8 @@ import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
+import dev.ftb.mods.ftbultimine.crops.VanillaCropLikeHandler;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
@@ -102,6 +104,8 @@ public class FTBUltimine {
 		ShapeRegistry.register(new LargeTunnelShape());
 		ShapeRegistry.register(new MiningTunnelShape());
 		ShapeRegistry.register(new EscapeTunnelShape());
+
+		CropLikeRegistry.getInstance().registerHandler(VanillaCropLikeHandler.INSTANCE);
 
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
