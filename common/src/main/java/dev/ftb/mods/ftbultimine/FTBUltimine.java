@@ -22,6 +22,7 @@ import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
 import dev.ftb.mods.ftbultimine.shape.*;
+import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -305,16 +306,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		int didWork = 0;
-		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
-			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
-			didWork = RightClickHandlers.farmlandConversion(serverPlayer, hand, clickPos, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_AXE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof AxeItem) {
-			didWork = RightClickHandlers.axeStripping(serverPlayer, hand, clickPos, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_SHOVEL.get() && serverPlayer.getItemInHand(hand).getItem() instanceof ShovelItem) {
-			didWork = RightClickHandlers.shovelFlattening(serverPlayer, hand, clickPos, data);
-		}
+		int didWork = PlatformMethods.blockRightClick(shapeContext, serverPlayer, hand, clickPos, face, data);
 
 		if (didWork > 0) {
 			player.swing(hand);
