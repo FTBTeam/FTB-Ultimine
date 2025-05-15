@@ -13,16 +13,13 @@ import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.client.keymappings.KeyMappingRegistry;
-import dev.ftb.mods.ftblibrary.config.manager.ConfigManagerClient;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
-import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
-import dev.ftb.mods.ftbultimine.net.EditConfigPacket;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
 import dev.ftb.mods.ftbultimine.net.ModeChangedPacket;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
@@ -35,7 +32,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -109,32 +105,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 					Component.translatable("key.ftbultimine").append(" : ").append(ShapeRegistry.getShape(shapeIdx).getDisplayName()),
 					true);
 		}
-	}
-
-	public static void editConfig(Player player, EditConfigPacket.ConfigType configType) {
-		switch (configType) {
-			case CLIENT -> editClientConfig();
-			case SERVER -> {
-				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
-					editServerConfig();
-				}
-			}
-			case CHOOSE -> {
-				if (player.hasPermissions(Commands.LEVEL_GAMEMASTERS)) {
-					new ChooseConfigScreen().openGui();
-				} else {
-					editClientConfig();
-				}
-			}
-		}
-	}
-
-	static void editServerConfig() {
-		ConfigManagerClient.editConfig(FTBUltimineServerConfig.KEY);
-	}
-
-	static void editClientConfig() {
-		ConfigManagerClient.editConfig(FTBUltimineClientConfig.KEY);
 	}
 
 	public void renderInGame(PoseStack stack) {
