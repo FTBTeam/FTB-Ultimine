@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 
 public record KeyPressedPacket(boolean pressed) implements CustomPacketPayload {
-    public static final Type<KeyPressedPacket> TYPE = new Type<>(FTBUltimine.rl("key_pressed_packet"));
+    public static final Type<KeyPressedPacket> TYPE = new Type<>(FTBUltimine.id("key_pressed_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, KeyPressedPacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL, KeyPressedPacket::pressed,

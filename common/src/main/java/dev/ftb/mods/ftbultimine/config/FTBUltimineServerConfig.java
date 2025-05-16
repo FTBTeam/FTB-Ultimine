@@ -4,7 +4,7 @@ import dev.architectury.utils.GameInstance;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
+import dev.ftb.mods.ftbultimine.integration.ranks.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import net.minecraft.core.registries.BuiltInRegistries;

@@ -8,7 +8,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.ClientGuiEvent;
-import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.client.ClientRawInputEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
 import dev.architectury.networking.NetworkManager;
@@ -70,8 +69,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		KeyMappingRegistry.register(keyBindNextMode = new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, "key.categories.ftbultimine"));
 		KeyMappingRegistry.register(keyBindPrevMode = new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, "key.categories.ftbultimine"));
 
-		ClientLifecycleEvent.CLIENT_SETUP.register(this::onClientSetup);
-
 		ClientTickEvent.CLIENT_PRE.register(this::clientTick);
 		ClientGuiEvent.RENDER_HUD.register(this::renderGameOverlay);
 
@@ -86,10 +83,6 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		return Minecraft.getInstance().player;
 	}
 
-	private void onClientSetup(Minecraft minecraft) {
-		ShapeRegistry.freeze();
-	}
-
 	@Override
 	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 		this.shapeIdx = shapeIdx;
@@ -102,7 +95,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 		if (!pressed) {
 			Minecraft.getInstance().player.displayClientMessage(
-					Component.translatable("key.ftbultimine").append(" : ").append(ShapeRegistry.getShape(shapeIdx).getDisplayName()),
+					Component.translatable("key.ftbultimine").append(" : ").append(ShapeRegistry.INSTANCE.getShape(shapeIdx).getDisplayName()),
 					true);
 		}
 	}
@@ -202,25 +195,26 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 		builder.add(new IndentedLine(0, Component.translatable("ftbultimine.info.base", msg)));
 
-		int context = Math.min((ShapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.SHAPE_MENU_CONTEXT_LINES.get());
+		ShapeRegistry shapeRegistry = ShapeRegistry.INSTANCE;
+		int context = Math.min((shapeRegistry.shapeCount() - 1) / 2, FTBUltimineClientConfig.SHAPE_MENU_CONTEXT_LINES.get());
 
 		boolean showingMenu = isMenuSneaking();
 
 		if (showingMenu) {
 			builder.add(new IndentedLine(0, Component.empty()));
 			for (int i = -context; i < 0; i++) {
-				builder.add(new IndentedLine(16, ShapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
+				builder.add(new IndentedLine(16, shapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
 			}
 		} else {
 			builder.add(new IndentedLine(0, Component.translatable("ftbultimine.change_shape.short").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
 			builder.add(new IndentedLine(0, Component.empty()));
 		}
 
-		builder.add(new IndentedLine(showingMenu ? 16 : 0, ShapeRegistry.getShape(shapeIdx).getDisplayName().withStyle(ChatFormatting.YELLOW)));
+		builder.add(new IndentedLine(showingMenu ? 16 : 0, shapeRegistry.getShape(shapeIdx).getDisplayName().withStyle(ChatFormatting.YELLOW)));
 
 		if (showingMenu) {
 			for (int i = 1; i <= context; i++) {
-				builder.add(new IndentedLine(16, ShapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
+				builder.add(new IndentedLine(16, shapeRegistry.getShape(shapeIdx + i).getDisplayName().withStyle(ChatFormatting.GRAY)));
 			}
 		}
 
@@ -275,7 +269,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			if (isMenuSneaking()) {
 				// draw the "scrollbar"
 				int barUpper = font.lineHeight * 2;
-				int barHeight = font.lineHeight * (ShapeRegistry.shapeCount() - 1) - 2;
+				int barHeight = font.lineHeight * (ShapeRegistry.INSTANCE.shapeCount() - 1) - 2;
 				Color4I col = Color4I.WHITE.withAlpha(192);
 				col.draw(graphics, 3, barUpper, 2, barHeight);
 				col.draw(graphics, 2, barUpper + 1, 4, 1);

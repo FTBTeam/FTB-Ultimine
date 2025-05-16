@@ -1,14 +1,20 @@
 package dev.ftb.mods.ftbultimine.shape;
 
+import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.api.shape.Shape;
+import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SmallTunnelShape implements Shape {
+	private static final ResourceLocation ID = FTBUltimine.id("small_tunnel");
+
 	@Override
-	public String getName() {
-		return "small_tunnel";
+	public ResourceLocation getName() {
+		return ID;
 	}
 
 	@Override

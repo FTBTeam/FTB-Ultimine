@@ -11,7 +11,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public record SyncUltimineTimePacket(long when, TimeType timetype) implements CustomPacketPayload {
-    public static final Type<SyncUltimineTimePacket> TYPE = new Type<>(FTBUltimine.rl("sync_ultimine_time_packet"));
+    public static final Type<SyncUltimineTimePacket> TYPE = new Type<>(FTBUltimine.id("sync_ultimine_time_packet"));
 
     public static final StreamCodec<FriendlyByteBuf, SyncUltimineTimePacket> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_LONG, SyncUltimineTimePacket::when,

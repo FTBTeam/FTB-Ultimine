@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public record SendShapePacket(int shapeIdx, Optional<List<BlockPos>> blocks) implements CustomPacketPayload {
-	public static final Type<SendShapePacket> TYPE = new Type<>(FTBUltimine.rl("send_shape_packet"));
+	public static final Type<SendShapePacket> TYPE = new Type<>(FTBUltimine.id("send_shape_packet"));
 
 	public static final StreamCodec<FriendlyByteBuf, SendShapePacket> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, SendShapePacket::shapeIdx,

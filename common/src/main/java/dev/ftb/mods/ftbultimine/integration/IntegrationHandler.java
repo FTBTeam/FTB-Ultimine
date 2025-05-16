@@ -1,7 +1,9 @@
 package dev.ftb.mods.ftbultimine.integration;
 
 import dev.architectury.platform.Platform;
-import dev.ftb.mods.ftbultimine.integration.agricraft.AgriCraftCropLikeHandler;
+import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
+import dev.ftb.mods.ftbultimine.integration.agricraft.AgricraftSetup;
+import dev.ftb.mods.ftbultimine.integration.ranks.FTBRanksIntegration;
 
 public class IntegrationHandler {
     public static boolean ranksMod = false;
@@ -18,8 +20,9 @@ public class IntegrationHandler {
 //            // but we want them to be treated as a crop for ultimine purposes
 //            CropLikeTypeMatcher.registerType(ResourceLocation.fromNamespaceAndPath("farmersdelight", "budding_tomatoes"), CropLikeTypeMatcher.Type.CROP);
 //        }
+
         if (Platform.isModLoaded("agricraft")) {
-            AgriCraftCropLikeHandler.init();
+            RegisterCropLikeEvent.REGISTER.register(AgricraftSetup::registerHandler);
         }
     }
 }

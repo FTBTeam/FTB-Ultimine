@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine.integration;
+package dev.ftb.mods.ftbultimine.integration.ranks;
 
 import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbranks.api.FTBRanksAPI;

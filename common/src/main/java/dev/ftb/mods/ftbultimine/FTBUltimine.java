@@ -8,17 +8,23 @@ import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
+import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
+import dev.ftb.mods.ftbultimine.api.restriction.RegisterRestrictionHandlerEvent;
+import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
+import dev.ftb.mods.ftbultimine.api.shape.RegisterShapeEvent;
+import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.api.util.ItemCollector;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
 import dev.ftb.mods.ftbultimine.crops.VanillaCropLikeHandler;
-import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
+import dev.ftb.mods.ftbultimine.rightclick.*;
 import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,7 +42,9 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,16 +72,16 @@ public class FTBUltimine {
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
 	private int tempBlockDroppedXp;
-	private ItemCollection tempBlockDropsList;
+	private ItemCollector tempBlockDropsList;
 
-	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("excluded_tools"));
-	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("excluded_tools/strict"));
-	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, FTBUltimine.rl("included_tools"));
+	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("excluded_tools"));
+	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("excluded_tools/strict"));
+	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("included_tools"));
 
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, FTBUltimine.rl("excluded_blocks"));
-	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, FTBUltimine.rl("block_whitelist"));
-	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.rl("farmland_tillable"));
-	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.rl("shovel_flattenable"));
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, FTBUltimine.id("excluded_blocks"));
+	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, FTBUltimine.id("block_whitelist"));
+	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.id("farmland_tillable"));
+	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.id("shovel_flattenable"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -94,26 +102,46 @@ public class FTBUltimine {
 
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
-		FTBUltiminePlugins.init();
-
 		ReloadListenerRegistry.register(PackType.SERVER_DATA, new DataReloadListener());
 
-		ShapeRegistry.register(new ShapelessShape(), true);
-		ShapeRegistry.register(new SmallTunnelShape());
-		ShapeRegistry.register(new SmallSquareShape());
-		ShapeRegistry.register(new LargeTunnelShape());
-		ShapeRegistry.register(new MiningTunnelShape());
-		ShapeRegistry.register(new EscapeTunnelShape());
-
-		CropLikeRegistry.getInstance().registerHandler(VanillaCropLikeHandler.INSTANCE);
-
+		LifecycleEvent.SETUP.register(this::commonSetup);
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
+		LifecycleEvent.SERVER_STOPPING.register(this::serverStopping);
 		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
 		EntityEvent.ADD.register(this::entityJoinedWorld);
 		CommandRegistrationEvent.EVENT.register(FTBUltimineCommands::registerCommands);
+
+		RegisterRightClickHandlerEvent.REGISTER.register(this::registerBuiltinHandlers);
+		RegisterShapeEvent.REGISTER.register(this::registerBuiltinShapes);
+		RegisterCropLikeEvent.REGISTER.register(this::registerCropHandlers);
+	}
+
+	private void commonSetup() {
+		RegisterRestrictionHandlerEvent.REGISTER.invoker().register(RestrictionHandlerRegistry.INSTANCE);
+		RegisterShapeEvent.REGISTER.invoker().register(ShapeRegistry.INSTANCE);
+	}
+
+	private void registerBuiltinShapes(RegisterShapeEvent.Registry shapeRegistry) {
+		shapeRegistry.register(new ShapelessShape());
+		shapeRegistry.register(new SmallTunnelShape());
+		shapeRegistry.register(new SmallSquareShape());
+		shapeRegistry.register(new LargeTunnelShape());
+		shapeRegistry.register(new MiningTunnelShape());
+		shapeRegistry.register(new EscapeTunnelShape());
+	}
+
+	private void registerCropHandlers(RegisterCropLikeEvent.Dispatcher dispatcher) {
+		dispatcher.registerHandler(VanillaCropLikeHandler.INSTANCE);
+	}
+
+	private void registerBuiltinHandlers(RegisterRightClickHandlerEvent.Dispatcher dispatcher) {
+		dispatcher.registerHandler(AxeStripping.INSTANCE);
+		dispatcher.registerHandler(ShovelFlattening.INSTANCE);
+		dispatcher.registerHandler(FarmlandConversion.INSTANCE);
+		dispatcher.registerHandler(CropHarvesting.INSTANCE);
 	}
 
 	@NotNull
@@ -126,8 +154,15 @@ public class FTBUltimine {
 	}
 
 	private void serverStarting(MinecraftServer server) {
-		ShapeRegistry.freeze();
+//		ShapeRegistry.serverInstance().freeze();
 		cachedDataMap = new HashMap<>();
+		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
+		RegisterCropLikeEvent.REGISTER.invoker().register(CropLikeRegistry.getInstance());
+	}
+
+	private void serverStopping(MinecraftServer server) {
+		RightClickDispatcher.INSTANCE.clear();
+		CropLikeRegistry.getInstance().clear();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
@@ -190,7 +225,7 @@ public class FTBUltimine {
 
 		var mainHand = player.getMainHandItem();
 		var offHand = player.getOffhandItem();
-		return isValidTool(mainHand, offHand) && FTBUltiminePlugins.canUltimine(player);
+		return isValidTool(mainHand, offHand) && RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
 	}
 
 	public EventResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
@@ -206,12 +241,12 @@ public class FTBUltimine {
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(player);
 
-		if (!(result instanceof BlockHitResult) || result.getType() != HitResult.Type.BLOCK) {
+		if (!(result instanceof BlockHitResult bhr) || result.getType() != HitResult.Type.BLOCK) {
 			return EventResult.pass();
 		}
 
 		data.clearCache();
-		data.updateBlocks(player, pos, ((BlockHitResult) result).getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
+		data.updateBlocks(player, pos, bhr.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
 
 		if (!data.hasCachedPositions()) {
 			return EventResult.pass();
@@ -222,7 +257,7 @@ public class FTBUltimine {
 		}
 
 		isBreakingBlock = true;
-		tempBlockDropsList = new ItemCollection();
+		tempBlockDropsList = new ItemCollector();
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
@@ -248,7 +283,7 @@ public class FTBUltimine {
 			ItemStack stack = player.getMainHandItem();
 			if (hadItem && stack.isEmpty()) {
 				break;
-				// TODO update this if & when Tinkers updates to 1.20.6+
+				// TODO update this if & when Tinkers updates to 1.21+
 //			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
 //				break;
 			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
@@ -292,29 +327,18 @@ public class FTBUltimine {
 		}
 
 		HitResult result = FTBUltiminePlayerData.rayTrace(serverPlayer);
-
 		if (!(result instanceof BlockHitResult blockHitResult) || result.getType() != HitResult.Type.BLOCK) {
 			return EventResult.pass();
 		}
 
 		data.clearCache();
-		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, blockHitResult.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 
-		if (shapeContext == null || !data.isPressed() || !data.hasCachedPositions()) {
+		ShapeContext shapeContext = data.updateBlocks(serverPlayer, clickPos, blockHitResult.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+		if (shapeContext == null || !data.hasCachedPositions()) {
 			return EventResult.pass();
 		}
 
-		int didWork = 0;
-		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
-			didWork = RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_HOE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof HoeItem) {
-			didWork = RightClickHandlers.farmlandConversion(serverPlayer, hand, clickPos, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_AXE.get() && serverPlayer.getItemInHand(hand).getItem() instanceof AxeItem) {
-			didWork = RightClickHandlers.axeStripping(serverPlayer, hand, clickPos, data);
-		} else if (FTBUltimineServerConfig.RIGHT_CLICK_SHOVEL.get() && serverPlayer.getItemInHand(hand).getItem() instanceof ShovelItem) {
-			didWork = RightClickHandlers.shovelFlattening(serverPlayer, hand, clickPos, data);
-		}
-
+		int didWork = RightClickDispatcher.INSTANCE.dispatchRightClick(shapeContext, hand, data);
 		if (didWork > 0) {
 			player.swing(hand);
 			if (!player.isCreative()) {
@@ -355,11 +379,14 @@ public class FTBUltimine {
 		return EventResult.pass();
 	}
 
-	public static ResourceLocation rl(String path) {
+	public static ResourceLocation id(String path) {
 		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 
 	public static boolean isTooExhausted(ServerPlayer player) {
+		if (player.isCreative()) {
+			return false;
+		}
 		FoodData data = player.getFoodData();
 		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
 	}

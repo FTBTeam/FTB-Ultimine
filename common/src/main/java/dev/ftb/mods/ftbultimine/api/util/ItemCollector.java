@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine;
+package dev.ftb.mods.ftbultimine.api.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -8,16 +8,31 @@ import net.minecraft.world.level.block.Block;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemCollection {
+/**
+ * Utility class for collecting items dropped during a multi-block ultimining operation.
+ */
+public class ItemCollector {
 	private final List<ItemStack> items = new ArrayList<>();
 
-	public void add(ItemStack is) {
-		if (!is.isEmpty()) {
-			items.add(is.copy());
+	/**
+	 * Add an item to the collection.
+	 *
+	 * @param stack the itemstack to add
+	 */
+	public void add(ItemStack stack) {
+		if (!stack.isEmpty()) {
+			items.add(stack.copy());
 		}
 	}
 
-	public void drop(Level world, BlockPos pos) {
+	/**
+	 * Drop all the accumulated items at the given position, merging them where possible to reduce the number of
+	 * item entities created.
+	 *
+	 * @param level the level
+	 * @param pos the position to drop items at
+	 */
+	public void drop(Level level, BlockPos pos) {
 		if (items.isEmpty()) {
 			return;
 		}
@@ -30,12 +45,9 @@ public class ItemCollection {
 				continue;
 			}
 
-			int sizeInventory = stacks.size();
-
 			// go through the inventory and try to fill up already existing items
-			for (int i = 0; i < sizeInventory; i++) {
+			for (int i = 0; i < stacks.size(); i++) {
 				stack = insert(stacks, stack, i);
-
 				if (stack.isEmpty()) {
 					break;
 				}
@@ -44,12 +56,10 @@ public class ItemCollection {
 			if (!stack.isEmpty()) {
 				stacks.add(stack);
 			}
-
-			//Block.spawnAsEntity(world, pos, ItemHandlerHelper.insertItemStacked(handler, stack, false));
 		}
 
 		for (ItemStack stack : stacks) {
-			Block.popResource(world, pos, stack);
+			Block.popResource(level, pos, stack);
 		}
 	}
 
@@ -78,27 +88,5 @@ public class ItemCollection {
 		existing.grow(toAdd);
 
 		return toAdd == stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - toAdd);
-
-//		if (!existing.isEmpty()) {
-//			if (!ItemUtils.canItemStacksStack(stack, existing)) {
-//				return stack;
-//			}
-//
-//			limit -= existing.getCount();
-//		}
-//
-//		if (limit <= 0) {
-//			return stack;
-//		}
-//
-//		boolean reachedLimit = stack.getCount() > limit;
-//
-//		if (existing.isEmpty()) {
-//			stacks.set(slot, reachedLimit ? stack.copyWithCount(limit) : stack);
-//		} else {
-//			existing.grow(reachedLimit ? limit : stack.getCount());
-//		}
-//
-//		return reachedLimit ? stack.copyWithCount(stack.getCount() - limit) : ItemStack.EMPTY;
 	}
 }

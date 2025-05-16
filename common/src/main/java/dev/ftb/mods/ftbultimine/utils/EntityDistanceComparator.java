@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine;
+package dev.ftb.mods.ftbultimine.utils;
 
 import net.minecraft.core.BlockPos;
 
