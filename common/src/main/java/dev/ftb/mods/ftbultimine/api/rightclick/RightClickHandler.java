@@ -19,6 +19,7 @@ public interface RightClickHandler {
     /**
      * Called when a player right-clicks a block with the Ultimine key held, and other ultimining conditions such
      * as player food level are satisfied. Handlers are called in the order in which they were registered, and
+     * when a handler returns a non-zero result, no further handlers are checked.
      *
      * @param shapeContext the shape context, providing data such as the player, clicked position and face, etc.
      * @param hand         the hand the player is using
