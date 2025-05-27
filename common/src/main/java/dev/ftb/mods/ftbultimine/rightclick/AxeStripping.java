@@ -33,7 +33,7 @@ public enum AxeStripping implements RightClickHandler {
     public int handleRightClickBlock(ShapeContext shapeContext, InteractionHand hand, Collection<BlockPos> positions) {
         ServerPlayer player = shapeContext.player();
 
-        if (!FTBUltimineServerConfig.RIGHT_CLICK_SHOVEL.get() || !(player.getItemInHand(hand).getItem() instanceof AxeItem)) {
+        if (!FTBUltimineServerConfig.RIGHT_CLICK_AXE.get() || !(player.getItemInHand(hand).getItem() instanceof AxeItem)) {
             return 0;
         }
 
