@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2101.1.2]
 
 ### Added
+* Added integration for the FTB EZ Crystals mod; right-clicking crystals with the ultimine key held can harvest multiple crystals at once
+* Added integration for Agricraft crop harvesting via right-click
 * Shape cycling keys are now configurable keybinds, no longer hardcoded to cursor up/down
 * Added client config "Require Ultimine Key for Shape Cycling", default true
   * If set to false, Ultimine shapes can be cycled at any time with the defined keybinds
+* Added ja_jp translation (thanks @twister716)
 
 ### Changed
 * Now using the new FTB Library 2101.1.10+ config API
@@ -17,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     * `defaultconfigs/ftbultimine/ftbultimine-client.snbt` -> `config/ftbultimine-client.snbt`
     * `defaultconfigs/ftbultimine/ftbultimine-server.snbt` -> `config/ftbultimine-server.snbt`
   * Server admins may locally copy `config/ftbultimine-server.snbt` to `world/serverconfig/ftbultimine-server.snbt` if they wish to maintain custom settings which will not be reset by modpack updates
+
+### Fixed
+* Fixed default ores tag for the `merge_tags` server config setting (was `c:*_ores`, now `c:ores/*`)
+* Fixed unwanted mod interaction with Accelerated Decay causing tools to take excessive damage when leaves fast-decay and ultimine key is still held
 
 ## [2101.1.1]
 
