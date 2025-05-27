@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public record SendShapePacket(int shapeIdx, Optional<List<BlockPos>> blocks) implements CustomPacketPayload {
-	public static final Type<SendShapePacket> TYPE = new Type<>(FTBUltimine.id("send_shape_packet"));
+	public static final Type<SendShapePacket> TYPE = new Type<>(FTBUltimineAPI.id("send_shape_packet"));
 
 	public static final StreamCodec<FriendlyByteBuf, SendShapePacket> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, SendShapePacket::shapeIdx,

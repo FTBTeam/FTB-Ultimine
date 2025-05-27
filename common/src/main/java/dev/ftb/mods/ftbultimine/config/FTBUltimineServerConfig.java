@@ -3,7 +3,7 @@ package dev.ftb.mods.ftbultimine.config;
 import dev.architectury.utils.GameInstance;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
 import dev.ftb.mods.ftblibrary.util.NetworkHelper;
-import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.integration.ranks.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
 
 public interface FTBUltimineServerConfig {
-	String KEY = FTBUltimine.MOD_ID + "-server";
+	String KEY = FTBUltimineAPI.MOD_ID + "-server";
 
 	SNBTConfig CONFIG = SNBTConfig.create(KEY)
 			.comment("Server-specific configuration for FTB Ultimine",

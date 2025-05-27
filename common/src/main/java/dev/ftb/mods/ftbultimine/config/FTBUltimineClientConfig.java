@@ -6,7 +6,7 @@ import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.util.PanelPositioning;
 
-import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
+import static dev.ftb.mods.ftbultimine.api.FTBUltimineAPI.MOD_ID;
 
 public interface FTBUltimineClientConfig {
 	String KEY = MOD_ID + "-client";

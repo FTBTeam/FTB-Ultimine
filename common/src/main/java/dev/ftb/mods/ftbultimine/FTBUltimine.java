@@ -14,6 +14,7 @@ import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.shape.RegisterShapeEvent;
 import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import dev.ftb.mods.ftbultimine.api.util.ItemCollector;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
@@ -31,7 +32,6 @@ import dev.ftb.mods.ftbultimine.shape.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
@@ -44,7 +44,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
@@ -67,7 +66,6 @@ import java.util.function.Predicate;
 public class FTBUltimine {
 	public static FTBUltimine instance;
 
-	public static final String MOD_ID = "ftbultimine";
 	public static final Logger LOGGER = LogManager.getLogger();
 
 	public final FTBUltimineCommon proxy;
@@ -77,14 +75,14 @@ public class FTBUltimine {
 	private int tempBlockDroppedXp;
 	private ItemCollector tempBlockDropsList;
 
-	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("excluded_tools"));
-	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("excluded_tools/strict"));
-	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, FTBUltimine.id("included_tools"));
+	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimineAPI.id("excluded_tools"));
+	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimineAPI.id("excluded_tools/strict"));
+	public static final TagKey<Item> ALLOW_TAG = TagKey.create(Registries.ITEM, FTBUltimineAPI.id("included_tools"));
 
-	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, FTBUltimine.id("excluded_blocks"));
-	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, FTBUltimine.id("block_whitelist"));
-	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.id("farmland_tillable"));
-	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimine.id("shovel_flattenable"));
+	public static final TagKey<Block> EXCLUDED_BLOCKS = TagKey.create(Registries.BLOCK, FTBUltimineAPI.id("excluded_blocks"));
+	public static final TagKey<Block> BLOCK_WHITELIST = TagKey.create(Registries.BLOCK, FTBUltimineAPI.id("block_whitelist"));
+	public static final TagKey<Block> TILLABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimineAPI.id("farmland_tillable"));
+	public static final TagKey<Block> FLATTENABLE_TAG = TagKey.create(Registries.BLOCK, FTBUltimineAPI.id("shovel_flattenable"));
 
 	private static Predicate<Player> permissionOverride = player -> true;
 
@@ -95,8 +93,8 @@ public class FTBUltimine {
 	public FTBUltimine() {
 		instance = this;
 
-		ConfigManager.getInstance().registerClientConfig(FTBUltimineClientConfig.CONFIG, MOD_ID + ".client_settings");
-		ConfigManager.getInstance().registerServerConfig(FTBUltimineServerConfig.CONFIG, MOD_ID + ".server_settings",
+		ConfigManager.getInstance().registerClientConfig(FTBUltimineClientConfig.CONFIG, FTBUltimineAPI.MOD_ID + ".client_settings");
+		ConfigManager.getInstance().registerServerConfig(FTBUltimineServerConfig.CONFIG, FTBUltimineAPI.MOD_ID + ".server_settings",
 				true, FTBUltimineServerConfig::onConfigChanged);
 
 		FTBUltimineNet.init();
@@ -285,7 +283,7 @@ public class FTBUltimine {
 
 			if (!player.isCreative()) {
 				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.getExhaustionPerBlock(player) * 0.005D));
-				if (isTooExhausted(player)) {
+				if (FTBUltimineAPI.isTooExhausted(player)) {
 					break;
 				}
 			}
@@ -387,18 +385,6 @@ public class FTBUltimine {
 			}
 		}
 		return EventResult.pass();
-	}
-
-	public static ResourceLocation id(String path) {
-		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
-	}
-
-	public static boolean isTooExhausted(ServerPlayer player) {
-		if (player.isCreative()) {
-			return false;
-		}
-		FoodData data = player.getFoodData();
-		return data.getExhaustionLevel() / 4f > data.getSaturationLevel() + data.getFoodLevel();
 	}
 
 	private static class DataReloadListener implements ResourceManagerReloadListener {

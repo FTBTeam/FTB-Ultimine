@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbultimine.rightclick;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.api.rightclick.RightClickHandler;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,7 @@ public enum FarmlandConversion implements RightClickHandler {
                 clicked++;
 
                 player.causeFoodExhaustion((float) (FTBUltimineServerConfig.getExhaustionPerBlock(player) * 0.005D));
-                if (hurtItemAndCheckIfBroken(player, hand) || FTBUltimine.isTooExhausted(player)) {
+                if (hurtItemAndCheckIfBroken(player, hand) || FTBUltimineAPI.isTooExhausted(player)) {
                     break;
                 }
             }

@@ -1,8 +1,8 @@
 package dev.ftb.mods.ftbultimine.shape;
 
-import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.api.shape.Shape;
 import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LargeTunnelShape implements Shape {
-    private static final ResourceLocation ID = FTBUltimine.id("large_tunnel");
+    private static final ResourceLocation ID = FTBUltimineAPI.id("large_tunnel");
 
     @Override
     public ResourceLocation getName() {
