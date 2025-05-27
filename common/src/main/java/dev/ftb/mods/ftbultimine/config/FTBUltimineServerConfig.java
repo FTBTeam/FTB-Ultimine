@@ -67,7 +67,7 @@ public interface FTBUltimineServerConfig {
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(MISC, "merge_tags",
 			new ArrayList<>(List.of(
 					"minecraft:base_stone_overworld",
-					"c:*_ores",
+					"c:ores/*",
 					"forge:ores/*"
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shapeless mining mode");
