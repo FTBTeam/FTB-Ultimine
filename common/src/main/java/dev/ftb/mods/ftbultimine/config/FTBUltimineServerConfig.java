@@ -43,6 +43,9 @@ public interface FTBUltimineServerConfig {
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
 	BooleanValue RIGHT_CLICK_HARVESTING = FEATURES.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
+	BooleanValue RIGHT_CLICK_CRYSTALS = (BooleanValue)FEATURES.addBoolean("right_click_crystals", true)
+			.comment("Right-click budding crystals (e.g. amethyst, AE2 certus) with the Ultimine key held to harvest multiple crystals",
+					"FTB EZ Crystals must also be installed");
 
 	SNBTConfig COSTS_LIMITS = CONFIG.addGroup("costs_limits");
 
