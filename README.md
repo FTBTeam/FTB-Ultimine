@@ -75,7 +75,7 @@ Example to require player to be holding a specific item:
 public enum MyHandler implements RestrictionHandler {
     @Override
     public boolean canUltimine(Player player) {
-        return player.getMainHandItem().getItem() instance SomeCustomItem;
+        return player.getMainHandItem().getItem() instanceof SomeCustomItem;
     }
 }
 ```
