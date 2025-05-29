@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added client config "Require Ultimine Key for Shape Cycling", default true
   * If set to false, Ultimine shapes can be cycled at any time with the defined keybinds
 * Added ja_jp translation (thanks @twister716)
+* Added ru_ru translation (thanks @BazZziliuS)
+* Added pt_br translation (thanks @Xlr11)
 
 ### Changed
 * Now using the new FTB Library 2101.1.10+ config API
