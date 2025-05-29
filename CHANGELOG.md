@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Added integration for the FTB EZ Crystals mod; right-clicking crystals with the ultimine key held can harvest multiple crystals at once
+  * NeoForge only
 * Added integration for Agricraft crop harvesting via right-click
 * Shape cycling keys are now configurable keybinds, no longer hardcoded to cursor up/down
 * Added client config "Require Ultimine Key for Shape Cycling", default true
