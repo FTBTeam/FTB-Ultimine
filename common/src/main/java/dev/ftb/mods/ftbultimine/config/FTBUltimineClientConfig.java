@@ -1,22 +1,27 @@
 package dev.ftb.mods.ftbultimine.config;
 
-import dev.architectury.platform.Platform;
-import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.snbt.config.BooleanValue;
 import dev.ftb.mods.ftblibrary.snbt.config.EnumValue;
 import dev.ftb.mods.ftblibrary.snbt.config.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.config.SNBTConfig;
 import dev.ftb.mods.ftblibrary.util.PanelPositioning;
 
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.LOCAL_DIR;
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
+import static dev.ftb.mods.ftbultimine.api.FTBUltimineAPI.MOD_ID;
 
 public interface FTBUltimineClientConfig {
-	SNBTConfig CONFIG = SNBTConfig.create(MOD_ID + "-client")
+	String KEY = MOD_ID + "-client";
+
+	SNBTConfig CONFIG = SNBTConfig.create(KEY)
 			.comment("Client-specific configuration for FTB Ultimine",
-					"This file is meant for users to control Ultimine's clientside behaviour and rendering.",
-					"Changes to this file require you to reload the world");
+					"Modpack defaults should be defined in <instance>/config/" + KEY + ".snbt",
+					"  (may be overwritten on modpack update)",
+					"Players may locally override this by copying into <instance>/local/" + KEY + ".snbt",
+					"  (will NOT be overwritten on modpack update)"
+			);
+
+	SNBTConfig GENERAL = CONFIG.addGroup("general");
+	BooleanValue REQUIRE_ULTIMINE_KEY_FOR_CYCLING = GENERAL.addBoolean("require_ultimine_key_for_cycling", true)
+			.comment("Does the player need to be holding the Ultimine key to cycle through shapes with the keyboard?");
 
 	SNBTConfig RENDERING = CONFIG.addGroup("rendering");
 	IntValue RENDER_OUTLINE = RENDERING.addInt("render_outline", 256)
@@ -37,20 +42,4 @@ public interface FTBUltimineClientConfig {
 	EnumValue<PanelPositioning> OVERLAY_POS = OVERLAY.addEnum("overlay_pos", PanelPositioning.NAME_MAP, PanelPositioning.TOP_LEFT);
 	IntValue OVERLAY_INSET_X = OVERLAY.addInt("overlay_inset_x", 2);
 	IntValue OVERLAY_INSET_Y = OVERLAY.addInt("overlay_inset_y", 2);
-
-	static void load() {
-		loadDefaulted(CONFIG, LOCAL_DIR, MOD_ID);
-	}
-
-	static ConfigGroup getConfigGroup() {
-		ConfigGroup group = new ConfigGroup(MOD_ID + ".client_settings", accepted -> {
-			if (accepted) {
-				CONFIG.save(Platform.getGameFolder().resolve("local/" + MOD_ID + "-client.snbt"));
-			}
-		});
-		CONFIG.createClientConfig(group);
-
-		return group;
-	}
-
 }

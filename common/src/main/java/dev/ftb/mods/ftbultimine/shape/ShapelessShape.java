@@ -1,11 +1,17 @@
 package dev.ftb.mods.ftbultimine.shape;
 
-import dev.ftb.mods.ftbultimine.EntityDistanceComparator;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import dev.ftb.mods.ftbultimine.utils.EntityDistanceComparator;
+import dev.ftb.mods.ftbultimine.api.shape.Shape;
+import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
 
 public class ShapelessShape implements Shape {
+	private static final ResourceLocation ID = FTBUltimineAPI.id("shapeless");
+
 	// all blocks in 3x3x3 cube around the block
 	private static final List<BlockPos> NEIGHBOR_POSITIONS = new ArrayList<>(26);
 	// all blocks in 5x5 square around block's Y-level, plus blocks directly above & below
@@ -29,19 +35,24 @@ public class ShapelessShape implements Shape {
 	}
 
 	@Override
-	public String getName() {
-		return "shapeless";
+	public ResourceLocation getName() {
+		return ID;
 	}
 
 	@Override
-	public BlockMatcher getTagMatcher() {
-		return BlockMatcher.TAGS_MATCH_SHAPELESS;
+	public boolean isIndeterminateShape() {
+		return true;
+	}
+
+	@Override
+	public boolean isDefault() {
+		return true;
 	}
 
 	@Override
 	public List<BlockPos> getBlocks(ShapeContext context) {
 		HashSet<BlockPos> known = new HashSet<>();
-		walk(context, known, context.matcher() == BlockMatcher.CROP_LIKE);
+		walk(context, known, context.matcher() == BlockMatchers.MATCH_BY_CROP_TYPE);
 
 		List<BlockPos> list = new ArrayList<>(known);
 		list.sort(new EntityDistanceComparator(context.pos()));

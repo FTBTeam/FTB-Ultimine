@@ -1,9 +1,14 @@
 package dev.ftb.mods.ftbultimine.shape;
 
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import net.minecraft.resources.ResourceLocation;
+
 public class SmallSquareShape extends LargeTunnelShape {
+	private static final ResourceLocation ID = FTBUltimineAPI.id("small_square");
+
 	@Override
-	public String getName() {
-		return "small_square";
+	public ResourceLocation getName() {
+		return ID;
 	}
 
 	@Override

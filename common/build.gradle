@@ -3,6 +3,8 @@ dependencies {
 	modApi "dev.architectury:architectury:${rootProject.architectury_api_version}"
 	modApi "dev.ftb.mods:ftb-library:${rootProject.ftb_library_version}"
 	modApi "dev.ftb.mods:ftb-ranks:${rootProject.ftb_ranks_version}"
+
+	modCompileOnly("curse.maven:agricraft-225635:${agricraft_forge_version}")
 }
 
 def ENV = System.getenv()

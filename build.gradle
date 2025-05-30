@@ -4,6 +4,8 @@ plugins {
 	id "me.modmuss50.mod-publish-plugin" version "0.5.1"
 }
 
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/changelog.gradle'
+
 architectury {
 	minecraft = rootProject.minecraft_version
 }
@@ -55,16 +57,14 @@ allprojects {
 		}
 
 		maven {
-			url "https://maven.saps.dev/releases"
+			url "https://maven.ftb.dev/releases"
 			content {
-				includeGroup "dev.latvian.mods"
 				includeGroup "dev.ftb.mods"
 			}
 		}
 		maven {
-			url "https://maven.saps.dev/snapshots"
+			url "https://maven.ftb.dev/snapshots"
 			content {
-				includeGroup "dev.latvian.mods"
 				includeGroup "dev.ftb.mods"
 			}
 		}
@@ -101,7 +101,7 @@ allprojects {
 
 publishMods {
 	dryRun = providers.environmentVariable("CURSEFORGE_KEY").getOrNull() == null
-	changelog = providers.environmentVariable("CHANGELOG").getOrElse("No changelog provided")
+	changelog = createChangelog(project)
 	version = "${mod_version}"
 
 	// TODO: Migrate to something else

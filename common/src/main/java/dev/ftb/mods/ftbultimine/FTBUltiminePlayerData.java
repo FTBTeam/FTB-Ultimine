@@ -3,9 +3,9 @@ package dev.ftb.mods.ftbultimine;
 import dev.architectury.networking.NetworkManager;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
-import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
-import dev.ftb.mods.ftbultimine.shape.Shape;
-import dev.ftb.mods.ftbultimine.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.api.shape.Shape;
+import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.shape.BlockMatchers;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -71,7 +71,7 @@ public class FTBUltiminePlayerData {
 	}
 
 	public Shape getCurrentShape() {
-		return ShapeRegistry.getShape(shapeIndex);
+		return ShapeRegistry.INSTANCE.getShape(shapeIndex);
 	}
 
 	public int getCurrentShapeIndex() {
@@ -79,13 +79,14 @@ public class FTBUltiminePlayerData {
 	}
 
 	public void cycleShape(boolean next) {
+		int nShapes = ShapeRegistry.INSTANCE.shapeCount();
 		if (next) {
-			if (++shapeIndex >= ShapeRegistry.shapeCount()) {
+			if (++shapeIndex >= nShapes) {
 				shapeIndex = 0;
 			}
 		} else {
 			if (--shapeIndex < 0) {
-				shapeIndex = ShapeRegistry.shapeCount() - 1;
+				shapeIndex = nShapes - 1;
 			}
 		}
 	}
@@ -141,15 +142,8 @@ public class FTBUltiminePlayerData {
 			cachedBlocks = Collections.emptyList();
 		} else {
 			BlockState origState = player.level().getBlockState(cachedPos);
-			BlockMatcher matcher;
-			if (shape.getTagMatcher().actualCheck(origState, origState)) {
-				matcher = shape.getTagMatcher();
-			} else if (BlockMatcher.CROP_LIKE.actualCheck(origState, origState)) {
-				matcher = BlockMatcher.CROP_LIKE;
-			} else {
-				matcher = BlockMatcher.MATCH;
-			}
-			context = new ShapeContext(player, cachedPos, cachedDirection, player.level().getBlockState(cachedPos), matcher, maxBlocks);
+			ShapeContext.Matcher matcher = BlockMatchers.determineBestMatcher(player.level(), cachedPos, origState, shape);
+			context = new ShapeContext(player, cachedPos, cachedDirection, origState, matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
 			if (FTBUltimineServerConfig.getExperiencePerBlock(player) > 0d) {
 				int max = (int) (player.totalExperience / FTBUltimineServerConfig.getExperiencePerBlock(player));

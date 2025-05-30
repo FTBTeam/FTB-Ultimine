@@ -1,16 +1,15 @@
 package dev.ftb.mods.ftbultimine.config;
 
-import dev.architectury.networking.NetworkManager;
-import dev.ftb.mods.ftblibrary.config.ConfigGroup;
-import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
+import dev.architectury.utils.GameInstance;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
-import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
-import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
+import dev.ftb.mods.ftblibrary.util.NetworkHelper;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import dev.ftb.mods.ftbultimine.integration.ranks.FTBRanksIntegration;
+import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
+import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -21,15 +20,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
-import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
 
 public interface FTBUltimineServerConfig {
-	SNBTConfig CONFIG = SNBTConfig.create(FTBUltimine.MOD_ID + "-server")
+	String KEY = FTBUltimineAPI.MOD_ID + "-server";
+
+	SNBTConfig CONFIG = SNBTConfig.create(KEY)
 			.comment("Server-specific configuration for FTB Ultimine",
-					"This file is meant for server administrators to control user behaviour.",
-					"Changes in this file currently require a server restart to take effect");
+					"Modpack defaults should be defined in <instance>/config/" + KEY + ".snbt",
+					"  (may be overwritten on modpack update)",
+					"Server admins may locally override this by copying into <instance>/world/serverconfig/" + KEY + ".snbt",
+					"  (will NOT be overwritten on modpack update)"
+			);
 
 	SNBTConfig FEATURES = CONFIG.addGroup("features");
 
@@ -41,6 +43,9 @@ public interface FTBUltimineServerConfig {
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
 	BooleanValue RIGHT_CLICK_HARVESTING = FEATURES.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
+	BooleanValue RIGHT_CLICK_CRYSTALS = (BooleanValue)FEATURES.addBoolean("right_click_crystals", true)
+			.comment("Right-click budding crystals (e.g. amethyst, AE2 certus) with the Ultimine key held to harvest multiple crystals",
+					"FTB EZ Crystals must also be installed");
 
 	SNBTConfig COSTS_LIMITS = CONFIG.addGroup("costs_limits");
 
@@ -49,20 +54,20 @@ public interface FTBUltimineServerConfig {
 			.comment("Max amount of blocks that can be ultimined at once");
 	DoubleValue EXHAUSTION_PER_BLOCK = COSTS_LIMITS.addDouble("exhaustion_per_block", 20.0)
 			.range(10000.0)
-			.comment("Hunger multiplied for each block mined with ultimine (fractional values allowed)");
+			.comment("Hunger multiplier for each block ultimined (fractional values allowed)");
 	DoubleValue EXPERIENCE_PER_BLOCK = COSTS_LIMITS.addDouble("experience_per_block", 0.0)
 			.range(20000.0)
-			.comment("Amount of experience taken per block mined (fractional values allowed)");
+			.comment("Amount of experience taken per block ultimined (fractional values allowed)");
 	BooleanValue REQUIRE_TOOL = COSTS_LIMITS.addBoolean("require_tool", false)
-			.comment("Require a damageable tool, or an item in the ftbultimine:tools tag, to ultimine.");
+			.comment("Require a damageable tool, or an item in the 'ftbultimine:tools' tag, to ultimine.");
 	LongValue ULTIMINE_COOLDOWN = COSTS_LIMITS.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
-			.comment("Cooldown in ticks between successive uses of the ultimine feature");
+			.comment("Cooldown in ticks between successive uses of the Ultimine feature");
 
 	SNBTConfig MISC = CONFIG.addGroup("misc");
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(MISC, "merge_tags",
 			new ArrayList<>(List.of(
 					"minecraft:base_stone_overworld",
-					"c:*_ores",
+					"c:ores/*",
 					"forge:ores/*"
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shapeless mining mode");
@@ -72,10 +77,10 @@ public interface FTBUltimineServerConfig {
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shaped mining modes");
 	IntValue PREVENT_TOOL_BREAK = MISC.addInt("prevent_tool_break", 0, 0, 100)
-			.comment("This will stop mining if tool reaches X durability. It's possible it won't work with special tool types.");
+			.comment("This will stop mining if tool reaches X durability. It's possible this won't work with some modded tools if they use non-standard durability handling.");
 
 	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = MISC.addBoolean("cancel_on_block_break_fail", false)
-			.comment("This is an advanced option, that you better leave alone This will stop ultimining on first block that it can't mine, rather than skipping it.");
+			.comment("If a block couldn't be broken (even though it should be), stop ultimining immediately instead of skipping to the next block.");
 
 //	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
@@ -84,48 +89,37 @@ public interface FTBUltimineServerConfig {
 
 	/*********************************************************************/
 
-	static void load(MinecraftServer server) {
-		loadDefaulted(CONFIG, server.getWorldPath(SERVER_CONFIG_DIR), MOD_ID);
-		clearTagCache();
+	static void onConfigChanged(boolean isServerSide) {
+		if (isServerSide) {
+			MERGE_TAGS_SHAPELESS.tags = null;
+			MERGE_TAGS_SHAPED.tags = null;
 
-		if (MAX_BLOCKS.get() > 8192) {
-			LOGGER.warn("maxBlocks is set to more than 8192 blocks!");
-			LOGGER.warn("This may cause a lot of tick and FPS lag!");
+			if (MAX_BLOCKS.get() > 8192) {
+				LOGGER.warn("'max_blocks' server config setting is set to more than 8192 blocks; this may cause performance issues!");
+			}
+
+			if (GameInstance.getServer() != null) {
+				GameInstance.getServer().getPlayerList().getPlayers().forEach(sp ->
+						NetworkHelper.sendTo(sp, new SyncUltimineTimePacket(getUltimineCooldown(sp), SyncUltimineTimePacket.TimeType.COOLDOWN))
+				);
+			}
 		}
 	}
 
-	static ConfigGroup getConfigGroup() {
-		ConfigGroup group = new ConfigGroup(MOD_ID + ".server_settings", accepted -> {
-			if (accepted) {
-				clearTagCache();
-				SNBTCompoundTag config = new SNBTCompoundTag();
-				FTBUltimineServerConfig.CONFIG.write(config);
-				NetworkManager.sendToServer(new SyncConfigToServerPacket(config));
-			}
-		});
-		CONFIG.createClientConfig(group);
-		return group;
-	}
-
-	static void clearTagCache() {
-		MERGE_TAGS_SHAPELESS.tags = null;
-		MERGE_TAGS_SHAPED.tags = null;
-	}
-
 	static int getMaxBlocks(ServerPlayer player) {
-		return ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
+		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
 	}
 
 	static long getUltimineCooldown(ServerPlayer player) {
-		return ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
+		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
 	}
 
 	static double getExperiencePerBlock(ServerPlayer player) {
-		return ranksMod ? FTBRanksIntegration.getExperiencePerBlock(player) : EXPERIENCE_PER_BLOCK.get();
+		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getExperiencePerBlock(player) : EXPERIENCE_PER_BLOCK.get();
 	}
 
 	static double getExhaustionPerBlock(ServerPlayer player) {
-		return ranksMod ? FTBRanksIntegration.getExhaustionPerBlock(player) : EXHAUSTION_PER_BLOCK.get();
+		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getExhaustionPerBlock(player) : EXHAUSTION_PER_BLOCK.get();
 	}
 
 	class BlockTagsConfig {

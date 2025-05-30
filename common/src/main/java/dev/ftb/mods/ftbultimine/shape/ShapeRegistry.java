@@ -1,52 +1,51 @@
 package dev.ftb.mods.ftbultimine.shape;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
+import dev.ftb.mods.ftbultimine.api.shape.RegisterShapeEvent;
+import dev.ftb.mods.ftbultimine.api.shape.Shape;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ShapeRegistry {
+public enum ShapeRegistry implements RegisterShapeEvent.Registry {
+    INSTANCE;
+
     // list of all known shapes
-    private static final List<Shape> LIST = new CopyOnWriteArrayList<>();
+    private final List<Shape> shapesList = new CopyOnWriteArrayList<>();
 
-    private static Shape defaultShape = null;
-    private static boolean frozen = false;
+    private Shape defaultShape = null;
 
-    public static void register(Shape shape) {
-        register(shape, false);
-    }
+    /**
+     * Register a new shape. Only call this via {@link RegisterShapeEvent#register(RegisterShapeEvent.Registry)} !
+     *
+     * @param shape the shape to register
+     */
+    @Override
+    public void register(Shape shape) {
+        shapesList.add(shape);
 
-    public static void register(Shape shape, boolean isDefault) {
-        if (frozen) {
-            throw new IllegalStateException("Shape registry is frozen!");
-        }
-
-        LIST.add(shape);
-
-        if (isDefault) {
+        if (shape.isDefault()) {
             if (defaultShape != null) {
-                FTBUltimine.LOGGER.warn("default shape already set to {}! ignoring attempt to make {} default", defaultShape.getName(), shape.getName());
+                FTBUltimine.LOGGER.warn("default shape already set to {}! ignoring attempt to make {} default",
+                        defaultShape.getName(), shape.getName());
+            } else {
+                defaultShape = shape;
             }
-            defaultShape = shape;
         }
-    }
-
-    public static void freeze() {
-        frozen = true;
     }
 
     @NotNull
-    public static Shape getShape(int idx) {
+    public Shape getShape(int idx) {
         if (idx < 0) {
-            idx += LIST.size();
-        } else if (idx >= LIST.size()) {
-            idx -= LIST.size();
+            idx += shapesList.size();
+        } else if (idx >= shapesList.size()) {
+            idx -= shapesList.size();
         }
-        return idx >= 0 && idx < LIST.size() ? LIST.get(idx) : defaultShape;
+        return idx >= 0 && idx < shapesList.size() ? shapesList.get(idx) : defaultShape;
     }
 
-    public static int shapeCount() {
-        return LIST.size();
+    public int shapeCount() {
+        return shapesList.size();
     }
 }
