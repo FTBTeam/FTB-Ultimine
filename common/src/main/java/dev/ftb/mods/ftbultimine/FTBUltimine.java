@@ -265,7 +265,7 @@ public class FTBUltimine {
 		for (BlockPos p : data.cachedPositions()) {
 			BlockState state1 = world.getBlockState(p);
 
-			if (AcceleratedDecay.available && state1.is(BlockTags.LEAVES) && LogBreakTracker.INSTANCE.playerRecentlyBrokeLog(player, 2000L)) {
+			if (AcceleratedDecay.available && state1.is(BlockTags.LEAVES) && LogBreakTracker.INSTANCE.playerRecentlyBrokeLog(player, 1500L)) {
 				// A kludge: if player recently mined a block and now leaves are breaking, and Accelerated Decay is installed,
 				//   then this is almost certainly leaf decay, and not directly broken by the player
 				// https://github.com/FTBTeam/FTB-Modpack-Issues/issues/7713
