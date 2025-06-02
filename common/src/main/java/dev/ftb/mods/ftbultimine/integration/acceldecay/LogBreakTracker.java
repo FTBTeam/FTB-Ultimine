@@ -17,6 +17,6 @@ public enum LogBreakTracker {
     }
 
     public boolean playerRecentlyBrokeLog(Player player, long deltaMS) {
-        return Util.getMillis() - lastLogBroken.getOrDefault(player.getUUID(), 0L) > deltaMS;
+        return Util.getMillis() - lastLogBroken.getOrDefault(player.getUUID(), 0L) < deltaMS;
     }
 }
