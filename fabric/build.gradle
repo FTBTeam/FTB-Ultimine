@@ -27,6 +27,15 @@ loom {
 	accessWidenerPath = file("src/main/resources/ftbultimine.accesswidener")
 }
 
+repositories {
+	maven {
+		url "https://maven.jamieswhiteshirt.com/libs-release"
+		content {
+			includeGroup "com.jamieswhiteshirt"
+		}
+	}
+}
+
 dependencies {
 	modApi "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
@@ -39,9 +48,13 @@ dependencies {
 	common(project(path: ":common", configuration: "dev")) { transitive false }
 	shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 
+	include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${rootProject.reach_entity_attributes_version}")
+
 	// TODO: move to custom.gradle
 	// modRuntime("curse.maven:lithium-360438:3215441")
 }
+
+apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/extra-local-mods.gradle"
 
 processResources {
 	inputs.property "version", project.version

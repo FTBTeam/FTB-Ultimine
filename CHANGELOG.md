@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Added crop harvesting compatibility for Agricraft crops
 
+### Fixed
+* (Fabric only) Fixed items that change player's reach distance (e.g. Arm Extender from the Things mod) not affecting ultimine reach
+
 ## [2001.1.5]
 
 ### Changed
