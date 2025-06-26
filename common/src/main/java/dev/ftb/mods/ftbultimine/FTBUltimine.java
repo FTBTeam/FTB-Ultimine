@@ -8,13 +8,14 @@ import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
+import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
 import dev.ftb.mods.ftbultimine.api.restriction.RegisterRestrictionHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.shape.RegisterShapeEvent;
+import dev.ftb.mods.ftbultimine.api.shape.Shape;
 import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import dev.ftb.mods.ftbultimine.api.util.ItemCollector;
-import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
@@ -155,7 +156,6 @@ public class FTBUltimine {
 	}
 
 	private void serverStarting(MinecraftServer server) {
-//		ShapeRegistry.serverInstance().freeze();
 		cachedDataMap = new HashMap<>();
 		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
 		RegisterCropLikeEvent.REGISTER.invoker().register(CropLikeRegistry.getInstance());
@@ -239,8 +239,8 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		HitResult result = FTBUltiminePlayerData.rayTrace(player);
-		if (!(result instanceof BlockHitResult bhr) || result.getType() != HitResult.Type.BLOCK) {
+		HitResult hitResult = FTBUltiminePlayerData.rayTrace(player);
+		if (!(hitResult instanceof BlockHitResult bhr) || hitResult.getType() != HitResult.Type.BLOCK) {
 			return EventResult.pass();
 		}
 
@@ -260,6 +260,7 @@ public class FTBUltimine {
 		tempBlockDroppedXp = 0;
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
+		Shape shape = data.getCurrentShape();
 		float baseSpeed = state.getDestroySpeed(world, pos);
 		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
@@ -277,7 +278,7 @@ public class FTBUltimine {
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
 			}
-			if (!player.gameMode.destroyBlock(p) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+			if (!tryBreakBlock(player, pos, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -318,6 +319,16 @@ public class FTBUltimine {
 		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(data.getCurrentShapeIndex(), List.of()));
 
 		return EventResult.interruptFalse();
+	}
+
+	private static boolean tryBreakBlock(ServerPlayer player, BlockPos pos, BlockState state, Shape shape, BlockHitResult bhr) {
+		for (var handler : BlockBreakingRegistry.INSTANCE.getHandlers()) {
+			switch (handler.breakBlock(player, pos, state, shape, bhr)) {
+				case SUCCESS: return true;
+				case FAIL: return false;
+			}
+		}
+		return player.gameMode.destroyBlock(pos);
 	}
 
 	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
