@@ -3,6 +3,8 @@ dependencies {
 	modApi "dev.architectury:architectury:${rootProject.architectury_version}"
 	modApi "dev.ftb.mods:ftb-library:${rootProject.ftb_library_version}"
 	modApi "dev.ftb.mods:ftb-ranks:${rootProject.ftb_ranks_version}"
+
+	modCompileOnly("curse.maven:agricraft-225635:${agricraft_forge_version}")
 }
 
 def ENV = System.getenv()
@@ -39,16 +41,6 @@ publishing {
 				credentials {
 					username = ftbPublishing.ftbUser
 					password = ftbPublishing.ftbToken
-				}
-			}
-		}
-
-		if (ftbPublishing.sapsToken) {
-			maven {
-				url ftbPublishing.sapsURL
-				credentials {
-					username = ftbPublishing.sapsUser
-					password = ftbPublishing.sapsToken
 				}
 			}
 		}

@@ -4,12 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2001.1.6]
+
+### Added
+* Added crop harvesting compatibility for Agricraft crops
+
+### Fixed
+* (Fabric only) Fixed items that change player's reach distance (e.g. Arm Extender from the Things mod) not affecting ultimine reach
 
 ## [2001.1.5]
 
 ### Changed
-* Minor background change for compatibility with future FTB Library release
-  * No player-visible change, but will avoid problems with uncloseable config screens with next FTB Library
+* Updated for FTB Library 2001.2.x
+  * No player-visible change, but avoids problems with uncloseable config screens
 
 ## [2001.1.4]
 

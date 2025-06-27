@@ -11,8 +11,11 @@ import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
+import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
+import dev.ftb.mods.ftbultimine.crops.VanillaCropLikeHandler;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
+import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
@@ -60,8 +63,6 @@ public class FTBUltimine {
 
 	public final FTBUltimineCommon proxy;
 
-	public static boolean ranksMod = false;
-
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
 	private int tempBlockDroppedXp;
@@ -86,11 +87,8 @@ public class FTBUltimine {
 		instance = this;
 		FTBUltimineNet.init();
 
-		if (Platform.isModLoaded("ftbranks")) {
-			ranksMod = true;
-			FTBRanksIntegration.init();
-		}
-
+		IntegrationHandler.init();
+		
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
 
 		FTBUltimineCommonConfig.load();
@@ -104,6 +102,8 @@ public class FTBUltimine {
 		ShapeRegistry.register(new LargeTunnelShape());
 		ShapeRegistry.register(new MiningTunnelShape());
 		ShapeRegistry.register(new EscapeTunnelShape());
+
+		CropLikeRegistry.getInstance().registerHandler(VanillaCropLikeHandler.INSTANCE);
 
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
