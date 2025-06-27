@@ -3,6 +3,8 @@ plugins {
 	id "dev.architectury.loom" version "1.7-SNAPSHOT" apply false
 }
 
+apply from: 'https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/changelog.gradle'
+
 architectury {
 	minecraft = rootProject.minecraft_version
 }
