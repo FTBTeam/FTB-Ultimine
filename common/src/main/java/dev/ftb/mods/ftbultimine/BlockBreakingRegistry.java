@@ -12,6 +12,10 @@ public enum BlockBreakingRegistry implements RegisterBlockBreakHandlerEvent.Regi
 
     private final Collection<BlockBreakHandler> handlers = new CopyOnWriteArrayList<>();
 
+    public static BlockBreakingRegistry getInstance() {
+        return INSTANCE;
+    }
+
     @Override
     public void registerHandler(BlockBreakHandler handler) {
         handlers.add(handler);
@@ -19,5 +23,9 @@ public enum BlockBreakingRegistry implements RegisterBlockBreakHandlerEvent.Regi
 
     public Collection<BlockBreakHandler> getHandlers() {
         return Collections.unmodifiableCollection(handlers);
+    }
+
+    public void clear() {
+        handlers.clear();
     }
 }

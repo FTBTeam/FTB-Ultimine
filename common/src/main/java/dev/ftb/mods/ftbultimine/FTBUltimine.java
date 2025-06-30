@@ -9,6 +9,7 @@ import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import dev.ftb.mods.ftbultimine.api.blockbreaking.RegisterBlockBreakHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
 import dev.ftb.mods.ftbultimine.api.restriction.RegisterRestrictionHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
@@ -159,11 +160,13 @@ public class FTBUltimine {
 		cachedDataMap = new HashMap<>();
 		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
 		RegisterCropLikeEvent.REGISTER.invoker().register(CropLikeRegistry.getInstance());
+		RegisterBlockBreakHandlerEvent.REGISTER.invoker().register(BlockBreakingRegistry.getInstance());
 	}
 
 	private void serverStopping(MinecraftServer server) {
-		RightClickDispatcher.INSTANCE.clear();
+		RightClickDispatcher.getInstance().clear();
 		CropLikeRegistry.getInstance().clear();
+		BlockBreakingRegistry.getInstance().clear();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
@@ -229,7 +232,7 @@ public class FTBUltimine {
 		return isValidTool(mainHand, offHand) && RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
 	}
 
-	public EventResult blockBroken(Level world, BlockPos pos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
+	public EventResult blockBroken(Level world, BlockPos origPos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
 		if (isBreakingBlock || !canUltimine(player)) {
 			return EventResult.pass();
 		}
@@ -245,7 +248,7 @@ public class FTBUltimine {
 		}
 
 		data.clearCache();
-		data.updateBlocks(player, pos, bhr.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
+		data.updateBlocks(player, origPos, bhr.getDirection(), false, FTBUltimineServerConfig.getMaxBlocks(player));
 
 		if (!data.hasCachedPositions()) {
 			return EventResult.pass();
@@ -261,24 +264,24 @@ public class FTBUltimine {
 		boolean hadItem = !player.getMainHandItem().isEmpty();
 
 		Shape shape = data.getCurrentShape();
-		float baseSpeed = state.getDestroySpeed(world, pos);
+		float baseSpeed = state.getDestroySpeed(world, origPos);
 		int blocksMined = 0;
-		for (BlockPos p : data.cachedPositions()) {
-			BlockState state1 = world.getBlockState(p);
+		for (BlockPos pos : data.cachedPositions()) {
+			BlockState state1 = world.getBlockState(pos);
 
 			if (AcceleratedDecay.available && state1.is(BlockTags.LEAVES) && LogBreakTracker.INSTANCE.playerRecentlyBrokeLog(player, 1500L)) {
 				// A kludge: if player recently mined a block and now leaves are breaking, and Accelerated Decay is installed,
 				//   then this is almost certainly leaf decay, and not directly broken by the player
 				// https://github.com/FTBTeam/FTB-Modpack-Issues/issues/7713
-				world.destroyBlock(p, true, player);
+				world.destroyBlock(pos, true, player);
 				continue;
 			}
 
-			float destroySpeed = state1.getDestroySpeed(world, p);
+			float destroySpeed = state1.getDestroySpeed(world, pos);
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
 			}
-			if (!tryBreakBlock(player, p, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+			if (!tryBreakBlock(player, pos, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -302,6 +305,8 @@ public class FTBUltimine {
 			blocksMined++;
 		}
 
+		BlockBreakingRegistry.INSTANCE.getHandlers().forEach(h -> h.postBreak(player));
+
 		if (!player.isCreative()) {
 			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
 			data.addPendingXPCost(player, Math.max(0, blocksMined - 1));
@@ -309,10 +314,10 @@ public class FTBUltimine {
 
 		isBreakingBlock = false;
 
-		tempBlockDropsList.drop(player.level(), pos);
+		tempBlockDropsList.drop(player.level(), origPos);
 
 		if (tempBlockDroppedXp > 0) {
-			player.level().addFreshEntity(new ExperienceOrb(player.level(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, tempBlockDroppedXp));
+			player.level().addFreshEntity(new ExperienceOrb(player.level(), origPos.getX() + 0.5D, origPos.getY() + 0.5D, origPos.getZ() + 0.5D, tempBlockDroppedXp));
 		}
 
 		data.clearCache();

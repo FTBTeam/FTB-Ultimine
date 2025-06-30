@@ -15,7 +15,8 @@ import net.minecraft.world.phys.BlockHitResult;
 @FunctionalInterface
 public interface BlockBreakHandler {
     /**
-     * Called for every block that should be ultimined, other than the original block, which has already been broken.
+     * Called for every block that should be ultimined, including the original block, which is always the first to be
+     * broken. You can check if this is the original block by comparing {@code pos} and {@code hitResult.getBlockPos()}.
      * <p>
      * Your implementation should initially check that the block in question is one that you specifically wish to handle,
      * and immediately return {@code PASS} if not. If the block is of interest, you should carry out your custom
@@ -30,6 +31,16 @@ public interface BlockBreakHandler {
      *      or {@code FAIL} if the candidate block could not be broken
      */
     Result breakBlock(Player player, BlockPos pos, BlockState state, Shape shape, BlockHitResult hitResult);
+
+    /**
+     * Called after the last block has been broken. This can be used to clean up any information you may have stored in
+     * your implementation. Note that any information stored should be in a map, keyed by the player's UUID, since
+     * multiple players can ultimine on the same server tick.
+     *
+     * @param player the player carrying out the ultimining operation
+     */
+    default void postBreak(Player player) {
+    }
 
     enum Result {
         SUCCESS,
