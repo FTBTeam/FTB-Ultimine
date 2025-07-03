@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added API for registering custom block breaking handlers
   * Allows for custom breaking logic for specific blocks, e.g. complex blocks with multiple hitboxes
 
+### Fixed
+* Right-click-harvesting Farmer's Delight crops which are climbing ropes no longer destroys the rope
+  * This may also help with any other mods which add custom crops with custom blockstate properties; all properties other than age are now preserved when harvesting
+
 ## [2101.1.3]
 
 ### Fixed
