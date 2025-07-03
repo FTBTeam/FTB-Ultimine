@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WeatheringCopper;
@@ -42,7 +43,7 @@ public enum AxeStripping implements RightClickHandler {
         Level level = player.level();
 
         ItemStack itemStack = player.getItemInHand(hand);
-        AxeItemAccess axeItemAccess = (AxeItemAccess) itemStack.getItem();
+        AxeItemAccess axeItemAccess = (AxeItemAccess) Items.DIAMOND_AXE;  // doesn't matter what item we use here, any AxeItem is fine
 
         for (BlockPos pos : positions) {
             BlockState state = player.level().getBlockState(pos);
