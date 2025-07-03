@@ -2,9 +2,10 @@ package dev.ftb.mods.ftbultimine.rightclick;
 
 import com.google.common.collect.BiMap;
 import dev.ftb.mods.ftbultimine.api.rightclick.RightClickHandler;
+import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
+import dev.ftb.mods.ftbultimine.client.PlatformUtil;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.mixin.AxeItemAccess;
-import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +13,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -33,7 +33,8 @@ public enum AxeStripping implements RightClickHandler {
     public int handleRightClickBlock(ShapeContext shapeContext, InteractionHand hand, Collection<BlockPos> positions) {
         ServerPlayer player = shapeContext.player();
 
-        if (!FTBUltimineServerConfig.RIGHT_CLICK_AXE.get() || !(player.getItemInHand(hand).getItem() instanceof AxeItem)) {
+        //noinspection ConstantValue
+        if (!FTBUltimineServerConfig.RIGHT_CLICK_AXE.get() || !PlatformUtil.canAxeStrip(player.getMainHandItem())) {
             return 0;
         }
 
