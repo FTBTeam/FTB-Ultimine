@@ -16,6 +16,10 @@ configurations {
 	dev
 }
 
+loom {
+	accessWidenerPath = project(":common").file("src/main/resources/ftbultimine.accesswidener")
+}
+
 artifacts {
 	dev(jar)
 }
