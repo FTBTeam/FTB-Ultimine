@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Added API for registering custom block breaking handlers
   * Allows for custom breaking logic for specific blocks, e.g. complex blocks with multiple hitboxes
+* Updated ru_ru translation (thanks @kkylern)
 
 ### Fixed
 * Right-click-harvesting Farmer's Delight crops which are climbing ropes no longer destroys the rope
