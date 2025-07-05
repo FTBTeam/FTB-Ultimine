@@ -65,7 +65,8 @@ public enum VanillaCropLikeHandler implements CropLikeHandler {
 
     private void resetAge(Level level, BlockPos pos, BlockState currentState) {
         if (currentState.getBlock() instanceof CropBlock cropBlock) {
-            level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
+            BlockState newState = currentState.setValue(cropBlock.getAgeProperty(), 0);
+            level.setBlock(pos, newState, Block.UPDATE_ALL);
         } else if (currentState.getBlock() instanceof SweetBerryBushBlock) {
             level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, 1), Block.UPDATE_ALL);
         } else if (currentState.getBlock() instanceof CocoaBlock) {
