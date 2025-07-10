@@ -16,12 +16,23 @@ configurations {
 	dev
 }
 
+def generatedResources = file("src/generated/resources")
+def accessWidenerFile = project(":common").file("src/main/resources/ftbultimine.accesswidener")
+
 artifacts {
 	dev(jar)
 }
 
+//sourceSets {
+//	main {
+//		resources {
+//			srcDir generatedResources
+//		}
+//	}
+//}
+
 loom {
-	accessWidenerPath = file("src/main/resources/ftbultimine.accesswidener")
+	accessWidenerPath = accessWidenerFile
 }
 
 dependencies {
@@ -40,7 +51,13 @@ dependencies {
 	// modRuntime("curse.maven:lithium-360438:3215441")
 }
 
+task copyAccessWidener(type: Copy) {
+	from accessWidenerFile
+	into generatedResources
+}
+
 processResources {
+	dependsOn copyAccessWidener
 	inputs.property "version", project.version
 
 	filesMatching("fabric.mod.json") {
@@ -50,6 +67,10 @@ processResources {
 				"mcversion": project.minecraft_version,
 				"ftblibraryversion": project.ftb_library_version
 	}
+}
+
+sourcesJar {
+	dependsOn copyAccessWidener
 }
 
 shadowJar {
