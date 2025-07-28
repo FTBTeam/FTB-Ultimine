@@ -76,7 +76,7 @@ public enum AxeStripping implements RightClickHandler {
                 }
             }
         }
-        sounds.forEach(sound -> level.playSound(null, shapeContext.pos(), sound, SoundSource.BLOCKS, 1f, 1f));
+        sounds.forEach(sound -> level.playSound(null, shapeContext.origPos(), sound, SoundSource.BLOCKS, 1f, 1f));
         return sounds.size();
     }
 }

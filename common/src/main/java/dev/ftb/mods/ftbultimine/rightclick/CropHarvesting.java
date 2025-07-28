@@ -36,7 +36,7 @@ public enum CropHarvesting implements RightClickHandler {
             });
         }
 
-        itemCollector.drop(player.level(), shapeContext.face() == null ? shapeContext.pos() : shapeContext.pos().relative(shapeContext.face()));
+        itemCollector.drop(player.level(), shapeContext.face() == null ? shapeContext.origPos() : shapeContext.origPos().relative(shapeContext.face()));
 
         return clicked.intValue();
     }

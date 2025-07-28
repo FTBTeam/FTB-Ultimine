@@ -21,7 +21,7 @@ public class LargeTunnelShape implements Shape {
     public List<BlockPos> getBlocks(ShapeContext context) {
         List<BlockPos> list = new ArrayList<>(9);
 
-        BlockPos basePos = context.pos();
+        BlockPos basePos = context.origPos();
         list.add(basePos);
         int depth = 0;
 

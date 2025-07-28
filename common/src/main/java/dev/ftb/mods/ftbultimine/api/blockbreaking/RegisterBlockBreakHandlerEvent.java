@@ -4,7 +4,7 @@ import dev.architectury.event.Event;
 import dev.architectury.event.EventFactory;
 
 /**
- * Listen to this event to register a custom block-breaking handler.
+ * Listen to this event (fired on server startup) to register a custom block-breaking handler.
  */
 @FunctionalInterface
 public interface RegisterBlockBreakHandlerEvent {

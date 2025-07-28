@@ -50,7 +50,7 @@ public enum FarmlandConversion implements RightClickHandler {
         }
 
         if (clicked > 0) {
-            player.level().playSound(player, shapeContext.pos(), SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
+            player.level().playSound(player, shapeContext.origPos(), SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1F, 1F);
         }
 
         return clicked;

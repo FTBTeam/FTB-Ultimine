@@ -58,7 +58,7 @@ public enum ShovelFlattening implements RightClickHandler {
         //noinspection ConstantConditions
         if (didWork > 0) {
             // suppress warning: didWork only looks false due to mixin
-            player.level().playSound(player, shapeContext.pos(), SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1F, 1F);
+            player.level().playSound(player, shapeContext.origPos(), SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1F, 1F);
         }
 
         return didWork;

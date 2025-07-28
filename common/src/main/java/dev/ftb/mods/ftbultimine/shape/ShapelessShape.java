@@ -54,21 +54,17 @@ public class ShapelessShape implements Shape {
 		HashSet<BlockPos> known = new HashSet<>();
 		walk(context, known, context.matcher() == BlockMatchers.MATCH_BY_CROP_TYPE);
 
-		List<BlockPos> list = new ArrayList<>(known);
-		list.sort(new EntityDistanceComparator(context.pos()));
-
-		if (list.size() > context.maxBlocks()) {
-			list.subList(context.maxBlocks(), list.size()).clear();
-		}
-
-		return list;
+		return known.stream()
+				.sorted(new EntityDistanceComparator(context.origPos()))
+				.limit(context.maxBlocks())
+				.toList();
 	}
 
 	private void walk(ShapeContext context, HashSet<BlockPos> known, boolean cropLike) {
 		Set<BlockPos> traversed = new HashSet<>();
 		Deque<BlockPos> openSet = new ArrayDeque<>();
-		openSet.add(context.pos());
-		traversed.add(context.pos());
+		openSet.add(context.origPos());
+		traversed.add(context.origPos());
 
 		while (!openSet.isEmpty()) {
 			BlockPos ptr = openSet.pop();

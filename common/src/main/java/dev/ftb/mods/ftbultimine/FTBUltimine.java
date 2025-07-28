@@ -10,6 +10,7 @@ import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.api.blockbreaking.RegisterBlockBreakHandlerEvent;
+import dev.ftb.mods.ftbultimine.api.blockselection.RegisterBlockSelectionHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
 import dev.ftb.mods.ftbultimine.api.restriction.RegisterRestrictionHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
@@ -95,6 +96,8 @@ public class FTBUltimine {
 	public FTBUltimine() {
 		instance = this;
 
+		FTBUltimineAPI._init(FTBUltimineAPIImpl.INSTANCE);
+
 		ConfigManager.getInstance().registerClientConfig(FTBUltimineClientConfig.CONFIG, FTBUltimineAPI.MOD_ID + ".client_settings");
 		ConfigManager.getInstance().registerServerConfig(FTBUltimineServerConfig.CONFIG, FTBUltimineAPI.MOD_ID + ".server_settings",
 				true, FTBUltimineServerConfig::onConfigChanged);
@@ -161,12 +164,14 @@ public class FTBUltimine {
 		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
 		RegisterCropLikeEvent.REGISTER.invoker().register(CropLikeRegistry.getInstance());
 		RegisterBlockBreakHandlerEvent.REGISTER.invoker().register(BlockBreakingRegistry.getInstance());
+		RegisterBlockSelectionHandlerEvent.REGISTER.invoker().register(BlockSelectionRegistry.getInstance());
 	}
 
 	private void serverStopping(MinecraftServer server) {
 		RightClickDispatcher.getInstance().clear();
 		CropLikeRegistry.getInstance().clear();
 		BlockBreakingRegistry.getInstance().clear();
+		BlockSelectionRegistry.getInstance().clear();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
