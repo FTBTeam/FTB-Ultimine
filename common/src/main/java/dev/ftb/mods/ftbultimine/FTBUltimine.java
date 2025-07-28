@@ -343,7 +343,11 @@ public class FTBUltimine {
 
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
 		if (!data.isPressed()) {
-			return EventResult.pass();
+			if (FTBUltimineServerConfig.SINGLE_CROP_HARVESTING.get() && CropLikeRegistry.checkForSingleCropHarvesting(player, clickPos)) {
+				return EventResult.interruptTrue();
+			} else {
+				return EventResult.pass();
+			}
 		}
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
@@ -369,7 +373,7 @@ public class FTBUltimine {
 				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
 				data.addPendingXPCost(serverPlayer, Math.max(0, didWork - 1));
 			}
-			return EventResult.interruptFalse();
+			return EventResult.interruptTrue();
 		} else {
 			return EventResult.pass();
 		}

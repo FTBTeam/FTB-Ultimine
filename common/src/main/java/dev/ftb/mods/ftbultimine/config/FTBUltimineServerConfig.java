@@ -46,6 +46,8 @@ public interface FTBUltimineServerConfig {
 	BooleanValue RIGHT_CLICK_CRYSTALS = (BooleanValue)FEATURES.addBoolean("right_click_crystals", true)
 			.comment("Right-click budding crystals (e.g. amethyst, AE2 certus) with the Ultimine key held to harvest multiple crystals",
 					"FTB EZ Crystals must also be installed");
+	BooleanValue SINGLE_CROP_HARVESTING = FEATURES.addBoolean("single_crop_harvesting", true)
+			.comment("When true, right-clicking a crop block without the Ultimine key held harvests it");
 
 	SNBTConfig COSTS_LIMITS = CONFIG.addGroup("costs_limits");
 
