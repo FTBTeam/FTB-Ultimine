@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2101.1.7]
+
+### Added
+* Added support for single-crop-harvesting, without requiring the Ultimine key to be held
+  * Enabled by default; see `single_crop_harvesting` in `config/ftbultimine-server.snbt`
+* Added API to allow other mods to register custom block selection handlers
+  * Allows for extended control over what blocks can be included in the selection when the Ultimine key is held
+  * E.g. could query some extended block entity data for the blocks
+
+### Fixed
+* Added missing translation in server config screen for crystal harvesting
+
 ## [2101.1.6]
 
 ### Fixed
