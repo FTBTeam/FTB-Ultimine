@@ -4,8 +4,8 @@ import dev.ftb.mods.ftbultimine.api.blockselection.BlockSelectionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -62,14 +62,14 @@ public class FTBUltimineAPI {
          * Called by {@link dev.ftb.mods.ftbultimine.api.shape.ShapeContext#check(BlockPos)} to handle any custom
          * block equivalence checks. You should not normally need to call this directly.
          *
-         * @param level the level
-         * @param origPos the original block position
-         * @param pos the current position being checked
+         * @param player    the player
+         * @param origPos   the original block position
+         * @param pos       the current position being checked
          * @param origState the blockstate at the original block position
-         * @param state the blockstate at the current position
+         * @param state     the blockstate at the current position
          * @return TRUE if the blocks are considered equivalent by a custom check, FALSE if definitely not equivalent,
-         *      or PASS to defer to the result of standard block equivalence checking, i.e. no custom handler cares.
+         * or PASS to defer to the result of standard block equivalence checking, i.e. no custom handler cares.
          */
-        BlockSelectionHandler.Result customSelectionCheck(Level level, BlockPos origPos, BlockPos pos, BlockState origState, BlockState state);
+        BlockSelectionHandler.Result customSelectionCheck(Player player, BlockPos origPos, BlockPos pos, BlockState origState, BlockState state);
     }
 }

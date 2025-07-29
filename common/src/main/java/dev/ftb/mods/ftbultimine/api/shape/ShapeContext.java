@@ -40,7 +40,7 @@ public record ShapeContext(ServerPlayer player, BlockPos origPos, Direction face
 	 */
 	public boolean check(BlockPos pos) {
 		BlockState state = getBlockState(pos);
-		BlockSelectionHandler.Result res = FTBUltimineAPI.api().customSelectionCheck(player.level(), this.origPos, pos, origState, state);
+		BlockSelectionHandler.Result res = FTBUltimineAPI.api().customSelectionCheck(player, this.origPos, pos, origState, state);
 		return res.asBoolean().orElse(check(state));
 	}
 
