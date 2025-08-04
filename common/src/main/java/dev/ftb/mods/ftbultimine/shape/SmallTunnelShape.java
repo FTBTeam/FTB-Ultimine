@@ -22,7 +22,7 @@ public class SmallTunnelShape implements Shape {
 		List<BlockPos> list = new ArrayList<>(context.maxBlocks());
 
 		for (int i = 0; i < context.maxBlocks(); i++) {
-			BlockPos pos = context.pos().relative(context.face(), -i);
+			BlockPos pos = context.origPos().relative(context.face(), -i);
 
 			if (!context.check(pos)) {
 				break;

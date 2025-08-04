@@ -16,7 +16,7 @@ public abstract class DiagonalTunnelShape implements Shape {
         List<BlockPos> list = new ArrayList<>(context.maxBlocks());
 
         for (int i = 0; i < context.maxBlocks(); i++) {
-            BlockPos pTop = context.pos().offset(-face.getStepX() * i, yDirection() * i, -face.getStepZ() * i);
+            BlockPos pTop = context.origPos().offset(-face.getStepX() * i, yDirection() * i, -face.getStepZ() * i);
 
             if (!context.check(pTop)) {
                 break;

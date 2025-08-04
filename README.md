@@ -90,6 +90,59 @@ In your mod constructor, register an instance of the `Shape` interface:
 RegisterShapeEvent.REGISTER.register(registry -> registry.register(MyShape.INSTANCE));
 ```
 
+### Custom block-break handlers
+
+In most cases, the default break strategy (simply to break the block and produce its drops) is fine. However, there may be a need at times when breaking blocks to have a little more control. An example is EnderIO conduit bundles, where you might want to break all the connected item conduits while leaving other parts of the bundle alone. This can be achieved with a custom block-break handler.
+
+To register a custom block-break handler:
+
+```java
+RegisterBlockBreakHandlerEvent.REGISTER.register(registry -> registry.register(MyBlockBreakHandler.INSTANCE));
+```
+
+```java
+enum MyBlockBreakHandler implements BlockBreakHandler {
+  INSTANCE;
+
+  @Override
+  public Result breakBlock(Player player, BlockPos pos, BlockState state, Shape shape, BlockHitResult hitResult) {
+    // check if it's your block, and if not return PASS asap
+    if (!isMyBlock(state)) {
+       return PASS;
+    }
+    // do your custom block break logic here, return SUCCESS or FAIL as appopriate
+    return SUCCESS;
+  }
+}
+```
+
+### Custom block-selection handlers
+
+Block selection determines which blocks will be included in the next ultimining operation, and is shown by the white outline on blocks when the ultimine key is held. By default, this is controlled by the current ultimining shape (and depending on the shape, the currently focused block). For the `Shapeless` shape, this can be customised; using EnderIO conduits again as an example, you might want to only select blocks which have the same facade as the focused block.
+
+To register a custom block-selection handler:
+
+```java
+RegisterBlockSelectionHandlerEvent.REGISTER.register(registry -> registry.register(MySelectionHandler.INSTANCE));
+```
+
+```java
+public enum MySelectionHandler implements BlockSelectionHandler {
+  INSTANCE;
+
+  @Override
+  public Result customSelectionCheck(Player player, BlockPos origPos, BlockPos pos, BlockState origState, BlockState state) {
+     // Called for every block in the current shape; keep the checks quick and efficient!
+      
+     // check if it's your block first, and return Result.PASS immediately if it's not
+
+     // then check for block equivalence (e.g. do both blocks have the same facade?)
+     // return Result.TRUE or Result.FALSE as appropriate
+     return Result.TRUE;
+  }
+}
+```
+
 ## Support
 
 - For **Modpack** issues, please go here: https://go.ftb.team/support-modpack
