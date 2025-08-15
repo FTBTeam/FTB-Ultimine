@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class RightClickHandlers {
-    static int axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+    public static int axeStripping(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         Set<SoundEvent> sounds = new HashSet<>();
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
         Level level = player.level();
@@ -71,7 +71,7 @@ public class RightClickHandlers {
         return sounds.size();
     }
 
-    static int shovelFlattening(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+    public static int shovelFlattening(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         int didWork = 0;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
@@ -106,7 +106,7 @@ public class RightClickHandlers {
         return didWork;
     }
 
-    static int farmlandConversion(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
+    public static int farmlandConversion(ServerPlayer player, InteractionHand hand, BlockPos clickPos, FTBUltiminePlayerData data) {
         int clicked = 0;
         BrokenItemHandler brokenItemHandler = new BrokenItemHandler();
 
@@ -137,7 +137,7 @@ public class RightClickHandlers {
         return clicked;
     }
 
-    static int cropHarvesting(ServerPlayer player, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
+    public static int cropHarvesting(ServerPlayer player, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
         MutableInt clicked = new MutableInt();
         ItemCollection itemCollection = new ItemCollection();
 
