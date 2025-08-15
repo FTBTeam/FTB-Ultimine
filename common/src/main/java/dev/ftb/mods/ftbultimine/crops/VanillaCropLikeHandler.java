@@ -15,6 +15,16 @@ import java.util.List;
 public enum VanillaCropLikeHandler implements ICropLikeHandler {
     INSTANCE;
 
+    public static boolean looksLikeACrop(BlockState state) {
+        // just checking if it's crop-like for breakability purposes (not harvestability)
+        return state.getBlock() instanceof BushBlock || state.getBlock() instanceof CocoaBlock;
+    }
+
+    public static boolean equivalentForSelection(BlockState orig, BlockState other) {
+        return looksLikeACrop(orig) && looksLikeACrop(other)
+                && getBushType(orig.getBlock()) == getBushType(other.getBlock());
+    }
+
     @Override
     public boolean isApplicable(Level level, BlockPos pos, BlockState state) {
         return state.getBlock() instanceof CropBlock cropBlock && cropBlock.isMaxAge(state)
@@ -40,8 +50,7 @@ public enum VanillaCropLikeHandler implements ICropLikeHandler {
 
     @Override
     public boolean isEquivalent(BlockState original, BlockState state) {
-        return (state.getBlock() instanceof BushBlock || state.getBlock() instanceof CocoaBlock)
-                && getBushType(original.getBlock()) == getBushType(state.getBlock());
+        return equivalentForSelection(original, state);
     }
 
     private static int getBushType(Block block) {
@@ -51,6 +60,8 @@ public enum VanillaCropLikeHandler implements ICropLikeHandler {
             return 2;
         } else if (block instanceof CocoaBlock) {
             return 3;
+        } else if (block instanceof SweetBerryBushBlock) {
+            return 4;
         }
 
         return 0;
@@ -64,7 +75,8 @@ public enum VanillaCropLikeHandler implements ICropLikeHandler {
         if (currentState.getBlock() instanceof CropBlock cropBlock) {
             level.setBlock(pos, cropBlock.getStateForAge(0), Block.UPDATE_ALL);
         } else if (currentState.getBlock() instanceof SweetBerryBushBlock) {
-            level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, 1), Block.UPDATE_ALL);
+            int currentAge = currentState.getValue(SweetBerryBushBlock.AGE);
+            level.setBlock(pos, currentState.setValue(SweetBerryBushBlock.AGE, Math.min(currentAge, 1)), Block.UPDATE_ALL);
         } else if (currentState.getBlock() instanceof CocoaBlock) {
             level.setBlock(pos, currentState.setValue(CocoaBlock.AGE, 0), Block.UPDATE_ALL);
         }
