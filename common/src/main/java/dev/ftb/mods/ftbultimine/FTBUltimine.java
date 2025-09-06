@@ -204,10 +204,6 @@ public class FTBUltimine {
 	 * @return if the tool is valid to be used
 	 */
 	public static boolean isValidTool(ItemStack mainHand, ItemStack offHand) {
-		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG) || mainHand.is(DENY_TAG)) {
-			return false;
-		}
-
 		if (FTBUltimineServerConfig.REQUIRE_TOOL.get()) {
 			if (mainHand.isEmpty()) {
 				return false;
@@ -219,26 +215,62 @@ public class FTBUltimine {
 		return true;
 	}
 
-	public boolean canUltimine(Player player) {
-		if (PlayerHooks.isFake(player) || player.getUUID() == null || CooldownTracker.isOnCooldown(player)) {
-			return false;
+	public enum CanUltimineResult {
+		ALLOWED ("ftbultimine.info.no_valid_block"),
+		NO_FOOD ("ftbultimine.info.no_food"),
+		NO_TOOL ("ftbultimine.info.no_tool"),
+		NO_PERMISSION ("ftbultimine.info.no_permission"),
+		BLOCKED_TOOL ("ftbultimine.info.denied_tool"),
+		ON_COOLDOWN ("ftbultimine.info.cooldown"),
+		OTHER_RESTRICTION ("ftbultimine.info.other_restriction");
+
+		CanUltimineResult(String messageKey)
+		{
+			this.translationKey = messageKey;
+		}
+
+		public final String translationKey;
+	}
+
+	public CanUltimineResult canUltimine(Player player) {
+		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
+			return CanUltimineResult.OTHER_RESTRICTION;
+		}
+
+		if (CooldownTracker.isOnCooldown(player))
+		{
+			return CanUltimineResult.ON_COOLDOWN;
 		}
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
-			return false;
+			return CanUltimineResult.NO_FOOD;
 		}
 
 		if (!permissionOverride.test(player)) {
-			return false;
+			return CanUltimineResult.NO_PERMISSION;
 		}
 
 		var mainHand = player.getMainHandItem();
 		var offHand = player.getOffhandItem();
-		return isValidTool(mainHand, offHand) && RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
+		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG) || mainHand.is(DENY_TAG)) {
+			return CanUltimineResult.BLOCKED_TOOL;
+		}
+
+		if (!isValidTool(mainHand, offHand))
+		{
+			return CanUltimineResult.NO_TOOL;
+		}
+
+		if (!RestrictionHandlerRegistry.INSTANCE.canUltimine(player))
+		{
+			return CanUltimineResult.OTHER_RESTRICTION;
+		}
+
+		return CanUltimineResult.ALLOWED;
 	}
 
 	public EventResult blockBroken(Level world, BlockPos origPos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
-		if (isBreakingBlock || !canUltimine(player)) {
+		if (isBreakingBlock || (CanUltimineResult.ALLOWED != canUltimine(player))) {
 			return EventResult.pass();
 		}
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);

@@ -53,6 +53,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	private boolean pressed;
 	private boolean canUltimine;
+	private FTBUltimine.CanUltimineResult canUltimineStatus;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
@@ -191,7 +192,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		} else if (canUltimine && actualBlocks > 0) {
 			msg = Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)));
 		} else {
-			msg = Component.translatable("ftbultimine.info.not_active").withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)));
+			msg = Component.translatable("ftbultimine.info.not_active_base", Component.translatable(canUltimineStatus.translationKey)).withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)));
+
 		}
 		builder.add(new IndentedLine(0, Component.translatable("ftbultimine.info.base", msg)));
 
@@ -306,8 +308,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 				mc.player.displayClientMessage(msg1, true);
 			}
 		}
-
-		canUltimine = pressed && FTBUltimine.instance.canUltimine(mc.player);
+		canUltimineStatus = FTBUltimine.instance.canUltimine(mc.player);
+		canUltimine = pressed && (FTBUltimine.CanUltimineResult.ALLOWED == canUltimineStatus);
 
 		if (pressed) {
 			infoPanelList = addPressedInfo();
