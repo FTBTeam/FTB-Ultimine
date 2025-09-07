@@ -77,6 +77,12 @@ public enum MyHandler implements RestrictionHandler {
     public boolean canUltimine(Player player) {
         return player.getMainHandItem().getItem() instanceof SomeCustomItem;
     }
+
+    @Override
+    public String ultimineBlockReason()
+    {
+      return "yourmod.blockreason.translation.key";
+    }
 }
 ```
 

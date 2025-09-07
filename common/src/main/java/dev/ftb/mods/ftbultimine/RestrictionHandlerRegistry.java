@@ -17,7 +17,12 @@ public enum RestrictionHandlerRegistry implements RegisterRestrictionHandlerEven
 		handlers.add(handler);
 	}
 
-	public boolean canUltimine(Player player) {
-        return handlers.stream().allMatch(h -> h.canUltimine(player));
+	public String canUltimine(Player player) {
+		for (RestrictionHandler handler : handlers) {
+			if (!handler.canUltimine(player)) {
+				return handler.ultimineBlockReason(player);
+			}
+		}
+        return null;
 	}
 }

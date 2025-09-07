@@ -3,7 +3,7 @@
 	"key.categories.ftbultimine": "FTB 连锁破坏",
 	"ftbultimine.info.base": "FTB 连锁破坏 %s",
 	"ftbultimine.info.active": "已激活",
-	"ftbultimine.info.not_active": "未激活",
+	"ftbultimine.info.not_active_base": "未激活 (%s)",
 	"ftbultimine.info.blocks": "采掘 %d 方块",
 	"ftbultimine.info.partial_render": "已渲染 %d",
 	"ftbultimine.change_shape": "按住 Shift + (滑动鼠标或上/下方向键) 更改形状",

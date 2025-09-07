@@ -13,4 +13,13 @@ public interface RestrictionHandler {
      * @return false to prevent ultimining, true to allow (note that if any handlers are registered, <em>all</em> must return true for ultimining to be allowed)
      */
     boolean canUltimine(Player player);
+
+    /**
+     * This is used to get the reason for the restriction to display to the player.
+     * @return Translatable key with the reason Ultimine is being blocked.
+     */
+    default String ultimineBlockReason(Player player)
+    {
+        return "ftbultimine.info.other_restriction";
+    }
 }

@@ -3,7 +3,7 @@
 	"key.categories.ftbultimine": "FTB Ultimine",
 	"ftbultimine.info.base": "FTB Ultimine이 %s",
 	"ftbultimine.info.active": "활성화됨",
-	"ftbultimine.info.not_active": "비활성화됨",
+	"ftbultimine.info.not_active_base": "비활성화됨 (%s)",
 	"ftbultimine.info.blocks": "%d 블록 채굴",
 	"ftbultimine.info.partial_render": "%d 렌더링됨",
 	"ftbultimine.change_shape": "Shift 키를 누르고 마우스 스크롤을 위/아래로 돌려 채굴 모양을 변경하세요.",

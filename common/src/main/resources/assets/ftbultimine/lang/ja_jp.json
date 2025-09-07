@@ -4,7 +4,7 @@
 	"sidebar_button.ftbultimine.config": "FTB Ultimine設定",
 	"ftbultimine.info.base": "FTB Ultimine は %s です",
 	"ftbultimine.info.active": "有効",
-	"ftbultimine.info.not_active": "無効",
+	"ftbultimine.info.not_active_base": "無効 (%s)",
 	"ftbultimine.info.cooldown": "クールダウン中",
 	"ftbultimine.info.blocks": "%dブロックを採掘",
 	"ftbultimine.info.partial_render": "%dレンダリング",

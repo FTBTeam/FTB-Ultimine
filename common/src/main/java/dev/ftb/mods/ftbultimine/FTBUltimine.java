@@ -216,12 +216,13 @@ public class FTBUltimine {
 	}
 
 	public enum CanUltimineResult {
-		ALLOWED ("ftbultimine.info.no_valid_block"),
+		ALLOWED ("ftbultimine.info.no_valid_block"), /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
 		NO_FOOD ("ftbultimine.info.no_food"),
 		NO_TOOL ("ftbultimine.info.no_tool"),
 		NO_PERMISSION ("ftbultimine.info.no_permission"),
 		BLOCKED_TOOL ("ftbultimine.info.denied_tool"),
 		ON_COOLDOWN ("ftbultimine.info.cooldown"),
+		NO_EXPERIENCE ("ftbultimine.info.no_experience"),
 		OTHER_RESTRICTION ("ftbultimine.info.other_restriction");
 
 		CanUltimineResult(String messageKey)
@@ -229,7 +230,7 @@ public class FTBUltimine {
 			this.translationKey = messageKey;
 		}
 
-		public final String translationKey;
+		public String translationKey;
 	}
 
 	public CanUltimineResult canUltimine(Player player) {
@@ -237,8 +238,7 @@ public class FTBUltimine {
 			return CanUltimineResult.OTHER_RESTRICTION;
 		}
 
-		if (CooldownTracker.isOnCooldown(player))
-		{
+		if (CooldownTracker.isOnCooldown(player)) {
 			return CanUltimineResult.ON_COOLDOWN;
 		}
 
@@ -256,14 +256,15 @@ public class FTBUltimine {
 			return CanUltimineResult.BLOCKED_TOOL;
 		}
 
-		if (!isValidTool(mainHand, offHand))
-		{
+		if (!isValidTool(mainHand, offHand)) {
 			return CanUltimineResult.NO_TOOL;
 		}
-
-		if (!RestrictionHandlerRegistry.INSTANCE.canUltimine(player))
-		{
-			return CanUltimineResult.OTHER_RESTRICTION;
+		String registryResult = RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
+		if (null != registryResult) {
+			CanUltimineResult result = CanUltimineResult.OTHER_RESTRICTION;
+			/* Updating the default string to the one provided. */
+			result.translationKey = registryResult;
+			return result;
 		}
 
 		return CanUltimineResult.ALLOWED;
