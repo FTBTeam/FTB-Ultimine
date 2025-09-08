@@ -225,8 +225,7 @@ public class FTBUltimine {
 		NO_EXPERIENCE ("ftbultimine.info.no_experience"),
 		OTHER_RESTRICTION ("ftbultimine.info.other_restriction");
 
-		CanUltimineResult(String messageKey)
-		{
+		CanUltimineResult(String messageKey) {
 			this.translationKey = messageKey;
 		}
 

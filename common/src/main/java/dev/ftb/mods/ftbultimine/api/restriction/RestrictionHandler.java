@@ -18,8 +18,7 @@ public interface RestrictionHandler {
      * This is used to get the reason for the restriction to display to the player.
      * @return Translatable key with the reason Ultimine is being blocked.
      */
-    default String ultimineBlockReason(Player player)
-    {
+    default String ultimineBlockReason(Player player) {
         return "ftbultimine.info.other_restriction";
     }
 }

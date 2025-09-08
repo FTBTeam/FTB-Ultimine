@@ -79,8 +79,7 @@ public enum MyHandler implements RestrictionHandler {
     }
 
     @Override
-    public String ultimineBlockReason()
-    {
+    public String ultimineBlockReason() {
       return "yourmod.blockreason.translation.key";
     }
 }
