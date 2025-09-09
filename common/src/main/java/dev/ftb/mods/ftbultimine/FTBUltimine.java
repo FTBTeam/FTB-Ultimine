@@ -211,28 +211,15 @@ public class FTBUltimine {
 		return true;
 	}
 
-	@FunctionalInterface
-	public interface CanUltimineResult {
-		default boolean isAllowed() {
-			return false;
-		}
-
-		String getTranslationKey();
-	}
-
-	public static CanUltimineResult prevent(String key) {
-		return () -> key;
-	}
-
-	public static final CanUltimineResult ALLOWED = prevent("ftbultimine.info.no_valid_block"); /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
-	public static final CanUltimineResult NO_FOOD = prevent("ftbultimine.info.no_food");
-	public static final CanUltimineResult NO_TOOL = prevent("ftbultimine.info.no_tool");
-	public static final CanUltimineResult NO_PERMISSION = prevent("ftbultimine.info.no_permission");
-	public static final CanUltimineResult BLOCKED_TOOL = prevent("ftbultimine.info.denied_tool");
-	public static final CanUltimineResult ON_COOLDOWN = prevent("ftbultimine.info.cooldown");
-	public static final CanUltimineResult OTHER_RESTRICTION = prevent("ftbultimine.info.other_restriction");
+	public static final String ALLOWED = "ftbultimine.info.no_valid_block"; /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
+	public static final String NO_FOOD = "ftbultimine.info.no_food";
+	public static final String NO_TOOL = "ftbultimine.info.no_tool";
+	public static final String NO_PERMISSION = "ftbultimine.info.no_permission";
+	public static final String BLOCKED_TOOL = "ftbultimine.info.denied_tool";
+	public static final String ON_COOLDOWN = "ftbultimine.info.cooldown";
+	public static final String OTHER_RESTRICTION = "ftbultimine.info.other_restriction";
 	/* Currently unimplemented. This restriction is grouped under the "ALLOWED" result because we cannot know it on client side right now. */
-	/* public static final CanUltimineResult NO_EXPERIENCE = prevent("ftbultimine.info.no_experience"); */
+	/* public static final String NO_EXPERIENCE = "ftbultimine.info.no_experience"; */
 
 	/**
 	 * Determines if the player is currently allowed to use Ultimine. Provides the reason it is not allowed as relevant.
@@ -244,7 +231,7 @@ public class FTBUltimine {
 	 *
 	 * @return Result object with the reason that ultimine is not allowed.
 	 */
-	public CanUltimineResult canUltimine(Player player) {
+	public String canUltimine(Player player) {
 		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
 			return OTHER_RESTRICTION;
 		}
@@ -273,7 +260,7 @@ public class FTBUltimine {
 		}
 		String registryResult = RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
 		if (null != registryResult) {
-			return prevent(registryResult);
+			return registryResult;
 		}
 
 		return ALLOWED;
