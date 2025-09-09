@@ -4,7 +4,7 @@
 	"sidebar_button.ftbultimine.config": "FTB Ultimine Configuration",
 	"ftbultimine.info.base": "FTB Ultimine is %s",
 	"ftbultimine.info.active": "active",
-	"ftbultimine.info.not_active_base": "not active (%s)",
+	"ftbultimine.info.not_active": "not active",
 	"ftbultimine.info.no_valid_block": "Not a valid block",
 	"ftbultimine.info.no_food": "Too Hungry",
 	"ftbultimine.info.no_experience": "Not enough XP",

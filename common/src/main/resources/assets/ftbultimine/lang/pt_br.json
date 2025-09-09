@@ -4,7 +4,7 @@
   "sidebar_button.ftbultimine.config": "Configuração do FTB Ultimine",
   "ftbultimine.info.base": "FTB Ultimine está %s",
   "ftbultimine.info.active": "ativo",
-  "ftbultimine.info.not_active_base": "inativo (%s)",
+  "ftbultimine.info.not_active": "inativo",
   "ftbultimine.info.cooldown": "em recarga",
   "ftbultimine.info.blocks": "Minerando %d blocos",
   "ftbultimine.info.partial_render": "%d renderizados",

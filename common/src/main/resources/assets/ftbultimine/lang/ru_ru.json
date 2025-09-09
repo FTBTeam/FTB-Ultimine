@@ -4,7 +4,7 @@
 
 	"ftbultimine.info.base": "FTB Ultimine %s",
 	"ftbultimine.info.active": "активен",
-	"ftbultimine.info.not_active_base": "не активен (%s)",
+	"ftbultimine.info.not_active": "не активен",
 	"ftbultimine.info.cooldown": "на перезарядке",
 	"ftbultimine.info.blocks": "Добыча %d блоков",
 	"ftbultimine.info.partial_render": "%d отрисовано",

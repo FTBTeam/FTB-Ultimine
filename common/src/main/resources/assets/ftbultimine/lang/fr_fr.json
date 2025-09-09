@@ -3,7 +3,7 @@
 	"key.categories.ftbultimine": "FTB Ultimine",
 	"ftbultimine.info.base": "FTB Ultimine est %s",
 	"ftbultimine.info.active": "active",
-	"ftbultimine.info.not_active_base": "non activé (%s)",
+	"ftbultimine.info.not_active": "non activé",
 	"ftbultimine.info.cooldown": "en cours de rechargement",
 	"ftbultimine.info.blocks": "Minage de %d blocs",
 	"ftbultimine.info.partial_render": "%d rendu",

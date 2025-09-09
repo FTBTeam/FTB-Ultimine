@@ -4,7 +4,7 @@
 	"sidebar_button.ftbultimine.config": "FTB Ultimine Ayarları",
 	"ftbultimine.info.base": "FTB Ultimine %s",
 	"ftbultimine.info.active": "aktif",
-	"ftbultimine.info.not_active_base": "aktif değil (%s)",
+	"ftbultimine.info.not_active": "aktif değil",
 	"ftbultimine.info.cooldown": "beklemede",
 	"ftbultimine.info.blocks": "%d blok kazılıyor",
 	"ftbultimine.info.partial_render": "%d gösteriliyor",

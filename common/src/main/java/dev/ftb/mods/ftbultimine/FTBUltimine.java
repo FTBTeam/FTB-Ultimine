@@ -192,18 +192,14 @@ public class FTBUltimine {
 	}
 
 	/**
-	 * Validates if a tool is correct to use. If the strict tag is on an item it applies to the main and offhand slots.
-	 * If to deny tag is on an item it'll deny the main hand item, not sure where this would be required... If the required
-	 * tool config is on, we have to be either a {@link TieredItem} or have a max damage, or be added to the ALLOW_TAG.
-	 *
-	 * If no strict deny and no normal deny, and we do not require a tool via config then let everything through
+	 * Validates if a tool is correct to use. If the required tool config is on, we have to be either a {@link TieredItem}
+	 * or have a max damage, or be added to the ALLOW_TAG.
 	 *
 	 * @param mainHand item in the main hand
-	 * @param offHand  item in the offhand
 	 *
 	 * @return if the tool is valid to be used
 	 */
-	public static boolean isValidTool(ItemStack mainHand, ItemStack offHand) {
+	public static boolean isValidTool(ItemStack mainHand) {
 		if (FTBUltimineServerConfig.REQUIRE_TOOL.get()) {
 			if (mainHand.isEmpty()) {
 				return false;
@@ -215,62 +211,76 @@ public class FTBUltimine {
 		return true;
 	}
 
-	public enum CanUltimineResult {
-		ALLOWED ("ftbultimine.info.no_valid_block"), /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
-		NO_FOOD ("ftbultimine.info.no_food"),
-		NO_TOOL ("ftbultimine.info.no_tool"),
-		NO_PERMISSION ("ftbultimine.info.no_permission"),
-		BLOCKED_TOOL ("ftbultimine.info.denied_tool"),
-		ON_COOLDOWN ("ftbultimine.info.cooldown"),
-		NO_EXPERIENCE ("ftbultimine.info.no_experience"),
-		OTHER_RESTRICTION ("ftbultimine.info.other_restriction");
-
-		CanUltimineResult(String messageKey) {
-			this.translationKey = messageKey;
+	@FunctionalInterface
+	public interface CanUltimineResult {
+		default boolean isAllowed() {
+			return false;
 		}
 
-		public String translationKey;
+		String getTranslationKey();
 	}
 
+	public static CanUltimineResult prevent(String key) {
+		return () -> key;
+	}
+
+	public static final CanUltimineResult ALLOWED = prevent("ftbultimine.info.no_valid_block"); /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
+	public static final CanUltimineResult NO_FOOD = prevent("ftbultimine.info.no_food");
+	public static final CanUltimineResult NO_TOOL = prevent("ftbultimine.info.no_tool");
+	public static final CanUltimineResult NO_PERMISSION = prevent("ftbultimine.info.no_permission");
+	public static final CanUltimineResult BLOCKED_TOOL = prevent("ftbultimine.info.denied_tool");
+	public static final CanUltimineResult ON_COOLDOWN = prevent("ftbultimine.info.cooldown");
+	public static final CanUltimineResult OTHER_RESTRICTION = prevent("ftbultimine.info.other_restriction");
+	/* Currently unimplemented. This restriction is grouped under the "ALLOWED" result because we cannot know it on client side right now. */
+	/* public static final CanUltimineResult NO_EXPERIENCE = prevent("ftbultimine.info.no_experience"); */
+
+	/**
+	 * Determines if the player is currently allowed to use Ultimine. Provides the reason it is not allowed as relevant.
+	 *
+	 * Does not determine if there is a valid target for ultimine, hence the "ALLOWED" result pointing at the "no valid block" reason.
+	 * If there is a result of ALLOWED and valid blocks returned from {@link FTBUltiminePlayerData.updateBlocks}, ultimine should be active and working.
+	 *
+	 * @param player Player to check status for
+	 *
+	 * @return Result object with the reason that ultimine is not allowed.
+	 */
 	public CanUltimineResult canUltimine(Player player) {
 		if (PlayerHooks.isFake(player) || player.getUUID() == null) {
-			return CanUltimineResult.OTHER_RESTRICTION;
+			return OTHER_RESTRICTION;
 		}
 
 		if (CooldownTracker.isOnCooldown(player)) {
-			return CanUltimineResult.ON_COOLDOWN;
+			return ON_COOLDOWN;
 		}
 
 		if (player.getFoodData().getFoodLevel() <= 0 && !player.isCreative()) {
-			return CanUltimineResult.NO_FOOD;
+			return NO_FOOD;
 		}
 
 		if (!permissionOverride.test(player)) {
-			return CanUltimineResult.NO_PERMISSION;
+			return NO_PERMISSION;
 		}
 
 		var mainHand = player.getMainHandItem();
 		var offHand = player.getOffhandItem();
+		/* Check if the current tool has a deny tag. strict deny applies to either hand. */
 		if (mainHand.is(STRICT_DENY_TAG) || offHand.is(STRICT_DENY_TAG) || mainHand.is(DENY_TAG)) {
-			return CanUltimineResult.BLOCKED_TOOL;
+			return BLOCKED_TOOL;
 		}
 
-		if (!isValidTool(mainHand, offHand)) {
-			return CanUltimineResult.NO_TOOL;
+		if (!isValidTool(mainHand)) {
+			return NO_TOOL;
 		}
 		String registryResult = RestrictionHandlerRegistry.INSTANCE.canUltimine(player);
 		if (null != registryResult) {
-			CanUltimineResult result = CanUltimineResult.OTHER_RESTRICTION;
-			/* Updating the default string to the one provided. */
-			result.translationKey = registryResult;
-			return result;
+			return prevent(registryResult);
 		}
 
-		return CanUltimineResult.ALLOWED;
+		return ALLOWED;
 	}
 
 	public EventResult blockBroken(Level world, BlockPos origPos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
-		if (isBreakingBlock || (CanUltimineResult.ALLOWED != canUltimine(player))) {
+		if (isBreakingBlock || (ALLOWED != canUltimine(player))) {
 			return EventResult.pass();
 		}
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
