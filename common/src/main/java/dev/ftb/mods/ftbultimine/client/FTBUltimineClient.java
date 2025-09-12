@@ -313,7 +313,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			}
 		}
 		canUltimineStatus = FTBUltimine.instance.canUltimine(mc.player);
-		canUltimine = pressed && (FTBUltimine.ALLOWED == canUltimineStatus);
+		canUltimine = pressed && (canUltimineStatus.isAllowed());
 
 		if (pressed) {
 			infoPanelList = addPressedInfo();

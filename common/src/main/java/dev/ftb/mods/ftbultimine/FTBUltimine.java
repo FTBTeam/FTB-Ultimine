@@ -220,11 +220,23 @@ public class FTBUltimine {
 		String getTranslationKey();
 	}
 
+	@FunctionalInterface
+	public interface UltimineAllowed extends CanUltimineResult {
+		@Override
+		default boolean isAllowed() {
+			return true;
+		}
+	}
+
 	public static CanUltimineResult prevent(String key) {
 		return () -> key;
 	}
 
-	public static final CanUltimineResult ALLOWED = prevent("ftbultimine.info.no_valid_block"); /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
+	public static UltimineAllowed allow(String key) {
+		return () -> key;
+	}
+
+	public static final CanUltimineResult ALLOWED = allow("ftbultimine.info.no_valid_block"); /* This keys to "no valid block" because it means there is nothing stopping ultimine except the lack of a valid block to mine. */
 	public static final CanUltimineResult NO_FOOD = prevent("ftbultimine.info.no_food");
 	public static final CanUltimineResult NO_TOOL = prevent("ftbultimine.info.no_tool");
 	public static final CanUltimineResult NO_PERMISSION = prevent("ftbultimine.info.no_permission");
@@ -280,7 +292,7 @@ public class FTBUltimine {
 	}
 
 	public EventResult blockBroken(Level world, BlockPos origPos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
-		if (isBreakingBlock || (ALLOWED != canUltimine(player))) {
+		if (isBreakingBlock || !canUltimine(player).isAllowed()) {
 			return EventResult.pass();
 		}
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
