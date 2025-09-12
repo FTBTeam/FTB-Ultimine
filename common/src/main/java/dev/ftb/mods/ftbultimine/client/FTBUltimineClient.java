@@ -53,7 +53,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 
 	private boolean pressed;
 	private boolean canUltimine;
-	private String canUltimineStatus;
+	private FTBUltimine.CanUltimineResult canUltimineStatus;
 	private List<BlockPos> shapeBlocks = Collections.emptyList();
 	private int actualBlocks = 0;
 	private List<CachedEdge> cachedEdges = null;
@@ -198,7 +198,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 		builder.add(new IndentedLine(0, Component.translatable("ftbultimine.info.base", msg)));
 		if (isNotActive) {
-			builder.add(new IndentedLine(0, Component.translatable(canUltimineStatus).withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))));
+			builder.add(new IndentedLine(0, Component.translatable(canUltimineStatus.getTranslationKey()).withStyle(style -> style.withColor(TextColor.fromRgb(0xBF616A)))));
 		}
 
 		ShapeRegistry shapeRegistry = ShapeRegistry.INSTANCE;
