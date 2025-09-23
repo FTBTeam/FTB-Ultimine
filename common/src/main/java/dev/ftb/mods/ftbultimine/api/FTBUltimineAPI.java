@@ -9,6 +9,9 @@ import net.minecraft.world.food.FoodData;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.Collection;
+import java.util.Optional;
+
 public class FTBUltimineAPI {
     public static final String MOD_ID = "ftbultimine";
 
@@ -58,6 +61,14 @@ public class FTBUltimineAPI {
      * Top-level API. Retrieve an instance of this via {@link FTBUltimineAPI#api()}.
      */
     public interface API {
+        /**
+         * Get a collection of the block positions in the player's current selection.
+         * @param player the player to check
+         * @return an optional collection of the block positions the player has selected;
+         *   {@code Optional.empty()} if the player is not currently ultimining
+         */
+        Optional<Collection<BlockPos>> currentBlockSelection(Player player);
+
         /**
          * Called by {@link dev.ftb.mods.ftbultimine.api.shape.ShapeContext#check(BlockPos)} to handle any custom
          * block equivalence checks. You should not normally need to call this directly.
