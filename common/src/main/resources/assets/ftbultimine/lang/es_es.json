@@ -12,6 +12,7 @@
 	"ftbultimine.info.no_permission": "Sin permiso",
 	"ftbultimine.info.denied_tool": "Herramienta no permitida",
 	"ftbultimine.info.other_restriction": "Otra restricción",
+	"ftbultimine.info.no_block_targeted": "No hay bloque objetivo",
 	"ftbultimine.info.cooldown": "en cooldown",
 	"ftbultimine.info.blocks": "Minando %d bloques",
 	"ftbultimine.info.partial_render": "%d renderizado",

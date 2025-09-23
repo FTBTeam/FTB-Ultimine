@@ -11,6 +11,7 @@
   "ftbultimine.info.no_tool": "Kein gültiges Werkzeug",
   "ftbultimine.info.no_permission": "Keine Berechtigung",
   "ftbultimine.info.denied_tool": "Werkzeug ist nicht erlaubt",
+  "ftbultimine.info.no_block_targeted": "Kein Block anvisiert",
   "ftbultimine.info.other_restriction": "Andere Einschränkung",
   "ftbultimine.info.cooldown": "auf Abklingzeit",
   "ftbultimine.info.blocks": "Baue %d Blöcke ab",
