@@ -316,7 +316,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			}
 		}
 		canUltimineStatus = mc.hitResult instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ?
-				FTBUltimine.instance.canUltimine(mc.player) :
+				FTBUltimine.instance.canUltimine(mc.player, mc.player.level().getBlockState(b.getBlockPos())) :
 				CanUltimineResult.NO_BLOCK_TARGETED;
 		canUltimine = pressed && (canUltimineStatus.isAllowed());
 

@@ -62,6 +62,8 @@ public interface FTBUltimineServerConfig {
 			.comment("Amount of experience taken per block ultimined (fractional values allowed)");
 	BooleanValue REQUIRE_TOOL = COSTS_LIMITS.addBoolean("require_tool", false)
 			.comment("Require a damageable tool, or an item in the 'ftbultimine:tools' tag, to ultimine.");
+	BooleanValue REQUIRE_VALID_TOOL_FOR_BLOCK = COSTS_LIMITS.addBoolean("require_valid_tool_for_block", false)
+			.comment("Require a valid tool for the block being ultimined, i.e. one that can properly harvest the block");
 	LongValue ULTIMINE_COOLDOWN = COSTS_LIMITS.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
 			.comment("Cooldown in ticks between successive uses of the Ultimine feature");
 
