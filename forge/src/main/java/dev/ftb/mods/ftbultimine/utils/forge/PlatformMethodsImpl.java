@@ -1,6 +1,7 @@
 package dev.ftb.mods.ftbultimine.utils.forge;
 
 import dev.ftb.mods.ftbultimine.FTBUltiminePlayerData;
+import dev.ftb.mods.ftbultimine.RightClickDispatcher;
 import dev.ftb.mods.ftbultimine.RightClickHandlers;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.shape.BlockMatcher;
@@ -21,7 +22,6 @@ public class PlatformMethodsImpl {
 	}
 
 	public static int blockRightClick(ShapeContext shapeContext, ServerPlayer serverPlayer, InteractionHand hand, BlockPos clickPos, Direction face, FTBUltiminePlayerData data) {
-		int didWork = 0;
 		if (FTBUltimineServerConfig.RIGHT_CLICK_HARVESTING.get() && shapeContext.matcher() == BlockMatcher.CROP_LIKE) {
 			return RightClickHandlers.cropHarvesting(serverPlayer, hand, clickPos, face, data);
 		}
@@ -38,6 +38,6 @@ public class PlatformMethodsImpl {
 			return RightClickHandlers.shovelFlattening(serverPlayer, hand, clickPos, data);
 		}
 
-		return didWork;
+		return RightClickDispatcher.INSTANCE.dispatchRightClick(shapeContext, hand, data);
 	}
 }

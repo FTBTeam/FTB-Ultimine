@@ -8,6 +8,7 @@ import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
+import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
@@ -108,6 +109,7 @@ public class FTBUltimine {
 
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
+		LifecycleEvent.SERVER_STOPPING.register(this::serverStopping);
 		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
@@ -130,7 +132,12 @@ public class FTBUltimine {
 	private void serverStarting(MinecraftServer server) {
 		ShapeRegistry.freeze();
 		cachedDataMap = new HashMap<>();
+		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
 		FTBUltimineServerConfig.load(server);
+	}
+
+	private void serverStopping(MinecraftServer server) {
+		RightClickDispatcher.getInstance().clear();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {

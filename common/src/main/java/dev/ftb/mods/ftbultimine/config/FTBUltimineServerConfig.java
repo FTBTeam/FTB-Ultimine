@@ -76,6 +76,9 @@ public interface FTBUltimineServerConfig {
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
 	BooleanValue RIGHT_CLICK_HARVESTING = CONFIG.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
+	BooleanValue RIGHT_CLICK_CRYSTALS = CONFIG.addBoolean("right_click_crystals", true)
+			.comment("Right-click budding crystals (e.g. amethyst, AE2 certus) with the Ultimine key held to harvest multiple crystals",
+					"FTB EZ Crystals must also be installed");
 
 	LongValue ULTIMINE_COOLDOWN = CONFIG.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
 			.comment("Cooldown in ticks between successive uses of the ultimine feature");
