@@ -46,5 +46,9 @@
 	"ftbultimine.server_settings.experience_per_block": "XP Cost per Block Mined",
 	"ftbultimine.server_settings.experience_per_block.tooltip": "This can be a fractional amount",
 	"ftbultimine.server_settings.ultimine_cooldown": "Ultimine cooldown (ticks)",
-	"ftbultimine.server_settings.ultimine_cooldown.tooltip": "Time in ticks required between successive uses of the Ultimine function"
+	"ftbultimine.server_settings.ultimine_cooldown.tooltip": "Time in ticks required between successive uses of the Ultimine function",
+	"ftbultimine.modifier.max_blocks": "FTB Ultimine Max Blocks",
+	"ftbultimine.modifier.cooldown": "FTB Ultimine Cooldown Ticks",
+	"ftbultimine.modifier.exhaustion": "FTB Ultimine Food Consumption",
+	"ftbultimine.modifier.experience": "FTB Ultimine Experience Cost"
 }

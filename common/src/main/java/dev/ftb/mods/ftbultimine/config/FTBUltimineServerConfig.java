@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.config;
 
+import dev.architectury.registry.registries.RegistrySupplier;
 import dev.ftb.mods.ftblibrary.config.ConfigGroup;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
 import dev.ftb.mods.ftblibrary.snbt.config.*;
@@ -7,12 +8,14 @@ import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
 import dev.ftb.mods.ftbultimine.net.SyncConfigToServerPacket;
+import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -26,7 +29,8 @@ import java.util.regex.Pattern;
 
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.SERVER_CONFIG_DIR;
 import static dev.ftb.mods.ftblibrary.snbt.config.ConfigUtil.loadDefaulted;
-import static dev.ftb.mods.ftbultimine.FTBUltimine.*;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.LOGGER;
+import static dev.ftb.mods.ftbultimine.FTBUltimine.MOD_ID;
 
 public interface FTBUltimineServerConfig {
 
@@ -37,14 +41,18 @@ public interface FTBUltimineServerConfig {
 
 	IntValue MAX_BLOCKS = CONFIG.addInt("max_blocks", 64)
 			.range(32768)
-			.comment("Max amount of blocks that can be ultimined at once");
+			.comment("Max amount of blocks that can be ultimined at once",
+					"If FTB Ranks is installed, the 'ftbultimine.max_blocks' ranks node can override this",
+					"This value can also be modified with the 'ftbultimine:max_blocks_modifier' entity attribute");
 
 	DoubleValue EXHAUSTION_PER_BLOCK = CONFIG.addDouble("exhaustion_per_block", 20)
 			.range(10000)
-			.comment("Hunger multiplied for each block mined with ultimine");
+			.comment("Hunger multiplier for each block mined with ultimine",
+					"This value can be modified with the 'ftbultimine:exhaustion_modifier' entity attribute");
 	DoubleValue EXPERIENCE_PER_BLOCK = CONFIG.addDouble("experience_per_block", 0.0)
 			.range(20000)
-			.comment("Amount of experience taken per block mined (fractional values allowed)");
+			.comment("Amount of experience taken per block mined (fractional values allowed)",
+					"This value can be modified with the 'ftbultimine:experience_modifier' entity attribute");
 
 	BlockTagsConfig MERGE_TAGS_SHAPELESS = new BlockTagsConfig(CONFIG, "merge_tags",
 			new ArrayList<>(List.of(
@@ -81,7 +89,9 @@ public interface FTBUltimineServerConfig {
 					"FTB EZ Crystals must also be installed");
 
 	LongValue ULTIMINE_COOLDOWN = CONFIG.addLong("ultimine_cooldown", 0L, 0L, Long.MAX_VALUE)
-			.comment("Cooldown in ticks between successive uses of the ultimine feature");
+			.comment("Cooldown in ticks between successive uses of the ultimine feature",
+					"If FTB Ranks is installed, the 'ftbultimine.ultimine_cooldown' ranks node can override this",
+					"This value can also be modified with the 'ftbultimine:cooldown_modifier' entity attribute");
 
 //	BooleanValue USE_TRINKET = CONFIG.addBoolean("use_trinket", false)
 //			.comment("(This only works if the mod 'Lost Trinkets' is installed!)",
@@ -135,11 +145,25 @@ public interface FTBUltimineServerConfig {
 	}
 
 	static int getMaxBlocks(ServerPlayer player) {
-		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getMaxBlocks(player) : MAX_BLOCKS.get();
+		int max = IntegrationHandler.ranksMod ? FTBRanksIntegration.getMaxBlocks(player, MAX_BLOCKS.get()) : MAX_BLOCKS.get();
+		return Math.max(0, max + (int) Math.round(getAttrSafe(player, ModAttributes.MAX_BLOCKS_MODIFIER)));
 	}
 
 	static long getUltimineCooldown(ServerPlayer player) {
-		return IntegrationHandler.ranksMod ? FTBRanksIntegration.getUltimineCooldown(player) : ULTIMINE_COOLDOWN.get();
+		long cooldown = IntegrationHandler.ranksMod ? FTBRanksIntegration.getUltimineCooldown(player, ULTIMINE_COOLDOWN.get()) : ULTIMINE_COOLDOWN.get();
+		return Math.max(0, cooldown + Math.round(getAttrSafe(player, ModAttributes.COOLDOWN_MODIFIER)));
+	}
+
+	static double getExhaustionPerBlock(ServerPlayer player) {
+		return Math.max(0.0, EXHAUSTION_PER_BLOCK.get() + getAttrSafe(player, ModAttributes.EXHAUSTION_MODIFIER));
+	}
+
+	static double getExperiencePerBlock(ServerPlayer player) {
+		return Math.max(0.0, EXPERIENCE_PER_BLOCK.get() + getAttrSafe(player, ModAttributes.EXPERIENCE_MODIFIER));
+	}
+
+	private static double getAttrSafe(ServerPlayer player, RegistrySupplier<Attribute> attr) {
+		return player.getAttributes().hasAttribute(attr.get()) ? player.getAttributeValue(attr.get()) : 0.0;
 	}
 
 	class BlockTagsConfig {
