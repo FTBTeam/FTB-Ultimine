@@ -1,6 +1,7 @@
 package dev.ftb.mods.ftbultimine.integration;
 
 import dev.architectury.platform.Platform;
+import dev.ftb.mods.ftbultimine.integration.acceldecay.AcceleratedDecay;
 import dev.ftb.mods.ftbultimine.integration.agricraft.AgriCraftCropLikeHandler;
 import dev.ftb.mods.ftbultimine.integration.ezcrystals.EZCrystals;
 
@@ -15,6 +16,10 @@ public class IntegrationHandler {
 
         if (Platform.isModLoaded("agricraft")) {
             AgriCraftCropLikeHandler.init();
+        }
+
+        if (Platform.isModLoaded("accelerateddecay")) {
+            AcceleratedDecay.init();
         }
 
         if (Platform.isModLoaded("ftbezcrystals")) {

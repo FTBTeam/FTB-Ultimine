@@ -15,6 +15,8 @@ import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
 import dev.ftb.mods.ftbultimine.crops.VanillaCropLikeHandler;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
+import dev.ftb.mods.ftbultimine.integration.acceldecay.AcceleratedDecay;
+import dev.ftb.mods.ftbultimine.integration.acceldecay.LogBreakTracker;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
@@ -32,6 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -242,6 +245,15 @@ public class FTBUltimine {
 		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
 			BlockState state1 = world.getBlockState(p);
+
+			if (AcceleratedDecay.available && state1.is(BlockTags.LEAVES) && LogBreakTracker.INSTANCE.playerRecentlyBrokeLog(player, 1500L)) {
+				// A kludge: if player recently broke a log block and now leaves are breaking, and Accelerated Decay is installed,
+				//   then this is almost certainly leaf decay, and not directly broken by the player
+				// https://github.com/FTBTeam/FTB-Modpack-Issues/issues/7713
+				world.destroyBlock(p, true, player);
+				continue;
+			}
+
 			float destroySpeed = state1.getDestroySpeed(world, p);
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
