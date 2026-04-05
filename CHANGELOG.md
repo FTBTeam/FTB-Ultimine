@@ -6,8 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2001.1.8]
 
+### Added
+* Player attributes for `max_blocks_modifier`, `cooldown_modifier`, `exchaustion_modifier`, `experience_modifier`
+* Support for FTB EzCrystals
+
+
 ### Fixed
 * Fixed unwanted mod interaction with Accelerated Decay causing tools to take excessive damage when leaves fast-decay and ultimine key is still held
+* Removed player exhaustion for tilling farmland
 
 ## [2001.1.7]
 
