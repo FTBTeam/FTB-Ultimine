@@ -3,24 +3,26 @@ package dev.ftb.mods.ftbultimine;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
-import dev.architectury.platform.Platform;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.snbt.SNBTCompoundTag;
+import dev.ftb.mods.ftbultimine.api.rightclick.RegisterRightClickHandlerEvent;
 import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineCommonConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
 import dev.ftb.mods.ftbultimine.crops.VanillaCropLikeHandler;
-import dev.ftb.mods.ftbultimine.integration.FTBRanksIntegration;
 import dev.ftb.mods.ftbultimine.integration.FTBUltiminePlugins;
 import dev.ftb.mods.ftbultimine.integration.IntegrationHandler;
+import dev.ftb.mods.ftbultimine.integration.acceldecay.AcceleratedDecay;
+import dev.ftb.mods.ftbultimine.integration.acceldecay.LogBreakTracker;
 import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncConfigFromServerPacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
+import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import dev.ftb.mods.ftbultimine.shape.*;
 import dev.ftb.mods.ftbultimine.utils.PlatformMethods;
 import net.minecraft.core.BlockPos;
@@ -32,6 +34,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +42,9 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -86,8 +91,9 @@ public class FTBUltimine {
 
 	public FTBUltimine() {
 		instance = this;
-		FTBUltimineNet.init();
 
+		FTBUltimineNet.init();
+		ModAttributes.init();
 		IntegrationHandler.init();
 		
 		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
@@ -108,6 +114,7 @@ public class FTBUltimine {
 
 		PlayerEvent.PLAYER_JOIN.register(this::playerJoined);
 		LifecycleEvent.SERVER_BEFORE_START.register(this::serverStarting);
+		LifecycleEvent.SERVER_STOPPING.register(this::serverStopping);
 		BlockEvent.BREAK.register(this::blockBroken);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(this::blockRightClick);
 		TickEvent.PLAYER_PRE.register(this::playerTick);
@@ -130,7 +137,12 @@ public class FTBUltimine {
 	private void serverStarting(MinecraftServer server) {
 		ShapeRegistry.freeze();
 		cachedDataMap = new HashMap<>();
+		RegisterRightClickHandlerEvent.REGISTER.invoker().register(RightClickDispatcher.getInstance());
 		FTBUltimineServerConfig.load(server);
+	}
+
+	private void serverStopping(MinecraftServer server) {
+		RightClickDispatcher.getInstance().clear();
 	}
 
 	public void setKeyPressed(ServerPlayer player, boolean pressed) {
@@ -220,7 +232,7 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.EXPERIENCE_PER_BLOCK.get()) {
+		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
 			return EventResult.pass();
 		}
 
@@ -233,6 +245,15 @@ public class FTBUltimine {
 		int blocksMined = 0;
 		for (BlockPos p : data.cachedPositions()) {
 			BlockState state1 = world.getBlockState(p);
+
+			if (AcceleratedDecay.available && state1.is(BlockTags.LEAVES) && LogBreakTracker.INSTANCE.playerRecentlyBrokeLog(player, 1500L)) {
+				// A kludge: if player recently broke a log block and now leaves are breaking, and Accelerated Decay is installed,
+				//   then this is almost certainly leaf decay, and not directly broken by the player
+				// https://github.com/FTBTeam/FTB-Modpack-Issues/issues/7713
+				world.destroyBlock(p, true, player);
+				continue;
+			}
+
 			float destroySpeed = state1.getDestroySpeed(world, p);
 			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !player.hasCorrectToolForDrops(state1))) {
 				continue;
@@ -242,7 +263,7 @@ public class FTBUltimine {
 			}
 
 			if (!player.isCreative()) {
-				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.EXHAUSTION_PER_BLOCK.get() * 0.005D));
+				player.causeFoodExhaustion((float) (FTBUltimineServerConfig.getExhaustionPerBlock(player) * 0.005D));
 				if (isTooExhausted(player)) {
 					break;
 				}
@@ -262,7 +283,7 @@ public class FTBUltimine {
 
 		if (!player.isCreative()) {
 			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
-			data.addPendingXPCost(Math.max(0, blocksMined - 1));
+			data.addPendingXPCost(player, Math.max(0, blocksMined - 1));
 		}
 
 		isBreakingBlock = false;
@@ -309,10 +330,10 @@ public class FTBUltimine {
 		int didWork = PlatformMethods.blockRightClick(shapeContext, serverPlayer, hand, clickPos, face, data);
 
 		if (didWork > 0) {
-			player.swing(hand);
+			serverPlayer.swing(hand);
 			if (!player.isCreative()) {
-				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
-				data.addPendingXPCost(Math.max(0, didWork - 1));
+				CooldownTracker.setLastUltimineTime(serverPlayer, System.currentTimeMillis());
+				data.addPendingXPCost(serverPlayer, Math.max(0, didWork - 1));
 			}
 			return EventResult.interruptFalse();
 		} else {
@@ -323,7 +344,7 @@ public class FTBUltimine {
 	public void playerTick(Player player) {
 		if (player instanceof ServerPlayer serverPlayer) {
 			FTBUltiminePlayerData data = getOrCreatePlayerData(player);
-			data.checkBlocks(serverPlayer, true, FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
+			data.checkBlocks(serverPlayer, true, () -> FTBUltimineServerConfig.getMaxBlocks(serverPlayer));
 			data.takePendingXP(serverPlayer);
 		}
 	}

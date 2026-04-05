@@ -35,13 +35,11 @@ public class FTBRanksIntegration {
         });
     }
 
-    public static int getMaxBlocks(ServerPlayer player) {
-        return FTBRanksAPI.getPermissionValue(player, MAX_BLOCKS_PERM).asInteger()
-                .orElse(FTBUltimineServerConfig.MAX_BLOCKS.get());
+    public static int getMaxBlocks(ServerPlayer player, int defMax) {
+        return FTBRanksAPI.getPermissionValue(player, MAX_BLOCKS_PERM).asInteger().orElse(defMax);
     }
 
-    public static long getUltimineCooldown(ServerPlayer player) {
-        return FTBRanksAPI.getPermissionValue(player, COOLDOWN_PERM).asLong()
-                .orElse(FTBUltimineServerConfig.ULTIMINE_COOLDOWN.get());
+    public static long getUltimineCooldown(ServerPlayer player, long defCooldown) {
+        return FTBRanksAPI.getPermissionValue(player, COOLDOWN_PERM).asLong().orElse(defCooldown);
     }
 }
