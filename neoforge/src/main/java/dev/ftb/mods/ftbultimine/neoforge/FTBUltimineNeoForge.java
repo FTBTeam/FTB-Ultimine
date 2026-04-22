@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -45,7 +45,7 @@ public class FTBUltimineNeoForge {
 		bus.addListener(ServerStartingEvent.class, this::onServerStarting);
 		bus.addListener(ServerStoppingEvent.class, event -> ultimine.serverStopping(event.getServer()));
 		bus.addListener(ServerTickEvent.Post.class, event -> ultimine.serverTick(event.getServer()));
-		bus.addListener(EventPriority.HIGH, BlockEvent.BreakEvent.class, event -> {
+		bus.addListener(EventPriority.HIGH, BreakBlockEvent.class, event -> {
 			if (event.getPlayer() instanceof ServerPlayer sp && ultimine.handleBlockBreak(event.getLevel(), event.getPos(), event.getState(), sp)) {
 				event.setCanceled(true);
 			}
