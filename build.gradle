@@ -86,7 +86,8 @@ subprojects {
 					"minecraft_version_range_semver": minecraft_version_range_semver,
 					"fabricapi_version_range": fabric_api_version_range,
 					"ftb_library_version_range_semver": ftb_library_version_range_semver,
-					"ftb_library_version_range_maven": ftb_library_version_range_maven
+					"ftb_library_version_range_maven": ftb_library_version_range_maven,
+					"accelerated_decay_version_range_maven": accelerated_decay_version_range
 		}
 	}
 

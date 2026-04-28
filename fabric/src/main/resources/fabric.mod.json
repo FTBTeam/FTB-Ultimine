@@ -30,5 +30,8 @@
 		"fabric-api": "${fabricapi_version_range}",
 		"minecraft": "${minecraft_version_range_semver}",
 		"ftblibrary": "${ftb_library_version_range_semver}"
+	},
+	"breaks": {
+		"accelerateddecay": "${accelerated_decay_version_semver_break}"
 	}
 }

@@ -36,3 +36,10 @@ versionRange = "${ftb_library_version_range_maven}"
 ordering = "NONE"
 side = "BOTH"
 
+[[dependencies.ftbultimine]]
+modId = "accelerateddecay"
+type = "optional"
+versionRange = "${accelerated_decay_version_range_maven}"
+ordering = "NONE"
+side = "BOTH"
+

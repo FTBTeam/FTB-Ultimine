@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.net;
 
+import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
 import dev.ftb.mods.ftblibrary.platform.network.PacketContext;
 import dev.ftb.mods.ftblibrary.util.NetworkHelper;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
@@ -26,7 +27,7 @@ public record SyncUltimineTimePacket(long when, TimeType timetype) implements Cu
 
     public static void handle(SyncUltimineTimePacket message, PacketContext ignoredContext) {
         switch (message.timetype) {
-            case LAST_USED -> CooldownTracker.setLastUltimineTime(FTBUltimineClient.getClientPlayer(), message.when);
+            case LAST_USED -> CooldownTracker.setLastUltimineTime(ClientUtils.getClientPlayer(), message.when);
             case COOLDOWN -> CooldownTracker.setClientCooldownTime(message.when);
         }
     }

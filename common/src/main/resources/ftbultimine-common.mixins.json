@@ -3,7 +3,6 @@
   "package": "dev.ftb.mods.ftbultimine.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "BlockMixin",
     "CropBlockAccess",
     "FoodDataAccess"
   ],

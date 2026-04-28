@@ -33,7 +33,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -89,10 +88,6 @@ public class FTBUltimineClient {
 
 	public static FTBUltimineClient getInstance() {
 		return Objects.requireNonNull(instance);
-	}
-
-	public static Player getClientPlayer() {
-		return Objects.requireNonNull(Minecraft.getInstance().player);
 	}
 
 	public void setShape(int shapeIdx, @Nullable List<BlockPos> blocks) {
@@ -205,7 +200,7 @@ public class FTBUltimineClient {
 
 		Component msg;
 		boolean isActive = true;
-		if (CooldownTracker.isOnCooldown(getClientPlayer())) {
+		if (CooldownTracker.isOnCooldown(ClientUtils.getClientPlayer())) {
 			msg = Component.translatable("ftbultimine.info.cooldown").withStyle(style -> style.withColor(TextColor.fromRgb(0xBFBF6C)));
 		} else if (canUltimine && actualBlocks > 0) {
 			msg = Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)));
@@ -290,7 +285,7 @@ public class FTBUltimineClient {
 			GuiHelper.drawHollowRect(graphics, -2, -2, width + 4, height + 4, Color4I.GRAY.withAlphaf(0.5f * panelAlphaMult), false);
 
 			// draw cooldown progress bar if needed
-			float f = CooldownTracker.getCooldownRemaining(getClientPlayer());
+			float f = CooldownTracker.getCooldownRemaining(ClientUtils.getClientPlayer());
 			if (f < 1f) {
 				Color4I col = Color4I.rgb(0x40A040).withAlphaf(0.68f * panelAlphaMult);
 				colorRenderer.render(col, graphics,0, 0, (int) (width * f) + 1, font.lineHeight + 1);
