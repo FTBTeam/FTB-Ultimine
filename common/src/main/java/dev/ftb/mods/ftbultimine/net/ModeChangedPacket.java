@@ -23,6 +23,6 @@ public record ModeChangedPacket(boolean next) implements CustomPacketPayload {
     }
 
     public static void handle(ModeChangedPacket message, NetworkManager.PacketContext context) {
-        context.queue(() -> FTBUltimine.instance.modeChanged((ServerPlayer) context.getPlayer(), message.next));
+        context.queue(() -> FTBUltimine.getInstance().modeChanged((ServerPlayer) context.getPlayer(), message.next));
     }
 }

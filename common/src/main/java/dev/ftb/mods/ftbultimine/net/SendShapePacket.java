@@ -1,8 +1,8 @@
 package dev.ftb.mods.ftbultimine.net;
 
 import dev.architectury.networking.NetworkManager;
-import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -35,8 +35,8 @@ public record SendShapePacket(int shapeIdx, Optional<List<BlockPos>> blocks) imp
 	}
 
 	public static void handle(SendShapePacket message, NetworkManager.PacketContext context) {
-		context.queue(() -> {
-			FTBUltimine.instance.proxy.setShape(message.shapeIdx, message.blocks.orElse(null));
-		});
+		context.queue(() ->
+				FTBUltimineClient.getInstance().setShape(message.shapeIdx, message.blocks.orElse(null))
+		);
 	}
 }
