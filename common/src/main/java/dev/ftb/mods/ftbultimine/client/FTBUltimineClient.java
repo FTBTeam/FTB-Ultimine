@@ -47,7 +47,7 @@ import java.util.*;
 
 public class FTBUltimineClient {
 	public static final Identifier GUI_OVERLAY_ID = FTBUltimineAPI.id("overlay");
-	private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(FTBUltimineAPI.id("default"));
+	private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(FTBUltimineAPI.id("default"));
 
 	public static final KeyMapping keyBindUltimine
 			= new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, KEY_CATEGORY);
