@@ -23,6 +23,6 @@ public record KeyPressedPacket(boolean pressed) implements CustomPacketPayload {
     }
 
     public static void handle(KeyPressedPacket message, NetworkManager.PacketContext context) {
-        context.queue(() -> FTBUltimine.instance.setKeyPressed((ServerPlayer) context.getPlayer(), message.pressed));
+        context.queue(() -> FTBUltimine.getInstance().setKeyPressed((ServerPlayer) context.getPlayer(), message.pressed));
     }
 }

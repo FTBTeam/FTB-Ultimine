@@ -17,7 +17,6 @@ import dev.ftb.mods.ftblibrary.ui.GuiHelper;
 import dev.ftb.mods.ftbultimine.api.util.CanUltimineResult;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
-import dev.ftb.mods.ftbultimine.FTBUltimineCommon;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.event.LevelRenderLastEvent;
 import dev.ftb.mods.ftbultimine.net.KeyPressedPacket;
@@ -49,10 +48,12 @@ import org.joml.Matrix4f;
 
 import java.util.*;
 
-public class FTBUltimineClient extends FTBUltimineCommon {
+public class FTBUltimineClient {
 	public static KeyMapping keyBindUltimine;
 	public static KeyMapping keyBindNextMode;
 	public static KeyMapping keyBindPrevMode;
+
+	private static FTBUltimineClient instance;
 
 	private boolean pressed;
 	private boolean canUltimine;
@@ -69,6 +70,8 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 	private List<IndentedLine> infoPanelList = List.of();
 
 	public FTBUltimineClient() {
+		instance = this;
+
 		KeyMappingRegistry.register(keyBindUltimine = new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, "key.categories.ftbultimine"));
 		KeyMappingRegistry.register(keyBindNextMode = new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, "key.categories.ftbultimine"));
 		KeyMappingRegistry.register(keyBindPrevMode = new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, "key.categories.ftbultimine"));
@@ -83,11 +86,14 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		ClientRawInputEvent.KEY_PRESSED.register(this::onKeyPress);
 	}
 
+	public static FTBUltimineClient getInstance() {
+		return instance;
+	}
+
 	public static Player getClientPlayer() {
 		return Minecraft.getInstance().player;
 	}
 
-	@Override
 	public void setShape(int shapeIdx, List<BlockPos> blocks) {
 		this.shapeIdx = shapeIdx;
 		if (blocks != null) {
@@ -104,8 +110,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 		}
 	}
 
-	@Override
-	public Collection<BlockPos> getSelectedBlocks(Player player) {
+	public Collection<BlockPos> getSelectedBlocks() {
 		return actualBlocks == 0 || shapeBlocks.isEmpty() ? null : shapeBlocks;
 	}
 
@@ -323,7 +328,7 @@ public class FTBUltimineClient extends FTBUltimineCommon {
 			}
 		}
 		canUltimineStatus = mc.hitResult instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK ?
-				FTBUltimine.instance.canUltimine(mc.player, b.getBlockPos(), mc.player.level().getBlockState(b.getBlockPos())) :
+				FTBUltimine.getInstance().canUltimine(mc.player, b.getBlockPos(), mc.player.level().getBlockState(b.getBlockPos())) :
 				CanUltimineResult.NO_BLOCK_TARGETED;
 		canUltimine = pressed && (canUltimineStatus.isAllowed());
 

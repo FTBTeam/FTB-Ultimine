@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineFabric"
+		],
+		"client": [
+			"dev.ftb.mods.ftbultimine.fabric.FTBUltimineFabricClient"
 		]
 	},
 	"mixins": [

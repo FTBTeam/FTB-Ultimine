@@ -70,11 +70,9 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 public class FTBUltimine {
-	public static FTBUltimine instance;
+	private static FTBUltimine instance;
 
 	public static final Logger LOGGER = LogManager.getLogger();
-
-	public final FTBUltimineCommon proxy;
 
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
 	private boolean isBreakingBlock;
@@ -110,8 +108,6 @@ public class FTBUltimine {
 		ModAttributes.init();
 		IntegrationHandler.init();
 
-		proxy = EnvExecutor.getEnvSpecific(() -> FTBUltimineClient::new, () -> FTBUltimineCommon::new);
-
 		ReloadListenerRegistry.register(PackType.SERVER_DATA, new DataReloadListener());
 
 		LifecycleEvent.SETUP.register(this::commonSetup);
@@ -128,6 +124,10 @@ public class FTBUltimine {
 		RegisterShapeEvent.REGISTER.register(this::registerBuiltinShapes);
 		RegisterCropLikeEvent.REGISTER.register(this::registerCropHandlers);
 	}
+
+    public static FTBUltimine getInstance() {
+        return instance;
+    }
 
 	private void commonSetup() {
 		RegisterRestrictionHandlerEvent.REGISTER.invoker().register(RestrictionHandlerRegistry.INSTANCE);

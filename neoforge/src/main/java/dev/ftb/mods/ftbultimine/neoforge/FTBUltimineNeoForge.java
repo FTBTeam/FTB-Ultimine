@@ -4,10 +4,8 @@ import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 
 @Mod(FTBUltimineAPI.MOD_ID)
@@ -18,10 +16,6 @@ public class FTBUltimineNeoForge {
 //		}
 
 		new FTBUltimine();
-
-		if (FMLEnvironment.dist == Dist.CLIENT) {
-			FTBUltimineNeoForgeClient.init();
-		}
 
 		modEventBus.addListener(this::addPlayerAttributes);
 	}

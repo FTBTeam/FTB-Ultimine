@@ -15,7 +15,10 @@ public enum FTBUltimineAPIImpl implements FTBUltimineAPI.API {
 
     @Override
     public Optional<Collection<BlockPos>> currentBlockSelection(Player player) {
-        return Optional.ofNullable(FTBUltimine.instance.proxy.getSelectedBlocks(player));
+        return Optional.ofNullable(player.level().isClientSide() ?
+                FTBUltimineClient.getInstance().getSelectedBlocks() :
+                FTBUltimine.getInstance().getOrCreatePlayerData(player).cachedPositions()
+        );
     }
 
     @Override
