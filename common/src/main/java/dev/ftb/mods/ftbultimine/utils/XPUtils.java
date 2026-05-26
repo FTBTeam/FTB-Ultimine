@@ -1,5 +1,6 @@
 package dev.ftb.mods.ftbultimine.utils;
 
+import dev.ftb.mods.ftbultimine.mixin.ServerPlayerAccess;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
@@ -23,7 +24,7 @@ public class XPUtils {
         player.experienceProgress = (float)(experience - expForLevel) / (float)player.getXpNeededForNextLevel();
         if (player instanceof ServerPlayer sp) {
             // force a sync to client
-            sp.setExperienceLevels(sp.experienceLevel);
+            ((ServerPlayerAccess) sp).ftbUltimine$setLastSentExp(-1);
         }
     }
 
