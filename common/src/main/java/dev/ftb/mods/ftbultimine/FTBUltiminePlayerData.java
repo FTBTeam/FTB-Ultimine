@@ -7,7 +7,7 @@ import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.shape.BlockMatchers;
 import dev.ftb.mods.ftbultimine.shape.ShapeRegistry;
-import net.minecraft.commands.CommandSourceStack;
+import dev.ftb.mods.ftbultimine.utils.XPUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -103,10 +103,7 @@ public class FTBUltiminePlayerData {
 	public void takePendingXP(ServerPlayer player) {
 		if (pendingXPCost > 1.0) {
 			int toTake = (int) pendingXPCost;
-
-			String cmd = String.format("experience add @s -%d points", toTake);
-			CommandSourceStack source = player.createCommandSourceStack().withSuppressedOutput();
-			player.level().getServer().getCommands().performPrefixedCommand(source, cmd);
+			XPUtils.addPlayerXP(player, -toTake);
 			pendingXPCost -= toTake;
 		}
 	}
@@ -151,7 +148,7 @@ public class FTBUltiminePlayerData {
 			context = new ShapeContext(player, cachedPos, cachedDirection, origState, matcher, maxBlocks);
 			cachedBlocks = shape.getBlocks(context);
 			if (FTBUltimineServerConfig.getExperiencePerBlock(player) > 0d) {
-				int max = (int) (player.totalExperience / FTBUltimineServerConfig.getExperiencePerBlock(player));
+				int max = (int) (XPUtils.getPlayerXP(player) / FTBUltimineServerConfig.getExperiencePerBlock(player));
 				if (max < cachedBlocks.size()) {
 					cachedBlocks = cachedBlocks.subList(0, max);
 				}

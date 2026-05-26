@@ -29,6 +29,7 @@ import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import dev.ftb.mods.ftbultimine.rightclick.*;
 import dev.ftb.mods.ftbultimine.shape.*;
 import dev.ftb.mods.ftbultimine.utils.ItemCollector;
+import dev.ftb.mods.ftbultimine.utils.XPUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.MinecraftServer;
@@ -240,7 +241,7 @@ public class FTBUltimine {
 			return false;
 		}
 
-		if (player.totalExperience < Objects.requireNonNull(data.cachedPositions()).size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
+		if (XPUtils.getPlayerXP(player) < Objects.requireNonNull(data.cachedPositions()).size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
 			return false;
 		}
 
