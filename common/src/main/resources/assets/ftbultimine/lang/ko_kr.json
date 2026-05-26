@@ -1,6 +1,6 @@
 {
-	"key.ftbultimine": "FTB Ultimine",
-	"key.categories.ftbultimine": "FTB Ultimine",
+	"key.ftbultimine.default.ftbultimine": "FTB Ultimine",
+	"key.category.ftbultimine.default": "FTB Ultimine",
 	"ftbultimine.info.base": "FTB Ultimine이 %s",
 	"ftbultimine.info.active": "활성화됨",
 	"ftbultimine.info.not_active": "비활성화됨",

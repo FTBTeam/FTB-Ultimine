@@ -1,6 +1,6 @@
 {
-	"key.ftbultimine": "FTB Ultimine",
-	"key.categories.ftbultimine": "FTB Ultimine",
+	"key.ftbultimine.default.ftbultimine": "FTB Ultimine",
+	"key.category.ftbultimine.default": "FTB Ultimine",
 
 	"ftbultimine.info.base": "FTB Ultimine %s",
 	"ftbultimine.info.active": "активен",
@@ -9,8 +9,8 @@
 	"ftbultimine.info.blocks": "Добыча %d блоков",
 	"ftbultimine.info.partial_render": "%d отрисовано",
 
-	"ftbultimine.change_shape.next": "Переключиться на след. форму",
-	"ftbultimine.change_shape.prev": "Переключиться на пред. форму",
+	"key.ftbultimine.default.change_shape.next": "Переключиться на след. форму",
+	"key.ftbultimine.default.change_shape.prev": "Переключиться на пред. форму",
 	"ftbultimine.change_shape": "Удерживайте Shift + (прокрутка колеса мыши или стрелки вверх/вниз для изменения формы) для переключения формы",
 	"ftbultimine.change_shape.short": "Удерживайте Shift, чтобы открыть меню",
 	"ftbultimine.change_shape.no_shift": "Прокрутка колеса мыши или стрелки вверх/вниз для переключения формы",

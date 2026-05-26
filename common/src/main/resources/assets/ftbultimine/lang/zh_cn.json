@@ -1,6 +1,6 @@
 {
-	"key.ftbultimine": "连锁破坏",
-	"key.categories.ftbultimine": "FTB 连锁破坏",
+	"key.ftbultimine.default.ftbultimine": "连锁破坏",
+	"key.category.ftbultimine.default": "FTB 连锁破坏",
 	"ftbultimine.info.base": "FTB 连锁破坏 %s",
 	"ftbultimine.info.active": "已激活",
 	"ftbultimine.info.not_active": "未激活",

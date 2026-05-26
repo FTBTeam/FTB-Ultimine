@@ -1,6 +1,6 @@
 {
-	"key.ftbultimine": "FTB Ultimine",
-	"key.categories.ftbultimine": "FTB Ultimine",
+	"key.ftbultimine.default.ftbultimine": "FTB Ultimine",
+	"key.category.ftbultimine.default": "FTB Ultimine",
 	"sidebar_button.ftbultimine.config": "FTB Ultimine Ayarları",
 	"ftbultimine.info.base": "FTB Ultimine %s",
 	"ftbultimine.info.active": "aktif",

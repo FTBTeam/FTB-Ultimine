@@ -9,6 +9,7 @@ import dev.ftb.mods.ftblibrary.client.icon.Color4IRenderer;
 import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.platform.client.PlatformClient;
+import dev.ftb.mods.ftblibrary.platform.client.input.InputHelper;
 import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
@@ -49,12 +50,9 @@ public class FTBUltimineClient {
 	public static final Identifier GUI_OVERLAY_ID = FTBUltimineAPI.id("overlay");
 	private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(FTBUltimineAPI.id("default"));
 
-	public static final KeyMapping keyBindUltimine
-			= new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, KEY_CATEGORY);
-	public static final KeyMapping keyBindNextMode
-			= new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, KEY_CATEGORY);
-	public static final KeyMapping keyBindPrevMode
-			= new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, KEY_CATEGORY);
+	public static final KeyMapping keyBindUltimine = InputHelper.createSimpleKeyMapping("ftbultimine", KEY_CATEGORY, InputConstants.KEY_GRAVE);
+	public static final KeyMapping keyBindNextMode = InputHelper.createSimpleKeyMapping("change_shape.next", KEY_CATEGORY, InputConstants.KEY_UP);
+	public static final KeyMapping keyBindPrevMode = InputHelper.createSimpleKeyMapping("change_shape.prev", KEY_CATEGORY, InputConstants.KEY_DOWN);
 
 	@Nullable
 	private static FTBUltimineClient instance;
@@ -79,7 +77,7 @@ public class FTBUltimineClient {
 	public FTBUltimineClient() {
 		instance = this;
 
-		PlatformClient.get().registerKeyMapping(FTBUltimineAPI.MOD_ID,
+		PlatformClient.get().input().registerKeyMapping(FTBUltimineAPI.MOD_ID,
 				keyBindUltimine,
 				keyBindNextMode,
 				keyBindPrevMode
@@ -102,7 +100,7 @@ public class FTBUltimineClient {
 		if (!ultimineKeyPressed && FTBUltimineClientConfig.SHAPE_FEEDBACK_MESSAGE.get()) {
 			Component shapeName = ShapeRegistry.getInstance(true).getShape(shapeIdx).getDisplayName();
 			ClientUtils.getClientPlayer().sendOverlayMessage(
-					Component.translatable("key.ftbultimine").append(" : ").append(shapeName));
+					Component.translatable("key.category.ftbultimine.default").append(" : ").append(shapeName));
 		}
 	}
 
