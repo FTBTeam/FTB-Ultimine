@@ -1,6 +1,8 @@
 {
-	"key.ftbultimine": "FTB Ultimine",
 	"key.category.ftbultimine.default": "FTB Ultimine",
+	"key.ftbultimine.default.ftbultimine": "Activate Ultimining",
+	"key.ftbultimine.default.change_shape.next": "Cycle to Next Shape",
+	"key.ftbultimine.default.change_shape.prev": "Cycle to Previous Shape",
 	"sidebar_button.ftbultimine.config": "FTB Ultimine Configuration",
 	"ftbultimine.info.base": "FTB Ultimine is %s",
 	"ftbultimine.info.active": "active",
@@ -16,8 +18,6 @@
 	"ftbultimine.info.cooldown": "on cooldown",
 	"ftbultimine.info.blocks": "Mining %d blocks",
 	"ftbultimine.info.partial_render": "%d rendered",
-	"ftbultimine.change_shape.next": "Cycle to Next Shape",
-	"ftbultimine.change_shape.prev": "Cycle to Previous Shape",
 	"ftbultimine.change_shape": "Hold Shift + (Scroll Mouse or Up/Down keys) to change shape",
 	"ftbultimine.change_shape.short": "Hold Shift for menu",
 	"ftbultimine.change_shape.no_shift": "Scroll Mouse or Up/Down keys to change shape",

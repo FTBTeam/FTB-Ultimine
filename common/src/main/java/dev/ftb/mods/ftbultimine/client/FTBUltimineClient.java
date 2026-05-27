@@ -9,6 +9,7 @@ import dev.ftb.mods.ftblibrary.client.icon.Color4IRenderer;
 import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
 import dev.ftb.mods.ftblibrary.icon.Color4I;
 import dev.ftb.mods.ftblibrary.platform.client.PlatformClient;
+import dev.ftb.mods.ftblibrary.platform.client.input.InputHelper;
 import dev.ftb.mods.ftblibrary.platform.network.Play2ServerNetworking;
 import dev.ftb.mods.ftbultimine.CooldownTracker;
 import dev.ftb.mods.ftbultimine.FTBUltimine;
@@ -33,7 +34,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -48,14 +48,11 @@ import java.util.*;
 
 public class FTBUltimineClient {
 	public static final Identifier GUI_OVERLAY_ID = FTBUltimineAPI.id("overlay");
-	private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(FTBUltimineAPI.id("default"));
+	private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(FTBUltimineAPI.id("default"));
 
-	public static final KeyMapping keyBindUltimine
-			= new KeyMapping("key.ftbultimine", InputConstants.Type.KEYSYM, InputConstants.KEY_GRAVE, KEY_CATEGORY);
-	public static final KeyMapping keyBindNextMode
-			= new KeyMapping("ftbultimine.change_shape.next", InputConstants.Type.KEYSYM, InputConstants.KEY_UP, KEY_CATEGORY);
-	public static final KeyMapping keyBindPrevMode
-			= new KeyMapping("ftbultimine.change_shape.prev", InputConstants.Type.KEYSYM, InputConstants.KEY_DOWN, KEY_CATEGORY);
+	public static final KeyMapping keyBindUltimine = InputHelper.createSimpleKeyMapping("ftbultimine", KEY_CATEGORY, InputConstants.KEY_GRAVE);
+	public static final KeyMapping keyBindNextMode = InputHelper.createSimpleKeyMapping("change_shape.next", KEY_CATEGORY, InputConstants.KEY_UP);
+	public static final KeyMapping keyBindPrevMode = InputHelper.createSimpleKeyMapping("change_shape.prev", KEY_CATEGORY, InputConstants.KEY_DOWN);
 
 	@Nullable
 	private static FTBUltimineClient instance;
@@ -80,7 +77,7 @@ public class FTBUltimineClient {
 	public FTBUltimineClient() {
 		instance = this;
 
-		PlatformClient.get().registerKeyMapping(FTBUltimineAPI.MOD_ID,
+		PlatformClient.get().input().registerKeyMapping(FTBUltimineAPI.MOD_ID,
 				keyBindUltimine,
 				keyBindNextMode,
 				keyBindPrevMode
@@ -89,10 +86,6 @@ public class FTBUltimineClient {
 
 	public static FTBUltimineClient getInstance() {
 		return Objects.requireNonNull(instance);
-	}
-
-	public static Player getClientPlayer() {
-		return Objects.requireNonNull(Minecraft.getInstance().player);
 	}
 
 	public void setShape(int shapeIdx, @Nullable List<BlockPos> blocks) {
@@ -107,7 +100,7 @@ public class FTBUltimineClient {
 		if (!ultimineKeyPressed && FTBUltimineClientConfig.SHAPE_FEEDBACK_MESSAGE.get()) {
 			Component shapeName = ShapeRegistry.getInstance(true).getShape(shapeIdx).getDisplayName();
 			ClientUtils.getClientPlayer().sendOverlayMessage(
-					Component.translatable("key.ftbultimine").append(" : ").append(shapeName));
+					Component.translatable("key.category.ftbultimine.default").append(" : ").append(shapeName));
 		}
 	}
 
@@ -205,7 +198,7 @@ public class FTBUltimineClient {
 
 		Component msg;
 		boolean isActive = true;
-		if (CooldownTracker.isOnCooldown(getClientPlayer())) {
+		if (CooldownTracker.isOnCooldown(ClientUtils.getClientPlayer())) {
 			msg = Component.translatable("ftbultimine.info.cooldown").withStyle(style -> style.withColor(TextColor.fromRgb(0xBFBF6C)));
 		} else if (canUltimine && actualBlocks > 0) {
 			msg = Component.translatable("ftbultimine.info.active").withStyle(style -> style.withColor(TextColor.fromRgb(0xA3BE8C)));
@@ -290,7 +283,7 @@ public class FTBUltimineClient {
 			GuiHelper.drawHollowRect(graphics, -2, -2, width + 4, height + 4, Color4I.GRAY.withAlphaf(0.5f * panelAlphaMult), false);
 
 			// draw cooldown progress bar if needed
-			float f = CooldownTracker.getCooldownRemaining(getClientPlayer());
+			float f = CooldownTracker.getCooldownRemaining(ClientUtils.getClientPlayer());
 			if (f < 1f) {
 				Color4I col = Color4I.rgb(0x40A040).withAlphaf(0.68f * panelAlphaMult);
 				colorRenderer.render(col, graphics,0, 0, (int) (width * f) + 1, font.lineHeight + 1);
