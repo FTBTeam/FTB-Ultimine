@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.1.2.4]
+
+### Fixed
+* Fixed some experience checking and syncing issues when `xp_per_block` is non-zero in server config
+* Fixed a clientside init crash with keybinding category registration in some cases (latest FTB Library 26.1.2.5 also required)
+
 ## [26.1.2.3]
 
 ### Changed
