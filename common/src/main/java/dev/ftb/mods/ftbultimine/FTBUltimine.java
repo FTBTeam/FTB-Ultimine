@@ -241,7 +241,8 @@ public class FTBUltimine {
 			return false;
 		}
 
-		if (XPUtils.getPlayerXP(player) < Objects.requireNonNull(data.cachedPositions()).size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
+		double xpPerBlock = FTBUltimineServerConfig.getExperiencePerBlock(player);
+		if (xpPerBlock > 0.0 && XPUtils.getPlayerXP(player) < Objects.requireNonNull(data.cachedPositions()).size() * xpPerBlock) {
 			return false;
 		}
 
