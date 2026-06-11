@@ -109,6 +109,7 @@ public class FTBUltimine {
 		event.registerHandler(AxeStripping.INSTANCE);
 		event.registerHandler(ShovelFlattening.INSTANCE);
 		event.registerHandler(FarmlandConversion.INSTANCE);
+		event.registerHandler(CropPlanting.INSTANCE);
 		event.registerHandler(CropHarvesting.INSTANCE);
 	}
 
