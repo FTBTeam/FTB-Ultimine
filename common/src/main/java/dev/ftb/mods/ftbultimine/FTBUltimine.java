@@ -62,10 +62,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class FTBUltimine {
@@ -279,7 +276,8 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		if (XPUtils.getPlayerXP(player) < data.cachedPositions().size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
+		double xpPerBlock = FTBUltimineServerConfig.getExperiencePerBlock(player);
+		if (xpPerBlock > 0.0 && XPUtils.getPlayerXP(player) < Objects.requireNonNull(data.cachedPositions()).size() * xpPerBlock) {
 			return EventResult.pass();
 		}
 
