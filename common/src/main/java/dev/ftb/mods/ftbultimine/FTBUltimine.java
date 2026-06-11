@@ -5,7 +5,6 @@ import dev.architectury.event.events.common.*;
 import dev.architectury.hooks.level.entity.PlayerHooks;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.ReloadListenerRegistry;
-import dev.architectury.utils.EnvExecutor;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
@@ -19,7 +18,6 @@ import dev.ftb.mods.ftbultimine.api.shape.Shape;
 import dev.ftb.mods.ftbultimine.api.shape.ShapeContext;
 import dev.ftb.mods.ftbultimine.api.util.CanUltimineResult;
 import dev.ftb.mods.ftbultimine.api.util.ItemCollector;
-import dev.ftb.mods.ftbultimine.client.FTBUltimineClient;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineClientConfig;
 import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import dev.ftb.mods.ftbultimine.crops.CropLikeRegistry;
@@ -31,10 +29,11 @@ import dev.ftb.mods.ftbultimine.net.FTBUltimineNet;
 import dev.ftb.mods.ftbultimine.net.SendShapePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket;
 import dev.ftb.mods.ftbultimine.net.SyncUltimineTimePacket.TimeType;
-import dev.ftb.mods.ftbultimine.rightclick.*;
 import dev.ftb.mods.ftbultimine.registry.ModAttributes;
+import dev.ftb.mods.ftbultimine.rightclick.*;
 import dev.ftb.mods.ftbultimine.shape.*;
 import dev.ftb.mods.ftbultimine.utils.PlatformUtil;
+import dev.ftb.mods.ftbultimine.utils.XPUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -63,10 +62,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class FTBUltimine {
@@ -280,7 +276,8 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		if (player.totalExperience < data.cachedPositions().size() * FTBUltimineServerConfig.getExperiencePerBlock(player)) {
+		double xpPerBlock = FTBUltimineServerConfig.getExperiencePerBlock(player);
+		if (xpPerBlock > 0.0 && XPUtils.getPlayerXP(player) < Objects.requireNonNull(data.cachedPositions()).size() * xpPerBlock) {
 			return EventResult.pass();
 		}
 
