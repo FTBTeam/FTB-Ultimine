@@ -29,10 +29,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -109,50 +111,36 @@ public class FTBUltimineClient {
 		return actualBlocks == 0 || shapeBlocks.isEmpty() ? null : shapeBlocks;
 	}
 
-	public void renderInGame(PoseStack stack) {
+	public void renderInGame() {
 		if (!ultimineKeyPressed || cachedPos == null || cachedEdges == null || cachedEdges.isEmpty() || !canUltimine) {
 			return;
 		}
 
-		Minecraft mc = Minecraft.getInstance();
-		Camera camera = mc.getEntityRenderDispatcher().camera;
-		if (camera == null) {
-			return;
-		}
-		Vec3 cameraPos = camera.position();
-
-		stack.pushPose();
-		stack.translate(cachedPos.getX() - cameraPos.x, cachedPos.getY() - cameraPos.y, cachedPos.getZ() - cameraPos.z);
-		Matrix4f matrix = stack.last().pose();
+		double bx = cachedPos.getX();
+		double by = cachedPos.getY();
+		double bz = cachedPos.getZ();
 
 		// solid lines on outer edges of blocks
-		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderTypes.LINES);
 		for (CachedEdge edge : cachedEdges) {
-			buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-					.setColor(255, 255, 255, 255)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(2f);
-			buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-					.setColor(255, 255, 255, 255)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(2f);
+			Gizmos.line(
+					new Vec3(bx + edge.x1(), by + edge.y1(), bz + edge.z1()),
+					new Vec3(bx + edge.x2(), by + edge.y2(), bz + edge.z2()),
+					ARGB.color(255, 255, 255, 255),
+					2f
+			);
 		}
 
 		// translucent lines on hidden edges of blocks
-		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NO_DEPTH_TRANSLUCENT);
 		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
+		int translucentColor = ARGB.color(alpha, 255, 255, 255);
 		for (CachedEdge edge : cachedEdges) {
-			buffer2.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-					.setColor(255, 255, 255, alpha)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(1f);
-			buffer2.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-					.setColor(255, 255, 255, alpha)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(1f);
+			Gizmos.line(
+					new Vec3(bx + edge.x1(), by + edge.y1(), bz + edge.z1()),
+					new Vec3(bx + edge.x2(), by + edge.y2(), bz + edge.z2()),
+					translucentColor,
+					1f
+			).setAlwaysOnTop();
 		}
-
-		stack.popPose();
 	}
 
 	public boolean onMouseScrolled(double amountX, double amountY) {

@@ -19,7 +19,7 @@ public class FTBUltimineFabricClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client::clientTick);
 
         HudElementRegistry.attachElementAfter(VanillaHudElements.SUBTITLES, FTBUltimineClient.GUI_OVERLAY_ID, client::renderGameOverlay);
-        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(context -> client.renderInGame(context.poseStack()));
+        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(context -> client.renderInGame());
 
         // see KeyboardHandlerMixin and MouseHandlerMixin for key/mouse "events"
     }

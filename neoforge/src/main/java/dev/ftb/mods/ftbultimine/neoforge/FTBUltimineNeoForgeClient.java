@@ -28,7 +28,7 @@ public class FTBUltimineNeoForgeClient {
         bus.addListener(ClientStartedEvent.class, _ -> FTBUltimine.commonSetup(true));
         bus.addListener(ClientTickEvent.Pre.class, _ -> client.clientTick(Minecraft.getInstance()));
         bus.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class,
-                event -> client.renderInGame(event.getPoseStack()));
+                event -> client.renderInGame());
         bus.addListener(InputEvent.MouseScrollingEvent.class, event -> {
             if (client.onMouseScrolled(event.getScrollDeltaX(), event.getScrollDeltaY())) {
                 event.setCanceled(true);

@@ -45,10 +45,10 @@ dependencies {
 	api("dev.ftb.mods:ftb-library-neoforge:${rootProject.ftb_library_version}")
 
 	compileOnly("dev.ftb.mods:ftb-ranks-neoforge:${rootProject.ftb_ranks_version}")
-	compileOnly("dev.ftb.mods:ftb-ez-crystals:${rootProject.ftb_ez_crystals_version}")
+	//compileOnly("dev.ftb.mods:ftb-ez-crystals:${rootProject.ftb_ez_crystals_version}")
 
 	localRuntime("dev.ftb.mods:ftb-ranks-neoforge:${rootProject.ftb_ranks_version}")
-	localRuntime("dev.ftb.mods:ftb-ez-crystals:${rootProject.ftb_ez_crystals_version}")
+	//localRuntime("dev.ftb.mods:ftb-ez-crystals:${rootProject.ftb_ez_crystals_version}")
 }
 
 jar {

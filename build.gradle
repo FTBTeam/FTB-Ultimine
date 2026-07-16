@@ -62,6 +62,7 @@ subprojects {
 
 	repositories {
 		mavenCentral()
+		mavenLocal()
 		commonMavenRepos(repositories)
 
 		maven {

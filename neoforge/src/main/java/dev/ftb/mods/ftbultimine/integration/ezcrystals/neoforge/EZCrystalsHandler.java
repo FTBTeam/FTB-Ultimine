@@ -1,3 +1,4 @@
+/*
 package dev.ftb.mods.ftbultimine.integration.ezcrystals.neoforge;
 
 import dev.ftb.mods.ftbezcrystals.FTBEZCrystals;
@@ -32,3 +33,4 @@ public enum EZCrystalsHandler implements RightClickHandler {
         }
     }
 }
+*/

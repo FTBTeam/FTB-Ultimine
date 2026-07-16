@@ -15,6 +15,7 @@ import dev.ftb.mods.ftbultimine.integration.NeoIntegration;
 import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -83,10 +84,10 @@ public class FTBUltimineNeoForge {
 	}
 
 	private void addPlayerAttributes(EntityAttributeModificationEvent event) {
-		event.add(EntityType.PLAYER, ModAttributes.FixedHolder.MAX_BLOCKS_MODIFIER.get());
-		event.add(EntityType.PLAYER, ModAttributes.FixedHolder.COOLDOWN_MODIFIER.get());
-		event.add(EntityType.PLAYER, ModAttributes.FixedHolder.EXHAUSTION_MODIFIER.get());
-		event.add(EntityType.PLAYER, ModAttributes.FixedHolder.EXPERIENCE_MODIFIER.get());
+		event.add(EntityTypes.PLAYER, ModAttributes.FixedHolder.MAX_BLOCKS_MODIFIER.get());
+		event.add(EntityTypes.PLAYER, ModAttributes.FixedHolder.COOLDOWN_MODIFIER.get());
+		event.add(EntityTypes.PLAYER, ModAttributes.FixedHolder.EXHAUSTION_MODIFIER.get());
+		event.add(EntityTypes.PLAYER, ModAttributes.FixedHolder.EXPERIENCE_MODIFIER.get());
 	}
 
 	private static void registerNeoEventPosters(IEventBus bus) {

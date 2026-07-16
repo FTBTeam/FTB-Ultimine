@@ -5,7 +5,6 @@ import net.neoforged.bus.api.IEventBus;
 
 public class EZCrystals {
     public static void init(IEventBus bus) {
-        bus.addListener(FTBUltimineEvent.RegisterRightClickHandler.class,
-                event -> event.getEventData().registerHandler(EZCrystalsHandler.INSTANCE));
+        //bus.addListener(FTBUltimineEvent.RegisterRightClickHandler.class, event -> event.getEventData().registerHandler(EZCrystalsHandler.INSTANCE));
     }
 }
