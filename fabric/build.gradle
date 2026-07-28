@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "7.1.0"
+	id "com.gradleup.shadow" version "9.5.0"
 }
 
 architectury {
@@ -23,13 +23,13 @@ artifacts {
 	dev(jar)
 }
 
-//sourceSets {
-//	main {
-//		resources {
-//			srcDir generatedResources
-//		}
-//	}
-//}
+sourceSets {
+	main {
+		resources {
+			srcDir generatedResources
+		}
+	}
+}
 
 loom {
 	accessWidenerPath = accessWidenerFile

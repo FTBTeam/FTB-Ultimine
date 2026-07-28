@@ -1,5 +1,5 @@
 plugins {
-	id "com.github.johnrengelman.shadow" version "7.1.0"
+	id "com.gradleup.shadow" version "9.5.0"
 }
 
 architectury {
@@ -40,6 +40,8 @@ dependencies {
 
 	common(project(path: ":common", configuration: "dev")) { transitive false }
 	shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive false }
+
+	modCompileOnly("curse.maven:farmersdelight-398521:8083481")
 }
 
 apply from: "https://raw.githubusercontent.com/FTBTeam/mods-meta/main/gradle/extra-local-mods.gradle"
