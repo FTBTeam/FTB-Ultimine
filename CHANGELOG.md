@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Reworked block breaking internals a little to be more tolerant of exceptions thrown by other mods during block breaking
+* Updated `pt_br` translation (thanks @PrincessStellar)
+* Updated `zh_cn` translation (thanks @FireflyHotaru)
 
 ## [26.1.2.5]
 
