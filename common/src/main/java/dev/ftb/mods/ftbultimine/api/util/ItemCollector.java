@@ -14,6 +14,10 @@ import java.util.List;
 public class ItemCollector {
 	private final List<ItemStack> items = new ArrayList<>();
 
+	public void clear() {
+		items.clear();
+	}
+
 	/**
 	 * Add an item to the collection.
 	 *
