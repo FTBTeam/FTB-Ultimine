@@ -57,6 +57,8 @@
 	"ftbultimine.server_settings.features.right_click_axe": "Axe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.features.right_click_hoe": "Hoe: Right-Click multiple blocks",
 	"ftbultimine.server_settings.features.right_click_shovel": "Shovel: Right-Click multiple blocks",
+	"ftbultimine.server_settings.features.right_click_planting": "Seeds: Plant on multiple farmland blocks",
+	"ftbultimine.server_settings.features.right_click_planting.tooltip": "Right-click with seeds (wheat, carrots, potatoes, etc.) on farmland while holding the Ultimine key to plant on multiple farmland blocks at once",
 	"ftbultimine.server_settings.features.right_click_harvesting": "Allow Ultimine harvesting of crops",
 	"ftbultimine.server_settings.features.right_click_crystals": "Allow Ultimine harvesting of crystals",
 	"ftbultimine.server_settings.features.right_click_crystals.tooltip": "Requires the FTB Ez Crystals mod to be installed (NeoForge only)\nHarvest vanilla Amethyst and other modded crystals",
