@@ -1,7 +1,7 @@
 plugins {
 	id 'java-library'
 	id 'net.fabricmc.fabric-loom' version '1.15.2' apply(false)
-	id 'net.neoforged.moddev' version '2.0.141' apply(false)
+	id 'net.neoforged.moddev' version '2.0.147' apply(false)
 	id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
@@ -62,6 +62,7 @@ subprojects {
 
 	repositories {
 		mavenCentral()
+		mavenLocal()
 		commonMavenRepos(repositories)
 
 		maven {

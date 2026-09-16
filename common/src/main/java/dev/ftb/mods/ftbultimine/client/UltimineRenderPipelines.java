@@ -1,13 +1,9 @@
 package dev.ftb.mods.ftbultimine.client;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.pipeline.*;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderPipelines;
 
 public class UltimineRenderPipelines {
     // Note: all snippets are currently private in RenderPipelines, so copying them here for now at least
@@ -16,12 +12,12 @@ public class UltimineRenderPipelines {
             .withLocation("pipeline/lines_translucent")
             .withVertexShader("core/rendertype_lines")
             .withFragmentShader("core/rendertype_lines")
-            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
-            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
-            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
-            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
+//            .withUniform("Globals", UniformType.UNIFORM_BUFFER)
+//            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+//            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+//            .withUniform("Fog", UniformType.UNIFORM_BUFFER)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, VertexFormat.Mode.LINES)
+//            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, RenderPipelines.LINES)
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .withCull(false)
             .build();

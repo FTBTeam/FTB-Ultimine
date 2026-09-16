@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +30,10 @@ import java.util.stream.Collectors;
 public final class ShapeMerger {
 	private static final Long2ObjectMap<Direction> BY_NORMAL = Arrays.stream(Direction.values())
 			.collect(Collectors.toMap(
-					dir -> new BlockPos(dir.getUnitVec3i()).asLong(),
+					dir -> {
+						Vec3i vec = dir.getUnitVec3i();
+						return new BlockPos(vec.getX(), vec.getY(), vec.getZ()).asLong();
+					},
 					dir -> dir,
 					(dir, dir2) -> {
 						throw new IllegalArgumentException("Duplicate keys");

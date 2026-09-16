@@ -126,31 +126,32 @@ public class FTBUltimineClient {
 		Matrix4f matrix = stack.last().pose();
 
 		// solid lines on outer edges of blocks
-		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderTypes.LINES);
-		for (CachedEdge edge : cachedEdges) {
-			buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-					.setColor(255, 255, 255, 255)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(2f);
-			buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-					.setColor(255, 255, 255, 255)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(2f);
-		}
-
-		// translucent lines on hidden edges of blocks
-		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NO_DEPTH_TRANSLUCENT);
-		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
-		for (CachedEdge edge : cachedEdges) {
-			buffer2.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-					.setColor(255, 255, 255, alpha)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(1f);
-			buffer2.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-					.setColor(255, 255, 255, alpha)
-					.setNormal(edge.xn(), edge.yn(), edge.zn())
-					.setLineWidth(1f);
-		}
+		// TODO: Make this work
+//		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderTypes.LINES);
+//		for (CachedEdge edge : cachedEdges) {
+//			buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
+//					.setColor(255, 255, 255, 255)
+//					.setNormal(edge.xn(), edge.yn(), edge.zn())
+//					.setLineWidth(2f);
+//			buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
+//					.setColor(255, 255, 255, 255)
+//					.setNormal(edge.xn(), edge.yn(), edge.zn())
+//					.setLineWidth(2f);
+//		}
+//
+//		// translucent lines on hidden edges of blocks
+//		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NO_DEPTH_TRANSLUCENT);
+//		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
+//		for (CachedEdge edge : cachedEdges) {
+//			buffer2.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
+//					.setColor(255, 255, 255, alpha)
+//					.setNormal(edge.xn(), edge.yn(), edge.zn())
+//					.setLineWidth(1f);
+//			buffer2.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
+//					.setColor(255, 255, 255, alpha)
+//					.setNormal(edge.xn(), edge.yn(), edge.zn())
+//					.setLineWidth(1f);
+//		}
 
 		stack.popPose();
 	}

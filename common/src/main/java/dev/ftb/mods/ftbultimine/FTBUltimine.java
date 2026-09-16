@@ -44,6 +44,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -356,7 +357,7 @@ public class FTBUltimine {
 
 		int didWork = RightClickDispatcher.INSTANCE.dispatchRightClick(shapeContext, hand, data);
 		if (didWork > 0) {
-			serverPlayer.swing(hand);
+			serverPlayer.swing(hand, SwingAnimation.DEFAULT, true);
 			if (!player.isCreative()) {
 				CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
 				data.addPendingXPCost(serverPlayer, Math.max(0, didWork - 1));
