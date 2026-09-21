@@ -3,7 +3,6 @@ package dev.ftb.mods.ftbultimine.client;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.ftb.mods.ftblibrary.client.gui.GuiHelper;
 import dev.ftb.mods.ftblibrary.client.icon.Color4IRenderer;
 import dev.ftb.mods.ftblibrary.client.util.ClientUtils;
@@ -27,6 +26,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -109,7 +109,7 @@ public class FTBUltimineClient {
 		return actualBlocks == 0 || shapeBlocks.isEmpty() ? null : shapeBlocks;
 	}
 
-	public void renderInGame(PoseStack stack) {
+	public void renderInGame(PoseStack stack, SubmitNodeCollector submitNodeCollector) {
 		if (!ultimineKeyPressed || cachedPos == null || cachedEdges == null || cachedEdges.isEmpty() || !canUltimine) {
 			return;
 		}
@@ -123,35 +123,37 @@ public class FTBUltimineClient {
 
 		stack.pushPose();
 		stack.translate(cachedPos.getX() - cameraPos.x, cachedPos.getY() - cameraPos.y, cachedPos.getZ() - cameraPos.z);
-		Matrix4f matrix = stack.last().pose();
 
 		// solid lines on outer edges of blocks
-		// TODO: Make this work
-//		VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderTypes.LINES);
-//		for (CachedEdge edge : cachedEdges) {
-//			buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-//					.setColor(255, 255, 255, 255)
-//					.setNormal(edge.xn(), edge.yn(), edge.zn())
-//					.setLineWidth(2f);
-//			buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-//					.setColor(255, 255, 255, 255)
-//					.setNormal(edge.xn(), edge.yn(), edge.zn())
-//					.setLineWidth(2f);
-//		}
-//
-//		// translucent lines on hidden edges of blocks
-//		VertexConsumer buffer2 = mc.renderBuffers().bufferSource().getBuffer(UltimineRenderTypes.LINES_NO_DEPTH_TRANSLUCENT);
-//		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
-//		for (CachedEdge edge : cachedEdges) {
-//			buffer2.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
-//					.setColor(255, 255, 255, alpha)
-//					.setNormal(edge.xn(), edge.yn(), edge.zn())
-//					.setLineWidth(1f);
-//			buffer2.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
-//					.setColor(255, 255, 255, alpha)
-//					.setNormal(edge.xn(), edge.yn(), edge.zn())
-//					.setLineWidth(1f);
-//		}
+		submitNodeCollector.submitCustomGeometry(stack, RenderTypes.LINES, (pose, buffer) -> {
+			Matrix4f matrix = pose.pose();
+			for (CachedEdge edge : cachedEdges) {
+				buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
+						.setColor(255, 255, 255, 255)
+						.setNormal(edge.xn(), edge.yn(), edge.zn())
+						.setLineWidth(2f);
+				buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
+						.setColor(255, 255, 255, 255)
+						.setNormal(edge.xn(), edge.yn(), edge.zn())
+						.setLineWidth(2f);
+			}
+		});
+
+		// translucent lines on hidden edges of blocks
+		int alpha = FTBUltimineClientConfig.PREVIEW_LINE_ALPHA.get();
+		submitNodeCollector.submitCustomGeometry(stack, UltimineRenderTypes.LINES_NO_DEPTH_TRANSLUCENT, (pose, buffer) -> {
+			Matrix4f matrix = pose.pose();
+			for (CachedEdge edge : cachedEdges) {
+				buffer.addVertex(matrix, edge.x1(), edge.y1(), edge.z1())
+						.setColor(255, 255, 255, alpha)
+						.setNormal(edge.xn(), edge.yn(), edge.zn())
+						.setLineWidth(1f);
+				buffer.addVertex(matrix, edge.x2(), edge.y2(), edge.z2())
+						.setColor(255, 255, 255, alpha)
+						.setNormal(edge.xn(), edge.yn(), edge.zn())
+						.setLineWidth(1f);
+			}
+		});
 
 		stack.popPose();
 	}
