@@ -13,7 +13,7 @@ public interface RegisterBlockSelectionHandlerEvent extends Consumer<RegisterBlo
         /// Register a new handler.
         ///
         /// @param handler the handler to register
-        void registerHandler(BlockSelectionHandler handler) {
+        public void registerHandler(BlockSelectionHandler handler) {
             consumer.accept(handler);
         }
     }
