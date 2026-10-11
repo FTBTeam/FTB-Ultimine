@@ -37,6 +37,8 @@ public interface FTBUltimineServerConfig {
 			.comment("Right-click with a shovel with the Ultimine key held to flatten multiple grass/dirt blocks into dirt paths");
 	BooleanValue RIGHT_CLICK_HOE = FEATURES.addBoolean("right_click_hoe", true)
 			.comment("Right-click with a hoe with the Ultimine key held to till multiple grass/dirt blocks into farmland");
+	BooleanValue RIGHT_CLICK_PLANTING = FEATURES.addBoolean("right_click_planting", true)
+			.comment("Right-click with seeds (wheat, carrots, potatoes, etc.) on farmland with the Ultimine key held to plant on multiple farmland blocks at once");
 	BooleanValue RIGHT_CLICK_HARVESTING = FEATURES.addBoolean("right_click_harvesting", true)
 			.comment("Right-click crops with the Ultimine key held to harvest multiple crop blocks");
 	BooleanValue RIGHT_CLICK_CRYSTALS = FEATURES.addBoolean("right_click_crystals", true)

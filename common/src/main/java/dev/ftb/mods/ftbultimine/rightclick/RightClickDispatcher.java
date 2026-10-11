@@ -32,6 +32,10 @@ public enum RightClickDispatcher {
         handlers.add(handler);
     }
 
+    public List<RightClickHandler> getHandlers() {
+        return handlers;
+    }
+
     public void clear() {
         handlers.clear();
     }
