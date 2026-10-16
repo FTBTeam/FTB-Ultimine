@@ -13,7 +13,7 @@ public interface RegisterBlockBreakHandlerEvent extends Consumer<RegisterBlockBr
         /// Register a new handler.
         ///
         /// @param handler the handler to register
-        void registerHandler(BlockBreakHandler handler) {
+        public void registerHandler(BlockBreakHandler handler) {
             consumer.accept(handler);
         }
     }
