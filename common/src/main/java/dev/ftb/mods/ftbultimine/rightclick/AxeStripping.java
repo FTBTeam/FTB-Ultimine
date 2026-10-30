@@ -30,7 +30,7 @@ public enum AxeStripping implements RightClickHandler {
         int clicked = 0;
         for (BlockPos pos : positions) {
             BlockHitResult hitResult = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
-            ItemStack stack = player.getMainHandItem();
+            ItemStack stack = player.getItemInHand(hand);
             if (stack.useOn(new UseOnContext(player, hand, hitResult)).consumesAction()) {
                 clicked++;
             }
