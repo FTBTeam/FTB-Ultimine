@@ -332,7 +332,7 @@ public class FTBUltimine {
 				// TODO update this if & when Tinkers updates to 1.21+
 //			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
 //				break;
-			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
+			} else if (hadItem && FTBUltimineServerConfig.isToolTooDamagedToContinue(stack)) {
 				break;
 			}
 

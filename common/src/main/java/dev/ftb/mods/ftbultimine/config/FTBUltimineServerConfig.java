@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -139,6 +140,12 @@ public interface FTBUltimineServerConfig {
 
 	private static double getAttrSafe(ServerPlayer player, Holder<Attribute> attr) {
 		return player.getAttributes().hasAttribute(attr) ? player.getAttributeValue(attr) : 0.0;
+	}
+
+	static boolean isToolTooDamagedToContinue(ItemStack stack) {
+		return PREVENT_TOOL_BREAK.get() > 0
+				&& stack.isDamageableItem()
+				&& stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get();
 	}
 
 	class BlockTagsConfig {
