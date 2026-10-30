@@ -89,7 +89,9 @@ public interface FTBUltimineServerConfig {
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shaped mining modes");
 	IntValue PREVENT_TOOL_BREAK = MISC.addInt("prevent_tool_break", 0, 0, 100)
-			.comment("This will stop mining if tool reaches X durability. It's possible this won't work with some modded tools if they use non-standard durability handling.");
+			.comment("This will stop mining if tool reaches X durability.",
+					"It's possible this won't work with some modded tools if they use non-standard durability handling.",
+					"Also applies to farmland tilling, axe stripping and shovel flattening operations.");
 
 	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = MISC.addBoolean("cancel_on_block_break_fail", false)
 			.comment("If a block couldn't be broken (even though it should be), stop ultimining immediately instead of skipping to the next block.");
