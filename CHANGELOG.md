@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [26.1.2.7]
 
+### Added
+* Added integration for the Framed Blocks mod
+  * Right-clicking blocks/hammer/wrench on a framed block while holding the Ultimine key applies the operation to all matching blocks
+
 ### Fixes
 * The `prevent_tool_break` server config setting is now honoured for farmland tilling, axe stripping & shovel flattening
 * Merging of items during drops collection is now more efficient
