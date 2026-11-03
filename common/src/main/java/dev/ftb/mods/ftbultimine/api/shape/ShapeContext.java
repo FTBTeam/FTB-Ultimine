@@ -37,7 +37,7 @@ public record ShapeContext(ServerPlayer player, BlockPos origPos, Direction face
 		}
 		BlockState state = getBlockState(pos);
 		BlockSelectionHandler.Result res = FTBUltimineAPI.api().customSelectionCheck(player, this.origPos, pos, origState, state);
-		return res.asBoolean().orElse(check(state));
+		return res.asBoolean().orElseGet(() -> check(state));
 	}
 
 	@ApiStatus.Internal
