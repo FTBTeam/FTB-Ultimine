@@ -299,6 +299,9 @@ public class FTBUltimine {
 		Shape shape = data.getCurrentShape();
 		float baseSpeed = state.getDestroySpeed(world, origPos);
 		int blocksMined = 0;
+		// snapshot the selected blocks, so we can detect positions altered by earlier breaks in this operation
+		Map<BlockPos, Block> selectedBlocks = new HashMap<>();
+		data.cachedPositions().forEach(p -> selectedBlocks.put(p, world.getBlockState(p).getBlock()));
 		for (BlockPos pos : data.cachedPositions()) {
 			BlockState state1 = world.getBlockState(pos);
 
@@ -310,12 +313,19 @@ public class FTBUltimine {
 				continue;
 			}
 
-			float destroySpeed = state1.getDestroySpeed(world, pos);
-            //noinspection ConstantValue
+			if (state1.isAir() || !state1.is(selectedBlocks.get(pos))) {
+				// block was removed or replaced as a side effect of an earlier break (multiblocks, block entities...)
+				continue;
+			}
+
+			// Ignore hardness comparison for indeterminate shapes: this allows vein-mining of ores of different hardness
+			// (e.g. iron ore & deepslate iron ore), but still prevents e.g. breaking obsidian by breaking an adjacent stone
+			// block with a 3x3 shape.
+			float destroySpeed = shape.isIndeterminateShape() ? baseSpeed : state1.getDestroySpeed(world, pos);
             if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !isValidTool(player, pos, state1))) {
 				continue;
 			}
-			if (!tryBreakOneBlock(player, pos, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+			if (!tryBreakOneBlock(player, pos, state1, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -358,10 +368,9 @@ public class FTBUltimine {
 				}
 			}
 			return player.gameMode.destroyBlock(pos);
-		} catch (Exception ex) {
+		} catch (Exception | StackOverflowError ex) {
 			FTBUltimine.LOGGER.error("caught exception while trying to break block {} @ {} / {}",
-					state, player.level().dimension().location(), pos);
-			ex.printStackTrace();
+					state, player.level().dimension().location(), pos, ex);
 			return false;
 		}
 	}
