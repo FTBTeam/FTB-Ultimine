@@ -1,5 +1,8 @@
 package dev.ftb.mods.ftbultimine.api.util;
 
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -12,6 +15,19 @@ import java.util.List;
  * Utility class for collecting items dropped during a multi-block ultimining operation.
  */
 public class ItemCollector {
+	// same semantics as vanilla's ItemStackLinkedSet.TYPE_AND_TAG, which isn't accessible on all platforms
+	private static final Hash.Strategy<ItemStack> TYPE_AND_COMPONENTS = new Hash.Strategy<>() {
+		@Override
+		public int hashCode(ItemStack stack) {
+			return ItemStack.hashItemAndComponents(stack);
+		}
+
+		@Override
+		public boolean equals(ItemStack a, ItemStack b) {
+			return a == b || a != null && b != null && a.isEmpty() == b.isEmpty() && ItemStack.isSameItemSameComponents(a, b);
+		}
+	};
+
 	private final List<ItemStack> items = new ArrayList<>();
 
 	public void clear() {
@@ -42,55 +58,27 @@ public class ItemCollector {
 		}
 
 		List<ItemStack> stacks = new ArrayList<>();
+		// total counts of stackable items, keyed by item type + components (count is ignored by the strategy)
+		Object2IntMap<ItemStack> totals = new Object2IntOpenCustomHashMap<>(TYPE_AND_COMPONENTS);
 
 		for (ItemStack stack : items) {
-			if (!stack.isStackable()) {
-				stacks.add(stack);
-				continue;
-			}
-
-			// go through the inventory and try to fill up already existing items
-			for (int i = 0; i < stacks.size(); i++) {
-				stack = insert(stacks, stack, i);
-				if (stack.isEmpty()) {
-					break;
-				}
-			}
-
-			if (!stack.isEmpty()) {
+			if (stack.isStackable()) {
+				totals.mergeInt(stack.copyWithCount(1), stack.getCount(), Integer::sum);
+			} else {
 				stacks.add(stack);
 			}
 		}
+
+		totals.forEach((key, remaining) -> {
+			while (remaining > 0) {
+				int n = Math.min(key.getMaxStackSize(), remaining);
+				stacks.add(key.copyWithCount(n));
+				remaining -= n;
+			}
+		});
 
 		for (ItemStack stack : stacks) {
 			Block.popResource(level, pos, stack);
 		}
-	}
-
-	private ItemStack insert(List<ItemStack> stacks, ItemStack stack, int slot) {
-		if (stack.isEmpty()) {
-			return ItemStack.EMPTY;  // degenerate case
-		}
-
-		ItemStack existing = stacks.get(slot);
-
-		if (existing.isEmpty()) {
-			// trivial case, just put the stack in the slot
-			stacks.set(slot, stack.copy());
-			return ItemStack.EMPTY;
-		}
-
-		if (!stack.isStackable() || !ItemStack.isSameItemSameComponents(stack, existing)) {
-			// stack doesn't fit here
-			return stack;
-		}
-
-		// the slot is not empty, and is compatible with the stack to be inserted
-		// - so at least some of it can be inserted
-		int available = stack.getMaxStackSize() - existing.getCount();
-		int toAdd = Math.min(available, stack.getCount());
-		existing.grow(toAdd);
-
-		return toAdd == stack.getCount() ? ItemStack.EMPTY : stack.copyWithCount(stack.getCount() - toAdd);
 	}
 }
