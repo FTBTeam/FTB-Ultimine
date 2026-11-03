@@ -46,6 +46,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+
+
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -263,15 +266,29 @@ public class FTBUltimine {
 		Shape shape = data.getCurrentShape();
 		float baseSpeed = state.getDestroySpeed(level, origPos);
 
+		// snapshot the selected blocks, so we can detect positions altered by earlier breaks in this operation
+		Map<BlockPos, Block> selectedBlocks = new HashMap<>();
+		data.cachedPositions().forEach(p -> selectedBlocks.put(p, level.getBlockState(p).getBlock()));
+
 		for (BlockPos pos : Objects.requireNonNull(data.cachedPositions())) {
 			BlockState state1 = level.getBlockState(pos);
 
-			float destroySpeed = state1.getDestroySpeed(level, pos);
-			if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !isValidTool(player, pos, state1))) {
+			if (state1.isAir() || !state1.is(selectedBlocks.get(pos))) {
+				// block was removed or replaced as a side effect of an earlier break (multiblocks, block entities...)
 				continue;
 			}
 
-			if (!tryBreakOneBlock(player, pos, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+			// Ignore hardness comparison when there's a shapeless match - this allows vein-mining of ores of different
+			// hardness (e.g. iron ore & deepslate iron ore), but still prevents e.g. breaking obsidian by breaking an
+			// adjacent stone block with a 3x3 shape.
+			float destroySpeed = state1.getDestroySpeed(level, pos);
+			boolean hardnessOK = destroySpeed >= 0 &&
+					(destroySpeed <= baseSpeed || FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS.match(state, state1));
+			if (!player.isCreative() && (!hardnessOK || !isValidTool(player, pos, state1))) {
+				continue;
+			}
+
+			if (!tryBreakOneBlock(player, pos, state1, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -283,9 +300,7 @@ public class FTBUltimine {
 			}
 
 			ItemStack stack = player.getMainHandItem();
-			if (hadItem && stack.isEmpty()) {
-				break;
-			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
+			if (hadItem && (stack.isEmpty() || FTBUltimineServerConfig.isToolTooDamagedToContinue(stack))) {
 				break;
 			}
 
