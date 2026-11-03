@@ -318,11 +318,13 @@ public class FTBUltimine {
 				continue;
 			}
 
-			// Ignore hardness comparison for indeterminate shapes: this allows vein-mining of ores of different hardness
-			// (e.g. iron ore & deepslate iron ore), but still prevents e.g. breaking obsidian by breaking an adjacent stone
-			// block with a 3x3 shape.
-			float destroySpeed = shape.isIndeterminateShape() ? baseSpeed : state1.getDestroySpeed(world, pos);
-            if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !isValidTool(player, pos, state1))) {
+			// Ignore hardness comparison when there's a shapeless match - this allows vein-mining of ores of different
+			// hardness (e.g. iron ore & deepslate iron ore), but still prevents e.g. breaking obsidian by breaking an
+			// adjacent stone block with a 3x3 shape.
+			float destroySpeed = state1.getDestroySpeed(world, pos);
+			boolean hardnessOK = destroySpeed >= 0 &&
+					(destroySpeed <= baseSpeed || FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS.match(state, state1));
+            if (!player.isCreative() && (!hardnessOK || !isValidTool(player, pos, state1))) {
 				continue;
 			}
 			if (!tryBreakOneBlock(player, pos, state1, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
