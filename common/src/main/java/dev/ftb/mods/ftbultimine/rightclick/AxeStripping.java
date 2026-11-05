@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -28,8 +29,12 @@ public enum AxeStripping implements RightClickHandler {
         int clicked = 0;
         for (BlockPos pos : positions) {
             BlockHitResult hitResult = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
-            if (player.getMainHandItem().useOn(new UseOnContext(player, hand, hitResult)).consumesAction()) {
+            ItemStack stack = player.getItemInHand(hand);
+            if (stack.useOn(new UseOnContext(player, hand, hitResult)).consumesAction()) {
                 clicked++;
+            }
+            if (stack.isEmpty() || FTBUltimineServerConfig.isToolTooDamagedToContinue(stack)) {
+                break;
             }
         }
         return clicked;
