@@ -7,8 +7,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 
 /// Register implementations of this interface via the [RegisterRightClickHandlerEvent] event handler.
 public interface RightClickHandler {
@@ -21,6 +23,21 @@ public interface RightClickHandler {
     /// @param positions    the block positions covered by the current ultimining shape
     /// @return the number of blocks actually affected by this operation (return 0 if the operation is for any reason not applicable)
     int handleRightClickBlock(ShapeContext shapeContext, InteractionHand hand, Collection<BlockPos> positions);
+
+    /// Optional preview filter for the Ultimine block outline shown to the player. Called every tick while the
+    /// Ultimine key is held. Handlers can return a filtered (or reduced) subset of `positions` to restrict the
+    /// preview to only the blocks this handler would actually act on, given the player's currently held items
+    /// and world state.
+    ///
+    /// Implementations should return `null` if this handler does not apply (e.g. the held item isn't relevant).
+    /// The first handler to return a non-null result wins; subsequent handlers are not consulted for the preview.
+    ///
+    /// @param player    the player holding the Ultimine key
+    /// @param positions the current shape positions
+    /// @return a filtered list of positions, or `null` if this handler is not applicable
+    default @Nullable List<BlockPos> filterPreview(ServerPlayer player, List<BlockPos> positions) {
+        return null;
+    }
 
     /// Convenience method to damage a tool item on use. Can be called by right-click handlers when processing blocks.
     ///
