@@ -1,4 +1,4 @@
-package dev.ftb.mods.ftbultimine.integration.ezcrystals.neoforge;
+package dev.ftb.mods.ftbultimine.neoforge.integration.ezcrystals.neoforge;
 
 import dev.ftb.mods.ftbezcrystals.FTBEZCrystals;
 import dev.ftb.mods.ftbultimine.api.rightclick.RightClickHandler;
@@ -7,7 +7,6 @@ import dev.ftb.mods.ftbultimine.config.FTBUltimineServerConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collection;
 

@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -88,7 +89,9 @@ public interface FTBUltimineServerConfig {
 			)),
 			"These tags will be considered the same block when checking for blocks to Ultimine in shaped mining modes");
 	IntValue PREVENT_TOOL_BREAK = MISC.addInt("prevent_tool_break", 0, 0, 100)
-			.comment("This will stop mining if tool reaches X durability. It's possible this won't work with some modded tools if they use non-standard durability handling.");
+			.comment("This will stop mining if tool reaches X durability.",
+					"It's possible this won't work with some modded tools if they use non-standard durability handling.",
+					"Also applies to farmland tilling, axe stripping and shovel flattening operations.");
 
 	BooleanValue CANCEL_ON_BLOCK_BREAK_FAIL = MISC.addBoolean("cancel_on_block_break_fail", false)
 			.comment("If a block couldn't be broken (even though it should be), stop ultimining immediately instead of skipping to the next block.");
@@ -139,6 +142,12 @@ public interface FTBUltimineServerConfig {
 
 	private static double getAttrSafe(ServerPlayer player, Holder<Attribute> attr) {
 		return player.getAttributes().hasAttribute(attr) ? player.getAttributeValue(attr) : 0.0;
+	}
+
+	static boolean isToolTooDamagedToContinue(ItemStack stack) {
+		return PREVENT_TOOL_BREAK.get() > 0
+				&& stack.isDamageableItem()
+				&& stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get();
 	}
 
 	class BlockTagsConfig {

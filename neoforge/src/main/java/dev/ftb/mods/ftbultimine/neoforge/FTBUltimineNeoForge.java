@@ -2,6 +2,7 @@ package dev.ftb.mods.ftbultimine.neoforge;
 
 import dev.ftb.mods.ftbultimine.FTBUltimine;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
+import dev.ftb.mods.ftbultimine.neoforge.integration.NeoIntegration;
 import dev.ftb.mods.ftbultimine.registry.ModAttributes;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -18,6 +19,8 @@ public class FTBUltimineNeoForge {
 		new FTBUltimine();
 
 		modEventBus.addListener(this::addPlayerAttributes);
+
+		NeoIntegration.init(modEventBus);
 	}
 
 	private void addPlayerAttributes(EntityAttributeModificationEvent event) {

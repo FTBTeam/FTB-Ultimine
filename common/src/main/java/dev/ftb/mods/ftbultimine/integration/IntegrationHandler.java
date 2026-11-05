@@ -4,7 +4,6 @@ import dev.architectury.platform.Platform;
 import dev.ftb.mods.ftbultimine.api.crop.RegisterCropLikeEvent;
 import dev.ftb.mods.ftbultimine.integration.acceldecay.AcceleratedDecay;
 import dev.ftb.mods.ftbultimine.integration.agricraft.AgricraftSetup;
-import dev.ftb.mods.ftbultimine.integration.ezcrystals.EZCrystals;
 import dev.ftb.mods.ftbultimine.integration.ranks.FTBRanksIntegration;
 
 public class IntegrationHandler {
@@ -29,10 +28,6 @@ public class IntegrationHandler {
 
         if (Platform.isModLoaded("accelerateddecay")) {
             AcceleratedDecay.init();
-        }
-
-        if (Platform.isModLoaded("ftbezcrystals")) {
-            EZCrystals.init();
         }
     }
 }

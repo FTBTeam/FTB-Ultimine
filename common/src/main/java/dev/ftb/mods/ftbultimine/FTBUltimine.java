@@ -7,6 +7,7 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.ReloadListenerRegistry;
 import dev.architectury.utils.value.IntValue;
 import dev.ftb.mods.ftblibrary.config.manager.ConfigManager;
+import dev.ftb.mods.ftblibrary.util.Lazy;
 import dev.ftb.mods.ftbultimine.api.FTBUltimineAPI;
 import dev.ftb.mods.ftbultimine.api.blockbreaking.RegisterBlockBreakHandlerEvent;
 import dev.ftb.mods.ftbultimine.api.blockselection.RegisterBlockSelectionHandlerEvent;
@@ -38,6 +39,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -71,9 +73,7 @@ public class FTBUltimine {
 	public static final Logger LOGGER = LogManager.getLogger();
 
 	private Map<UUID, FTBUltiminePlayerData> cachedDataMap;
-	private boolean isBreakingBlock;
-	private int tempBlockDroppedXp;
-	private ItemCollector tempBlockDropsList;
+	private final DropsAccumulator dropsAccumulator = new DropsAccumulator();
 
 	public static final TagKey<Item> DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimineAPI.id("excluded_tools"));
 	public static final TagKey<Item> STRICT_DENY_TAG = TagKey.create(Registries.ITEM, FTBUltimineAPI.id("excluded_tools/strict"));
@@ -255,7 +255,7 @@ public class FTBUltimine {
     }
 
 	public EventResult blockBroken(Level world, BlockPos origPos, BlockState state, ServerPlayer player, @Nullable IntValue xp) {
-		if (isBreakingBlock || !canUltimine(player, origPos, state).isAllowed()) {
+		if (dropsAccumulator.isActive() || !canUltimine(player, origPos, state).isAllowed()) {
 			return EventResult.pass();
 		}
 		FTBUltiminePlayerData data = getOrCreatePlayerData(player);
@@ -281,14 +281,27 @@ public class FTBUltimine {
 			return EventResult.pass();
 		}
 
-		isBreakingBlock = true;
-		tempBlockDropsList = new ItemCollector();
-		tempBlockDroppedXp = 0;
-		boolean hadItem = !player.getMainHandItem().isEmpty();
+		try {
+			dropsAccumulator.start();
+			breakBlocksInShape(world, origPos, state, player, bhr, data);
+		} finally {
+			dropsAccumulator.finish(player.serverLevel(), origPos);
+		}
 
+		data.clearCache();
+		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(data.getCurrentShapeIndex(), List.of()));
+
+		return EventResult.interruptFalse();
+	}
+
+	private static void breakBlocksInShape(Level world, BlockPos origPos, BlockState state, ServerPlayer player, BlockHitResult bhr, FTBUltiminePlayerData data) {
+		boolean hadItem = !player.getMainHandItem().isEmpty();
 		Shape shape = data.getCurrentShape();
 		float baseSpeed = state.getDestroySpeed(world, origPos);
 		int blocksMined = 0;
+		// snapshot the selected blocks, so we can detect positions altered by earlier breaks in this operation
+		Map<BlockPos, Block> selectedBlocks = new HashMap<>();
+		data.cachedPositions().forEach(p -> selectedBlocks.put(p, world.getBlockState(p).getBlock()));
 		for (BlockPos pos : data.cachedPositions()) {
 			BlockState state1 = world.getBlockState(pos);
 
@@ -300,12 +313,21 @@ public class FTBUltimine {
 				continue;
 			}
 
-			float destroySpeed = state1.getDestroySpeed(world, pos);
-            //noinspection ConstantValue
-            if (!player.isCreative() && (destroySpeed < 0 || destroySpeed > baseSpeed || !isValidTool(player, pos, state1))) {
+			if (state1.isAir() || !state1.is(selectedBlocks.get(pos))) {
+				// block was removed or replaced as a side effect of an earlier break (multiblocks, block entities...)
 				continue;
 			}
-			if (!tryBreakBlock(player, pos, state, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
+
+			// Ignore hardness comparison when there's a shapeless match - this allows vein-mining of ores of different
+			// hardness (e.g. iron ore & deepslate iron ore), but still prevents e.g. breaking obsidian by breaking an
+			// adjacent stone block with a 3x3 shape.
+			float destroySpeed = state1.getDestroySpeed(world, pos);
+			boolean hardnessOK = destroySpeed >= 0 &&
+					(destroySpeed <= baseSpeed || FTBUltimineServerConfig.MERGE_TAGS_SHAPELESS.match(state, state1));
+            if (!player.isCreative() && (!hardnessOK || !isValidTool(player, pos, state1))) {
+				continue;
+			}
+			if (!tryBreakOneBlock(player, pos, state1, shape, bhr) && FTBUltimineServerConfig.CANCEL_ON_BLOCK_BREAK_FAIL.get()) {
 				break;
 			}
 
@@ -322,7 +344,7 @@ public class FTBUltimine {
 				// TODO update this if & when Tinkers updates to 1.21+
 //			} else if (hadItem && stack.hasTag() && stack.getTag().getBoolean("tic_broken")) {
 //				break;
-			} else if (hadItem && FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get() > 0 && stack.isDamageableItem() && stack.getDamageValue() >= stack.getMaxDamage() - FTBUltimineServerConfig.PREVENT_TOOL_BREAK.get()) {
+			} else if (hadItem && FTBUltimineServerConfig.isToolTooDamagedToContinue(stack)) {
 				break;
 			}
 
@@ -335,29 +357,24 @@ public class FTBUltimine {
 			CooldownTracker.setLastUltimineTime(player, System.currentTimeMillis());
 			data.addPendingXPCost(player, Math.max(0, blocksMined - 1));
 		}
-
-		isBreakingBlock = false;
-
-		tempBlockDropsList.drop(player.level(), origPos);
-
-		if (tempBlockDroppedXp > 0) {
-			player.level().addFreshEntity(new ExperienceOrb(player.level(), origPos.getX() + 0.5D, origPos.getY() + 0.5D, origPos.getZ() + 0.5D, tempBlockDroppedXp));
-		}
-
-		data.clearCache();
-		NetworkManager.sendToPlayer(player, SendShapePacket.adjustShapeAndBlockPos(data.getCurrentShapeIndex(), List.of()));
-
-		return EventResult.interruptFalse();
 	}
 
-	private static boolean tryBreakBlock(ServerPlayer player, BlockPos pos, BlockState state, Shape shape, BlockHitResult bhr) {
-		for (var handler : BlockBreakingRegistry.INSTANCE.getHandlers()) {
-			switch (handler.breakBlock(player, pos, state, shape, bhr)) {
-				case SUCCESS: return true;
-				case FAIL: return false;
+	private static boolean tryBreakOneBlock(ServerPlayer player, BlockPos pos, BlockState state, Shape shape, BlockHitResult bhr) {
+		try {
+			for (var handler : BlockBreakingRegistry.INSTANCE.getHandlers()) {
+				switch (handler.breakBlock(player, pos, state, shape, bhr)) {
+					case SUCCESS:
+						return true;
+					case FAIL:
+						return false;
+				}
 			}
+			return player.gameMode.destroyBlock(pos);
+		} catch (Exception | StackOverflowError ex) {
+			FTBUltimine.LOGGER.error("caught exception while trying to break block {} @ {} / {}",
+					state, player.level().dimension().location(), pos, ex);
+			return false;
 		}
-		return player.gameMode.destroyBlock(pos);
 	}
 
 	public EventResult blockRightClick(Player player, InteractionHand hand, BlockPos clickPos, Direction face) {
@@ -417,29 +434,59 @@ public class FTBUltimine {
 	}
 
 	public EventResult entityJoinedWorld(Entity entity, Level level) {
-		// Other mods may have already intercepted this event to do similar absorption;
-		//  the only way to be sure if the entity is still valid is to check if it's alive,
-		//  and hope other mods killed the entity if they've absorbed it.
-		if (entity.isAlive()) {
-			if (isBreakingBlock && entity instanceof ItemEntity item) {
-				if (!item.getItem().isEmpty()) {
-					tempBlockDropsList.add(item.getItem());
-					item.setItem(ItemStack.EMPTY);
-				}
-				return EventResult.interruptFalse();
-			} else if (isBreakingBlock && entity instanceof ExperienceOrb orb) {
-				tempBlockDroppedXp += orb.getValue();
-				entity.kill();
-				return EventResult.interruptFalse();
-			}
-		}
-		return EventResult.pass();
+		return dropsAccumulator.handleEntity(entity, level) ? EventResult.interruptFalse() : EventResult.pass();
 	}
 
 	private static class DataReloadListener implements ResourceManagerReloadListener {
 		@Override
 		public void onResourceManagerReload(ResourceManager resourceManager) {
 			BlockMatcher.TagCache.onReload();
+		}
+	}
+
+	/// Keeps track of blocks and exp orbs that are dropped while an ultimining operation is in progress.
+	private static class DropsAccumulator {
+		private boolean isBreakingBlock;
+		private int tempBlockDroppedXp;
+		private final Lazy<ItemCollector> tempBlockDropsList = Lazy.of(ItemCollector::new);
+
+		public void start() {
+			isBreakingBlock = true;
+			tempBlockDroppedXp = 0;
+			tempBlockDropsList.get().clear();
+		}
+
+		public void finish(ServerLevel level, BlockPos origPos) {
+			isBreakingBlock = false;
+			tempBlockDropsList.get().drop(level, origPos);
+			tempBlockDropsList.get().clear();
+			if (tempBlockDroppedXp > 0) {
+				level.addFreshEntity(new ExperienceOrb(level, origPos.getX() + 0.5D, origPos.getY() + 0.5D, origPos.getZ() + 0.5D, tempBlockDroppedXp));
+			}
+		}
+
+		public boolean handleEntity(Entity entity, Level level) {
+			// Other mods may have already intercepted this event to do similar absorption;
+			//  the only way to be sure if the entity is still valid is to check if it's alive,
+			//  and hope other mods killed the entity if they've absorbed it.
+			if (entity.isAlive() && level instanceof ServerLevel && isBreakingBlock) {
+				if (entity instanceof ItemEntity item) {
+					if (!item.getItem().isEmpty()) {
+						tempBlockDropsList.get().add(item.getItem());
+						item.setItem(ItemStack.EMPTY);
+					}
+					return true;
+				} else if (entity instanceof ExperienceOrb orb) {
+					tempBlockDroppedXp += orb.getValue();
+					entity.kill();
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public boolean isActive() {
+			return isBreakingBlock;
 		}
 	}
 }

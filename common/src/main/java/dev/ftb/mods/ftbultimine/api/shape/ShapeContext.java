@@ -5,6 +5,8 @@ import dev.ftb.mods.ftbultimine.api.blockselection.BlockSelectionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -23,7 +25,7 @@ import org.jetbrains.annotations.ApiStatus;
  */
 public record ShapeContext(ServerPlayer player, BlockPos origPos, Direction face, BlockState origState, Matcher matcher, int maxBlocks) {
 	public BlockState getBlockState(BlockPos pos) {
-		return player.level().getBlockState(pos);
+		return player.level().hasChunkAt(pos) ? player.level().getBlockState(pos) : Blocks.AIR.defaultBlockState();
 	}
 
 	@Deprecated
@@ -39,9 +41,12 @@ public record ShapeContext(ServerPlayer player, BlockPos origPos, Direction face
 	 * @return true if the block should be included, false otherwise
 	 */
 	public boolean check(BlockPos pos) {
+		if (!player.level().hasChunkAt(pos)) {
+			return false;
+		}
 		BlockState state = getBlockState(pos);
 		BlockSelectionHandler.Result res = FTBUltimineAPI.api().customSelectionCheck(player, this.origPos, pos, origState, state);
-		return res.asBoolean().orElse(check(state));
+		return res.asBoolean().orElseGet(() -> check(state));
 	}
 
 	@ApiStatus.Internal
