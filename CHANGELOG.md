@@ -4,13 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [26.1.2.8]
+
+### Fixed
+* Fixed translation key for config-choice screen
+
 ## [26.1.2.7]
 
 ### Added
 * Added integration for the Framed Blocks mod
   * Right-clicking blocks/hammer/wrench on a framed block while holding the Ultimine key applies the operation to all matching blocks
 
-### Fixes
+### Fixed
 * The `prevent_tool_break` server config setting is now honoured for farmland tilling, axe stripping & shovel flattening
 * Merging of items during drops collection is now more efficient
 * More careful of loaded-chunk detection (looking for candidate breaks can no longer cause chunkloading)
