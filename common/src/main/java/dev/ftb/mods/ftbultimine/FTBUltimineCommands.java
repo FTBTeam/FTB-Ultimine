@@ -31,7 +31,7 @@ public class FTBUltimineCommands {
                 .then(Commands.literal("config")
                         .requires(CommandSourceStack::isPlayer)
                         .executes(context -> {
-                            Server2PlayNetworking.send(context.getSource().getPlayerOrException(), EditConfigChoicePacket.choose(FTBUltimineClientConfig.KEY, FTBUltimineServerConfig.KEY, Component.translatable("key.ftbultimine")));
+                            Server2PlayNetworking.send(context.getSource().getPlayerOrException(), EditConfigChoicePacket.choose(FTBUltimineClientConfig.KEY, FTBUltimineServerConfig.KEY, Component.translatable("ftbultimine.config")));
                             return 1;
                         })
                 )
