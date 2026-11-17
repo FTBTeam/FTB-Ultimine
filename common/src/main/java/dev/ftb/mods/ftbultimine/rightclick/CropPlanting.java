@@ -21,8 +21,11 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public enum CropPlanting implements RightClickHandler {
     INSTANCE;
@@ -52,6 +55,28 @@ public enum CropPlanting implements RightClickHandler {
             }
         }
         return planted;
+    }
+
+    @Override
+    public @Nullable List<BlockPos> filterPreview(ServerPlayer player, List<BlockPos> positions) {
+        if (!FTBUltimineServerConfig.RIGHT_CLICK_PLANTING.get()) return null;
+
+        ItemStack stack = player.getMainHandItem();
+        if (!isPlantable(stack)) {
+            stack = player.getOffhandItem();
+            if (!isPlantable(stack)) return null;
+        }
+
+        int seedCount = stack.getCount();
+        Level level = player.level();
+        List<BlockPos> filtered = new ArrayList<>();
+        for (BlockPos pos : positions) {
+            if (filtered.size() >= seedCount) break;
+            if (level.getBlockState(pos).getBlock() != Blocks.FARMLAND) continue;
+            if (!level.getBlockState(pos.above()).isAir()) continue;
+            filtered.add(pos);
+        }
+        return filtered;
     }
 
     private static boolean isPlantable(ItemStack stack) {
